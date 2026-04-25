@@ -1,0 +1,485 @@
+import React, { useState, useEffect } from 'react';
+import { Card, Button } from './ui-components';
+import {
+  Contact,
+  UserPlus,
+  Mail,
+  Phone,
+  MapPin,
+  Trash2,
+  Pencil,
+  X,
+  Loader2,
+  Search,
+  FileText,
+  Hash,
+} from 'lucide-react';
+import { api } from '../lib/api';
+import { toast } from 'sonner';
+import { useAuthStore } from '../store/useAuthStore';
+
+// ─── Types ──────────────────────────────────────────────────────────────────
+interface Customer {
+  id: string;
+  name: string;
+  document_type: string;
+  document_number: string;
+  email: string;
+  phone: string;
+  address: string;
+  notes: string;
+  created_at: string;
+}
+
+type CustomerForm = Omit<Customer, 'id' | 'created_at'>;
+
+const EMPTY_FORM: CustomerForm = {
+  name: '',
+  document_type: 'CC',
+  document_number: '',
+  email: '',
+  phone: '',
+  address: '',
+  notes: '',
+};
+
+const DOC_TYPES = ['CC', 'NIT', 'CE', 'PAS', 'TI'];
+
+// ─── Component ───────────────────────────────────────────────────────────────
+export const Customers = () => {
+  const { profile } = useAuthStore();
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [form, setForm] = useState<CustomerForm>(EMPTY_FORM);
+  const [search, setSearch] = useState('');
+
+  // ── Data ──────────────────────────────────────────────────────────────────
+  const fetchCustomers = async () => {
+    setLoading(true);
+    try {
+      const data = await api.get('/customers');
+      setCustomers(data || []);
+    } catch {
+      toast.error('Error al cargar clientes');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchCustomers(); }, []);
+
+  // ── Filtered list ─────────────────────────────────────────────────────────
+  const filtered = customers.filter(c =>
+    [c.name, c.email, c.phone, c.document_number].some(v =>
+      (v || '').toLowerCase().includes(search.toLowerCase())
+    )
+  );
+
+  // ── Handlers ──────────────────────────────────────────────────────────────
+  const openCreate = () => {
+    setEditingId(null);
+    setForm(EMPTY_FORM);
+    setIsModalOpen(true);
+  };
+
+  const openEdit = (c: Customer) => {
+    setEditingId(c.id);
+    setForm({
+      name: c.name,
+      document_type: c.document_type,
+      document_number: c.document_number,
+      email: c.email,
+      phone: c.phone,
+      address: c.address,
+      notes: c.notes,
+    });
+    setIsModalOpen(true);
+  };
+
+  const toTitleCase = (str: string) => str.toLowerCase().replace(/\b\w/g, s => s.toUpperCase());
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.name.trim()) return toast.error('El nombre es obligatorio');
+    setIsSubmitting(true);
+    
+    // 1. Sanitización de Texto (Title Case)
+    const sanitizedForm = {
+       ...form,
+       name: toTitleCase(form.name.trim())
+    };
+
+    try {
+      if (editingId) {
+        await api.patch(`/customers/${editingId}`, sanitizedForm);
+        toast.success('Cliente actualizado');
+      } else {
+        await api.post('/customers', sanitizedForm);
+        toast.success('Cliente registrado');
+      }
+      fetchCustomers();
+      setIsModalOpen(false);
+    } catch (err: any) {
+      toast.error(err.message || 'Error al guardar cliente');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('¿Eliminar este cliente permanentemente?')) return;
+    try {
+      await api.delete(`/customers/${id}`);
+      toast.success('Cliente eliminado');
+      fetchCustomers();
+    } catch {
+      toast.error('Error al eliminar cliente');
+    }
+  };
+
+  const f = (key: keyof CustomerForm, val: string) =>
+    setForm(prev => ({ ...prev, [key]: val }));
+
+  // ── Render ────────────────────────────────────────────────────────────────
+  return (
+    <div className="space-y-8 animate-slide-up flex-1 min-h-full">
+
+      {/* HEADER */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+        <div className="space-y-1">
+          <h2 className="text-3xl font-black text-slate-900 dark:text-white flex items-center gap-3 font-outfit uppercase tracking-tight">
+            <div className="p-2 bg-brand-500/10 rounded-xl border border-brand-500/20 text-brand-500 shadow-sm">
+              <Contact className="h-6 w-6" />
+            </div>
+            DIRECTORIO DE CLIENTES
+          </h2>
+          <p className="text-slate-500 dark:text-zinc-500 font-bold uppercase tracking-[0.3em] text-[10px] ml-1">
+            CRM Básico — Gestión de Cartera Comercial
+          </p>
+        </div>
+        <Button
+          className="h-14 px-8 rounded-2xl font-black text-[10px] uppercase tracking-widest glow-blue border border-brand-400/30"
+          icon={UserPlus}
+          onClick={openCreate}
+        >
+          NUEVO CLIENTE
+        </Button>
+      </div>
+
+      {/* SEARCH */}
+      <div className="relative max-w-md">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+        <input
+          type="search"
+          placeholder="Buscar por nombre, cédula, email o teléfono..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          aria-label="Buscar clientes"
+          className="w-full h-12 bg-white dark:bg-black/20 border border-zinc-200 dark:border-white/5 rounded-2xl pl-11 pr-4 text-sm font-bold focus:ring-2 focus:ring-brand-500/50 transition-all outline-none dark:text-white placeholder:text-zinc-400 shadow-sm"
+        />
+      </div>
+
+      {/* TABLE */}
+      <Card className="p-0 bg-white dark:bg-zinc-900/50 border border-slate-200 dark:border-white/5 shadow-md overflow-hidden rounded-[2.5rem] flex-1 backdrop-blur-xl">
+        <div className="overflow-x-auto min-h-[400px]">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-slate-100 dark:bg-black/40 text-slate-500 dark:text-zinc-500 text-[10px] uppercase font-black tracking-[0.2em] border-b border-slate-200 dark:border-white/5">
+                <th className="px-8 py-5">Cliente</th>
+                <th className="px-8 py-5">Documento</th>
+                <th className="px-8 py-5">Contacto</th>
+                <th className="px-8 py-5 hidden lg:table-cell">Dirección</th>
+                <th className="px-8 py-5 text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-200 dark:divide-white/5">
+              {loading ? (
+                <tr>
+                  <td colSpan={5} className="text-center py-32">
+                    <div className="flex flex-col items-center animate-pulse">
+                      <Loader2 className="h-10 w-10 text-brand-500 animate-spin mb-4" />
+                      <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">
+                        Cargando directorio...
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              ) : filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="text-center py-32 text-zinc-700">
+                    <div className="flex flex-col items-center opacity-30">
+                      <Contact className="h-16 w-16 mb-4" strokeWidth={1} />
+                      <p className="font-black uppercase tracking-[0.4em] text-[10px]">
+                        {search ? 'No hay resultados' : 'Aún no hay clientes registrados'}
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                filtered.map(c => (
+                  <tr key={c.id} className="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors group">
+                    {/* Nombre + inicial */}
+                    <td className="px-8 py-5 whitespace-nowrap">
+                      <div className="flex items-center gap-4">
+                        <div className="h-11 w-11 rounded-2xl bg-brand-500/10 border border-brand-500/20 flex items-center justify-center text-brand-500 font-black text-sm font-outfit shadow-lg shadow-brand-500/5 group-hover:scale-110 transition-transform">
+                          {(c.name || 'C').charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="font-black text-slate-800 dark:text-zinc-100 uppercase tracking-tight font-outfit group-hover:text-brand-500 dark:group-hover:text-white transition-colors">
+                            {c.name}
+                          </p>
+                          {c.notes && (
+                            <p className="text-[9px] text-zinc-400 dark:text-zinc-600 font-bold italic truncate max-w-[180px]">
+                              {c.notes}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* Documento */}
+                    <td className="px-8 py-5">
+                      {c.document_number ? (
+                        <div className="flex flex-col">
+                          <span className="text-[9px] font-black text-brand-500 uppercase tracking-widest">{c.document_type}</span>
+                          <span className="text-sm font-bold text-slate-700 dark:text-zinc-300 font-mono">{c.document_number}</span>
+                        </div>
+                      ) : (
+                        <span className="text-zinc-300 dark:text-zinc-700 text-xs">—</span>
+                      )}
+                    </td>
+
+                    {/* Contacto */}
+                    <td className="px-8 py-5">
+                      <div className="flex flex-col gap-1">
+                        {c.email && (
+                          <div className="flex items-center gap-2 text-slate-500 dark:text-zinc-400 text-xs font-bold">
+                            <Mail className="h-3 w-3 text-brand-500 shrink-0" />
+                            <span className="lowercase truncate max-w-[160px]">{c.email}</span>
+                          </div>
+                        )}
+                        {c.phone && (
+                          <div className="flex items-center gap-2 text-slate-500 dark:text-zinc-400 text-xs font-bold">
+                            <Phone className="h-3 w-3 text-emerald-500 shrink-0" />
+                            {c.phone}
+                          </div>
+                        )}
+                        {!c.email && !c.phone && (
+                          <span className="text-zinc-300 dark:text-zinc-700 text-xs">Sin contacto</span>
+                        )}
+                      </div>
+                    </td>
+
+                    {/* Dirección */}
+                    <td className="px-8 py-5 hidden lg:table-cell text-slate-500 dark:text-zinc-400 text-xs font-bold">
+                      {c.address || <span className="text-zinc-300 dark:text-zinc-700">—</span>}
+                    </td>
+
+                    {/* Acciones */}
+                    <td className="px-8 py-5 text-right">
+                      <div className="flex justify-end gap-2 opacity-20 group-hover:opacity-100 transition-all scale-90 group-hover:scale-100">
+                        <button
+                          onClick={() => openEdit(c)}
+                          className="p-3 bg-zinc-100 dark:bg-white/5 text-zinc-400 hover:text-brand-500 hover:bg-brand-500/10 rounded-xl border border-transparent hover:border-brand-500/20 transition-all"
+                          title="Editar cliente"
+                        >
+                          <Pencil className="h-4 w-4" strokeWidth={2.5} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(c.id)}
+                          className="p-3 bg-zinc-100 dark:bg-white/5 text-zinc-400 hover:text-red-500 hover:bg-red-500/10 rounded-xl border border-transparent hover:border-red-500/20 transition-all"
+                          title="Eliminar cliente"
+                        >
+                          <Trash2 className="h-4 w-4" strokeWidth={2.5} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+        <div className="p-6 border-t border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/[0.01] text-center">
+          <p className="text-[8px] font-black text-slate-400 dark:text-zinc-700 uppercase tracking-[0.5em]">
+            {customers.length} CLIENTE(S) REGISTRADO(S) — GKAD STOCK CRM V1
+          </p>
+        </div>
+      </Card>
+
+      {/* ── MODAL CREAR / EDITAR ─────────────────────────────────────────── */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-900/60 dark:bg-black/80 backdrop-blur-xl animate-fade-in">
+          <div className="absolute inset-0" onClick={() => setIsModalOpen(false)} />
+
+          <Card className="relative w-full max-w-2xl p-0 glass-dark border-zinc-200 dark:border-white/10 shadow-[0_0_100px_rgba(0,0,0,0.1)] dark:shadow-[0_0_100px_rgba(0,0,0,0.5)] overflow-hidden rounded-[3rem] max-h-[90vh] flex flex-col">
+            <div className="absolute top-[-20%] left-[-20%] w-64 h-64 bg-brand-500/10 blur-[80px] rounded-full pointer-events-none" />
+
+            {/* Modal Header */}
+            <div className="p-10 border-b border-zinc-100 dark:border-white/5 bg-zinc-50 dark:bg-white/[0.02] shrink-0">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <h3 className="text-2xl font-black text-zinc-900 dark:text-white font-outfit uppercase tracking-tight">
+                    {editingId ? 'EDITAR CLIENTE' : 'NUEVO CLIENTE'}
+                  </h3>
+                  <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-[0.3em]">
+                    {editingId ? 'Actualizar datos del directorio' : 'Registro en el directorio comercial'}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  className="p-3 bg-zinc-100 dark:bg-white/5 text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-white/10 rounded-2xl transition-all"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Body */}
+            <form onSubmit={handleSubmit} className="p-10 space-y-6 overflow-y-auto flex-1">
+
+              {/* Nombre completo */}
+              <FieldGroup label="Nombre / Razón Social" required>
+                <input
+                  id="customer-name"
+                  type="text"
+                  placeholder="Ej. María García Ltda."
+                  value={form.name}
+                  onChange={e => f('name', e.target.value)}
+                  required
+                  className="w-full h-14 bg-white dark:bg-black/40 border border-zinc-200 dark:border-white/10 rounded-2xl px-6 text-sm font-bold focus:ring-2 focus:ring-brand-500 transition-all text-zinc-900 dark:text-white outline-none placeholder:text-zinc-300 dark:placeholder:text-zinc-600 shadow-sm"
+                />
+              </FieldGroup>
+
+              {/* Documento */}
+              <div className="grid grid-cols-2 gap-4">
+                <FieldGroup label="Tipo de Documento">
+                  <select
+                    id="customer-doc-type"
+                    value={form.document_type || ''}
+                    onChange={e => f('document_type', e.target.value)}
+                    className="w-full h-14 bg-white dark:bg-black/40 border border-zinc-200 dark:border-white/10 rounded-2xl px-6 text-sm font-bold focus:ring-2 focus:ring-brand-500 transition-all text-zinc-900 dark:text-white outline-none shadow-sm appearance-none"
+                  >
+                    {DOC_TYPES.map(d => <option key={d}>{d}</option>)}
+                  </select>
+                </FieldGroup>
+                <FieldGroup label="Número de Documento">
+                  <div className="relative">
+                    <Hash className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-300 dark:text-zinc-600" />
+                    <input
+                      id="customer-doc-number"
+                      type="text"
+                      placeholder="12345678"
+                      value={form.document_number}
+                      onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        e.target.value = e.target.value.replace(/[^0-9]/g, '');
+                      }}
+                      onChange={e => f('document_number', e.target.value)}
+                      className="w-full h-14 bg-white dark:bg-black/40 border border-zinc-200 dark:border-white/10 rounded-2xl pl-11 pr-6 text-sm font-bold focus:ring-2 focus:ring-brand-500 transition-all text-zinc-900 dark:text-white outline-none placeholder:text-zinc-300 dark:placeholder:text-zinc-600 font-mono shadow-sm"
+                    />
+                  </div>
+                </FieldGroup>
+              </div>
+
+              {/* Email y Teléfono */}
+              <div className="grid grid-cols-2 gap-4">
+                <FieldGroup label="Correo Electrónico">
+                  <div className="relative">
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-300 dark:text-zinc-600" />
+                    <input
+                      id="customer-email"
+                      type="email"
+                      placeholder="cliente@empresa.com"
+                      value={form.email}
+                      onChange={e => f('email', e.target.value)}
+                      className="w-full h-14 bg-white dark:bg-black/40 border border-zinc-200 dark:border-white/10 rounded-2xl pl-11 pr-6 text-sm font-bold focus:ring-2 focus:ring-brand-500 transition-all text-zinc-900 dark:text-white outline-none placeholder:text-zinc-300 dark:placeholder:text-zinc-600 font-mono shadow-sm"
+                    />
+                  </div>
+                </FieldGroup>
+                <FieldGroup label="Teléfono / Celular">
+                  <div className="relative">
+                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-300 dark:text-zinc-600" />
+                    <input
+                      id="customer-phone"
+                      type="text"
+                      placeholder="300 000 0000"
+                      value={form.phone}
+                      onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        e.target.value = e.target.value.replace(/[^0-9]/g, '');
+                      }}
+                      onChange={e => f('phone', e.target.value)}
+                      className="w-full h-14 bg-white dark:bg-black/40 border border-zinc-200 dark:border-white/10 rounded-2xl pl-11 pr-6 text-sm font-bold focus:ring-2 focus:ring-brand-500 transition-all text-zinc-900 dark:text-white outline-none placeholder:text-zinc-300 dark:placeholder:text-zinc-600 shadow-sm"
+                    />
+                  </div>
+                </FieldGroup>
+              </div>
+
+              {/* Dirección */}
+              <FieldGroup label="Dirección">
+                <div className="relative">
+                  <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-300 dark:text-zinc-600" />
+                  <input
+                    id="customer-address"
+                    type="text"
+                    placeholder="Cll 123 #45-67, Ciudad"
+                    value={form.address}
+                    onChange={e => f('address', e.target.value)}
+                    className="w-full h-14 bg-white dark:bg-black/40 border border-zinc-200 dark:border-white/10 rounded-2xl pl-11 pr-6 text-sm font-bold focus:ring-2 focus:ring-brand-500 transition-all text-zinc-900 dark:text-white outline-none placeholder:text-zinc-300 dark:placeholder:text-zinc-600 shadow-sm"
+                  />
+                </div>
+              </FieldGroup>
+
+              {/* Notas */}
+              <FieldGroup label="Notas Internas">
+                <div className="relative">
+                  <FileText className="absolute left-4 top-4 h-4 w-4 text-zinc-300 dark:text-zinc-600" />
+                  <textarea
+                    id="customer-notes"
+                    placeholder="Cliente frecuente, preferencias, observaciones..."
+                    value={form.notes}
+                    onChange={e => f('notes', e.target.value)}
+                    rows={2}
+                    className="w-full bg-white dark:bg-black/40 border border-zinc-200 dark:border-white/10 rounded-2xl pl-11 pr-6 py-4 text-sm font-bold focus:ring-2 focus:ring-brand-500 transition-all text-zinc-900 dark:text-white outline-none placeholder:text-zinc-300 dark:placeholder:text-zinc-600 shadow-sm resize-none"
+                  />
+                </div>
+              </FieldGroup>
+
+              <Button
+                type="submit"
+                className="w-full h-16 rounded-[1.5rem] font-black text-[11px] uppercase tracking-[0.2em] shadow-2xl transition-all active:scale-[0.98]"
+                disabled={isSubmitting}
+                loading={isSubmitting}
+              >
+                {editingId ? 'ACTUALIZAR CLIENTE' : 'REGISTRAR CLIENTE'}
+              </Button>
+            </form>
+          </Card>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ─── Helper: label + slot wrapper ───────────────────────────────────────────
+const FieldGroup = ({
+  label,
+  required,
+  children,
+}: {
+  label: string;
+  required?: boolean;
+  children: React.ReactNode;
+}) => (
+  <div className="space-y-2">
+    <label
+      htmlFor={`customer-${label.toLowerCase().replace(/[^a-z0-9]/g, '-')}`}
+      className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] ml-2"
+    >
+      {label}{required && <span className="text-brand-500 ml-1">*</span>}
+    </label>
+    {children}
+  </div>
+);

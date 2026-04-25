@@ -1,0 +1,268 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap');
+
+@import "tailwindcss";
+
+/* Configuración de Modo Oscuro nativa para V4 */
+@variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: "Outfit", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-outfit: "Outfit", sans-serif;
+  
+  /* Sistema de Marca Dinámico */
+  --brand-primary: #3b82f6; 
+  --brand-secondary: color-mix(in srgb, var(--brand-primary), black 15%);
+
+  --color-brand-50: color-mix(in srgb, var(--brand-primary), white 90%);
+  --color-brand-100: color-mix(in srgb, var(--brand-primary), white 80%);
+  --color-brand-200: color-mix(in srgb, var(--brand-primary), white 60%);
+  --color-brand-300: color-mix(in srgb, var(--brand-primary), white 40%);
+  --color-brand-400: color-mix(in srgb, var(--brand-primary), white 20%);
+  --color-brand-500: var(--brand-primary);
+  --color-brand-600: var(--brand-secondary);
+  --color-brand-700: color-mix(in srgb, var(--brand-secondary), black 10%);
+  --color-brand-800: color-mix(in srgb, var(--brand-secondary), black 20%);
+  --color-brand-900: color-mix(in srgb, var(--brand-secondary), black 40%);
+  --color-brand-950: color-mix(in srgb, var(--brand-secondary), black 60%);
+
+  --color-zinc-950: #09090b;
+  --color-zinc-900: #18181b;
+  --color-zinc-800: #27272a;
+  
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --radius-3xl: 2rem;
+}
+
+@layer base {
+  * {
+    @apply border-slate-200 dark:border-zinc-800/50;
+  }
+  
+  body {
+    @apply bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 font-sans antialiased selection:bg-brand-500/30 transition-colors duration-500 overflow-x-hidden;
+  }
+
+  /* Glassmorphism V5 Premium */
+  .glass {
+    @apply bg-white dark:bg-zinc-900/40 backdrop-blur-md border border-slate-200/60 dark:border-white/5 shadow-sm;
+  }
+
+  .glass-dark {
+    @apply bg-white dark:bg-zinc-900/60 backdrop-blur-xl border border-slate-200/60 dark:border-white/5 shadow-md;
+  }
+
+  .glow-brand {
+    box-shadow: 0 0 20px color-mix(in srgb, var(--brand-primary), transparent 60%);
+  }
+
+  .text-glow {
+    text-shadow: 0 0 10px color-mix(in srgb, var(--brand-primary), transparent 50%);
+  }
+}
+
+/* Quitar flechas de inputs numéricos */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+}
+
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+/* Scrollbar personalizada V5 */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--brand-primary), transparent 85%);
+  border-radius: 20px;
+  transition: all 0.3s;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--brand-primary);
+}
+
+/* Custom Scrollbar Global */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-300 dark:bg-zinc-800 rounded-full hover:bg-brand-500 transition-colors;
+}
+
+/* Animations Premium */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.1); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.8s ease-out forwards;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 8s infinite ease-in-out;
+}
+
+/* Efecto de Gradiente Dinámico V5 */
+.theme-gradient .bg-brand-600,
+.theme-gradient .bg-brand-500 {
+  background-image: linear-gradient(to bottom right, var(--brand-primary), var(--brand-secondary));
+  box-shadow: 0 10px 25px -5px color-mix(in srgb, var(--brand-primary), transparent 60%);
+}
+
+.theme-gradient .hover\:bg-brand-500:hover {
+  background-image: linear-gradient(to bottom right, color-mix(in srgb, var(--brand-primary), white 10%), var(--brand-primary));
+}
+
+/* Mejora de Contraste para Modo Claro */
+.dark-border-light {
+  border-color: theme('colors.zinc.300');
+}
+.light-mode-high-contrast {
+  @apply text-zinc-800 dark:text-zinc-200;
+}
+
+/* --- MOTOR DE IMPRESIÓN PROFESIONAL GKAD --- */
+@media print {
+  /* ESCUDO DE INVISIBILIDAD (PARA TODO MENOS EL TICKET) */
+  body * {
+    visibility: hidden !important;
+  }
+  
+  /* EXCEPCIÓN: EL TICKET ES EL REY */
+  #receipt-printer, 
+  #receipt-printer * {
+    visibility: visible !important;
+  }
+
+  #receipt-printer {
+    display: block !important;
+    opacity: 1 !important;
+    position: absolute !important; 
+    left: 0 !important;            
+    top: 0 !important;             
+    width: 80mm !important;
+    margin: 0 !important;
+    padding: 2mm !important;
+    background: white !important;
+    color: black !important;
+    font-family: 'Courier New', Courier, monospace !important;
+    box-shadow: none !important;
+    z-index: 9999 !important;
+  }
+
+  /* Aseguramos que los flexbox internos sigan funcionando */
+  #receipt-printer .flex,
+  #receipt-printer [style*="display: flex"] {
+    display: flex !important;
+  }
+  
+  #receipt-printer div, 
+  #receipt-printer span, 
+  #receipt-printer p, 
+  #receipt-printer img {
+    display: inline-block !important; /* Ajuste para flexbox/layouts internos */
+  }
+
+  #receipt-printer .receipt-row,
+  #receipt-printer .total-row,
+  #receipt-printer .flex {
+    display: flex !important;
+  }
+
+  /* Forzar eliminación de fondos de UI */
+  .no-print, 
+  .fixed, 
+  .absolute:not(#receipt-printer),
+  header,
+  footer,
+  aside,
+  nav {
+    display: none !important;
+  }
+
+  /* Ajustes de fondo y página */
+  body, html {
+    background: white !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+  }
+
+  .receipt-header {
+    text-align: center;
+    margin-bottom: 5mm;
+    border-bottom: 2px solid #000;
+    padding-bottom: 2mm;
+  }
+
+  .receipt-divider {
+    border-top: 1px dashed #000;
+    margin: 4mm 0 !important;
+  }
+
+  .receipt-row {
+    display: flex !important;
+    justify-content: space-between !important;
+    margin-bottom: 1mm;
+  }
+
+  .total-row {
+    font-size: 16px;
+    font-weight: 900;
+    margin-top: 4mm;
+    border-top: 2px solid #000;
+    padding-top: 2mm;
+  }
+
+  .footer-center {
+    text-align: center;
+    margin-top: 10mm;
+    font-size: 10px;
+    border-top: 1px solid #eee;
+    padding-top: 4mm;
+  }
+  
+  @page {
+    margin: 0;
+    size: 80mm auto;
+  }
+}
+
+/* Ocultar en pantalla pero mantener para la impresora */
+.receipt-screen-hidden {
+  position: absolute !important;
+  left: -9999px !important;
+  top: -9999px !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
