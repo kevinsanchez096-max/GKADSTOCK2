@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const inventoryController = require('../controllers/inventoryController');
 const authMiddleware = require('../middleware/authMiddleware');
+// Este es el "import" que probablemente te falta en ese archivo
+const supabase = require('../lib/supabase'); // Asegúrate de que la ruta '../lib/supabase' sea la correcta donde inicializaste supabase
 
 // RUTAS PROTEGIDAS (Zero Trust SaaS)
 router.get('/', authMiddleware, inventoryController.getAllProducts);
