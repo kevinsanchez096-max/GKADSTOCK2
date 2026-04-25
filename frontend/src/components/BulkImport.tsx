@@ -8,7 +8,6 @@ import {
   AlertCircle, 
   CheckCircle2, 
   X, 
-  Loader2, 
   FileSpreadsheet, 
   ChevronDown, 
   ChevronUp 
@@ -26,7 +25,7 @@ interface ImportError {
 }
 
 export const BulkImport = ({ onComplete, onClose }: BulkImportProps) => {
-  const { user, profile } = useAuthStore();
+  const { profile } = useAuthStore(); // Eliminado 'user' para evitar error TS6133
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [results, setResults] = useState<{ success: number; failed: number } | null>(null);
@@ -50,12 +49,12 @@ export const BulkImport = ({ onComplete, onClose }: BulkImportProps) => {
         const wb = XLSX.read(bstr, { type: 'binary' });
         const wsname = wb.SheetNames[0];
         const ws = wb.Sheets[wsname];
-        const data: any[] = XLSX.utils.sheet_to_json(ws);
+        const rawData: any[] = XLSX.utils.sheet_to_json(ws);
 
-        if (data.length === 0) throw new Error('El archivo está vacío.');
-        if (data.length > 2000) throw new Error('El límite máximo es de 2000 filas para garantizar estabilidad.');
+        if (rawData.length === 0) throw new Error('El archivo está vacío.');
+        if (rawData.length > 2000) throw new Error('El límite máximo es de 2000 filas para garantizar estabilidad.');
 
-        await processImport(data);
+        await processImport(rawData);
       } catch (err: any) {
         setErrors([{ row: 0, message: err.message }]);
         setIsUploading(false);
@@ -64,14 +63,41 @@ export const BulkImport = ({ onComplete, onClose }: BulkImportProps) => {
     reader.readAsBinaryString(file);
   };
 
-  const processImport = async (data: any[]) => {
-    const totalRows = data.length;
+  // ════════════════════════════════════════════════════════════════
+  // FUNCIÓN DE LIMPIEZA AUTOMÁTICA (Sanitization)
+  // Evita errores si el usuario pone "$", comas o espacios en el Excel
+  // ════════════════════════════════════════════════════════════════
+  const sanitizeData = (rawData: any[]) => {
+    return rawData.map((row) => {
+      // Extraer solo números del precio
+      let cleanPrice = 0;
+      if (row.Precio) {
+        const priceStr = row.Precio.toString().replace(/[^0-9.-]+/g, "");
+        cleanPrice = Number(priceStr);
+      }
+
+      return {
+        Nombre: row.Nombre?.toString().trim().toUpperCase() || '',
+        Sku: row.Sku?.toString().trim() || '',
+        Precio: isNaN(cleanPrice) ? 0 : cleanPrice,
+        Stock: Math.floor(Number(row.Stock)) || 0,
+        Minimo_Stock: Math.floor(Number(row.Minimo_Stock)) || 5,
+        Unidad: row.Unidad?.toString().trim() || 'unidad',
+        Categoria: row.Categoria?.toString().trim() || ''
+      };
+    });
+  };
+
+  const processImport = async (rawData: any[]) => {
+    // 1. Aplicamos la limpieza automática
+    const data = sanitizeData(rawData);
+    
     let successCount = 0;
     let failedCount = 0;
     const localErrors: ImportError[] = [];
 
-    // 1. Resolve Categories Atomics
-    const uniqueCategoryNames = Array.from(new Set(data.map(d => d.Categoria?.trim()).filter(Boolean)));
+    // 2. Resolve Categories Atomics
+    const uniqueCategoryNames = Array.from(new Set(data.map(d => d.Categoria).filter(Boolean)));
     const categoryMap: Record<string, string> = {};
 
     try {
@@ -80,7 +106,7 @@ export const BulkImport = ({ onComplete, onClose }: BulkImportProps) => {
         .from('categories')
         .select('id, name');
       
-      existingCats?.forEach(c => {
+      existingCats?.forEach((c: any) => {
         categoryMap[c.name.toLowerCase()] = c.id;
       });
 
@@ -88,9 +114,10 @@ export const BulkImport = ({ onComplete, onClose }: BulkImportProps) => {
       for (const catName of uniqueCategoryNames) {
         const lowerName = catName.toLowerCase();
         if (!categoryMap[lowerName]) {
-          const { data: newCat, error: catErr } = await supabase
+          // Cast 'as any' para evitar el error TS2339 en cadenas de Supabase
+          const { data: newCat, error: catErr } = await (supabase
             .from('categories')
-            .insert([{ name: catName, organization_id: profile?.organization_id }])
+            .insert([{ name: catName, organization_id: profile?.organization_id }]) as any)
             .select()
             .single();
           
@@ -100,16 +127,14 @@ export const BulkImport = ({ onComplete, onClose }: BulkImportProps) => {
         }
       }
 
-      // 2. Fetch existing SKUs to avoid duplicates (Optimization)
+      // 3. Fetch existing SKUs to avoid duplicates (Optimization)
       const { data: existingProducts } = await supabase
         .from('products')
         .select('sku');
-      const existingSkus = new Set(existingProducts?.map(p => p.sku?.toLowerCase()).filter(Boolean));
+      const existingSkus = new Set(existingProducts?.map((p: any) => p.sku?.toLowerCase()).filter(Boolean));
 
       // ════════════════════════════════════════════════════════════════
       // FASE 1: VALIDACIÓN ATÓMICA COMPLETA (Pre-flight)
-      // Se analizan TODAS las filas ANTES de tocar la base de datos.
-      // Si un solo registro es inválido, se RECHAZA TODA la carga.
       // ════════════════════════════════════════════════════════════════
       const validatedRows: any[] = [];
       const seenSkus = new Set<string>();
@@ -118,68 +143,52 @@ export const BulkImport = ({ onComplete, onClose }: BulkImportProps) => {
         const row = data[i];
         const rowNum = i + 2; // Fila de Excel (1-based + header)
 
-        // ── Validación 1: Nombre obligatorio ──
-        const name = row.Nombre?.toString().trim();
-        if (!name) {
+        if (!row.Nombre) {
           localErrors.push({ row: rowNum, message: `Error en fila ${rowNum}: El campo "Nombre" es obligatorio y está vacío.` });
           continue;
         }
 
-        // ── Validación 2: Precio numérico y positivo ──
-        const rawPrice = row.Precio;
-        const price = Number(rawPrice);
-        if (isNaN(price) || price <= 0) {
-          localErrors.push({ row: rowNum, message: `Error en fila ${rowNum}, columna "Precio": El valor "${rawPrice}" no es un número válido mayor a 0.` });
+        if (row.Precio <= 0) {
+          localErrors.push({ row: rowNum, message: `Error en fila ${rowNum}, columna "Precio": El valor no es un número válido mayor a 0.` });
           continue;
         }
 
-        // ── Validación 3: Stock entero y no negativo ──
-        const rawStock = row.Stock;
-        const stock = Number(rawStock);
-        if (!Number.isInteger(stock) || stock < 0) {
-          localErrors.push({ row: rowNum, message: `Error en fila ${rowNum}, columna "Stock": El valor "${rawStock}" debe ser un número entero mayor o igual a 0.` });
+        if (row.Stock < 0) {
+          localErrors.push({ row: rowNum, message: `Error en fila ${rowNum}, columna "Stock": El valor debe ser mayor o igual a 0.` });
           continue;
         }
 
-        // ── Validación 4: SKU no duplicado ──
-        const sku = row.Sku?.toString().trim();
-        if (sku) {
-          const skuLower = sku.toLowerCase();
+        if (row.Sku) {
+          const skuLower = row.Sku.toLowerCase();
           if (existingSkus.has(skuLower) || seenSkus.has(skuLower)) {
-            localErrors.push({ row: rowNum, message: `Error en fila ${rowNum}: SKU duplicado detectado: "${sku}".` });
+            localErrors.push({ row: rowNum, message: `Error en fila ${rowNum}: SKU duplicado detectado: "${row.Sku}".` });
             continue;
           }
           seenSkus.add(skuLower);
         }
 
-        const minStock = parseInt(row.Minimo_Stock) || 5;
-        const unit = row.Unidad?.toString().trim() || 'unidad';
-        const catName = row.Categoria?.toString().trim();
-
         validatedRows.push({
           organization_id: profile?.organization_id,
-          name,
-          sku,
-          price,
-          stock,
-          min_stock: minStock,
-          unit,
-          category_id: catName ? categoryMap[catName.toLowerCase()] : null
+          name: row.Nombre,
+          sku: row.Sku,
+          price: row.Precio,
+          stock: row.Stock,
+          min_stock: row.Minimo_Stock,
+          unit: row.Unidad,
+          category_id: row.Categoria ? categoryMap[row.Categoria.toLowerCase()] : null
         });
       }
 
-      // ════════════════════════════════════════════════════════════════
-      // DECISIÓN ATÓMICA: Si hay UN SOLO error, se rechaza TODA la carga
-      // ════════════════════════════════════════════════════════════════
+      // DECISIÓN ATÓMICA
       if (localErrors.length > 0) {
         setResults({ success: 0, failed: localErrors.length });
         setErrors(localErrors);
         setIsUploading(false);
-        return; // ← ABORTAR: No se toca la base de datos
+        return; 
       }
 
       // ════════════════════════════════════════════════════════════════
-      // FASE 2: INSERCIÓN (solo si la validación pasó al 100%)
+      // FASE 2: INSERCIÓN 
       // ════════════════════════════════════════════════════════════════
       const batchSize = 50;
       for (let i = 0; i < validatedRows.length; i += batchSize) {
@@ -329,7 +338,7 @@ export const BulkImport = ({ onComplete, onClose }: BulkImportProps) => {
         {/* FOOTER */}
         <div className="p-4 bg-slate-50 dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-4">
             <p className="text-[10px] text-slate-400 font-medium uppercase tracking-tight">
-              Paso #1: Descarga y completa la plantilla, luego imponla aquí.
+              Paso #1: Descarga y completa la plantilla, luego impórtala aquí.
             </p>
             <a
               href="/plantilla_importacion.xlsx"
