@@ -1,4 +1,4 @@
-const BASE_URL = 'https://gkad-backend.onrender.com/'; // <--- Asegúrate de que termine en /
+const BASE_URL = 'https://gkad-backend.onrender.com'; // SIN el slash al final
 
 /**
  * API CONFIGURATION (Fetch Wrapper)
