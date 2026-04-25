@@ -1,4 +1,5 @@
 const { supabaseAdmin } = require('../config/supabase');
+const supabase = require('../lib/supabase');
 
 const inventoryController = {
   // Helper para obtener el ID de organización con validación estricta (Zero-Trust)
