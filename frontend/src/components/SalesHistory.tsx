@@ -24,11 +24,14 @@ import { supabase } from '../lib/supabase';
 import { PrintableTicket } from './PrintableTicket';
 import { ReturnSaleModal } from './ReturnSaleModal';
 
+type FilterRange = 'day' | 'week' | 'month' | 'year';
+
 export const SalesHistory = () => {
   const { sales } = useShopStore();
   const { profile } = useAuthStore();
 
   const [searchTerm, setSearchTerm] = useState('');
+  const [timeFilter, setTimeFilter] = useState<FilterRange>('day');
   const [selectedSale, setSelectedSale] = useState<any>(null);
   const [saleToPrint, setSaleToPrint] = useState<any>(null);
   const [saleToReturn, setSaleToReturn] = useState<any>(null);
@@ -68,13 +71,27 @@ export const SalesHistory = () => {
 
   const filteredSales = useMemo(() => {
     if (!Array.isArray(sales)) return [];
+
+    // Filtro de tiempo
+    const now = new Date();
+    const startRange = new Date();
+    if (timeFilter === 'day') startRange.setHours(0, 0, 0, 0);
+    else if (timeFilter === 'week') startRange.setDate(now.getDate() - 7);
+    else if (timeFilter === 'month') startRange.setMonth(now.getMonth() - 1);
+    else if (timeFilter === 'year') startRange.setFullYear(now.getFullYear() - 1);
+
     return sales.filter(s => {
+      // Filtro por rango de tiempo
+      const saleDate = new Date(s.created_at);
+      if (saleDate < startRange) return false;
+
+      // Filtro por búsqueda de texto
       const idMatch = (s.id || '').toLowerCase().includes(searchTerm.toLowerCase());
       const method = (s.payment_method || '').toLowerCase();
       const methodMatch = method.includes(searchTerm.toLowerCase());
       return idMatch || methodMatch;
     });
-  }, [sales, searchTerm]);
+  }, [sales, searchTerm, timeFilter]);
 
   // CÁLCULO DE INTELIGENCIA FINANCIERA (NEW)
   const totalGross = useMemo(() => {
@@ -224,33 +241,56 @@ export const SalesHistory = () => {
       
       {/* 🟢 CONTENEDOR NO-PRINT: Todo lo que ves en pantalla pero NO en la impresora */}
       <div className="no-print space-y-8">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-1">
-            <h2 className="text-3xl font-black dark:text-white flex items-center gap-3 font-outfit uppercase tracking-tight">
-              <div className="p-2 bg-brand-500/10 rounded-lg border border-brand-500/20 text-brand-500">
-                <FileText className="h-6 w-6" />
-              </div>
-              AUDITORÍA DE VENTAS
-            </h2>
-            <p className="text-zinc-500 font-bold uppercase tracking-[0.3em] text-[10px] ml-1">Registro Centralizado de Transacciones</p>
+        <div className="flex flex-col xl:flex-row xl:items-center justify-between mb-6 gap-4">
+          <div className="flex items-start space-x-3">
+            <div className="space-y-1">
+              <h2 className="text-3xl font-black dark:text-white flex items-center gap-3 font-outfit uppercase tracking-tight">
+                <div className="p-2 bg-brand-500/10 rounded-lg border border-brand-500/20 text-brand-500">
+                  <FileText className="h-6 w-6" />
+                </div>
+                AUDITORÍA DE VENTAS
+              </h2>
+              <p className="text-zinc-500 font-bold uppercase tracking-[0.3em] text-[10px] ml-1">Registro Centralizado de Transacciones</p>
+            </div>
           </div>
-          <div className="flex gap-3">
-            <Button 
-              variant="outline"
-              className="px-4 h-14 rounded-2xl border-white/5 bg-white/5 text-zinc-400 hover:text-white transition-all active:scale-95"
-              onClick={handleRefresh}
-              loading={refreshing}
-            >
-              <RefreshCw className={`h-5 w-5 ${refreshing ? 'animate-spin' : ''}`} />
-            </Button>
-            <Button 
-              className="px-8 h-14 text-[10px] font-black uppercase tracking-widest rounded-2xl glow-blue transition-all active:scale-95"
-              onClick={fetchArqueo}
-              loading={loadingArqueo}
-            >
-              <DollarSign className="h-4 w-4 mr-2" />
-              GENERAR ARQUEO DIARIO
-            </Button>
+
+          <div className="flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:space-x-4">
+            {/* Selector de Periodo de Tiempo */}
+            <div className="flex items-center space-x-1 p-1 rounded-full bg-gray-100 dark:bg-gray-700/50 border border-gray-200/50 dark:border-gray-600">
+              {(['day', 'week', 'month', 'year'] as FilterRange[]).map((range) => (
+                <button
+                  key={range}
+                  onClick={() => setTimeFilter(range)}
+                  className={`px-4 py-1.5 text-xs font-extrabold uppercase tracking-wider transition-colors rounded-full ${
+                    timeFilter === range 
+                      ? 'text-white bg-gradient-to-r from-orange-400 to-green-500 shadow-md' 
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  }`}
+                >
+                  {range === 'day' ? 'Hoy' : range === 'week' ? 'Semana' : range === 'month' ? 'Mes' : 'Año'}
+                </button>
+              ))}
+            </div>
+
+            {/* Botones de Acción Existentes */}
+            <div className="flex items-center space-x-3">
+              <Button 
+                variant="outline"
+                className="px-4 h-14 rounded-2xl border-white/5 bg-white/5 text-zinc-400 hover:text-white transition-all active:scale-95"
+                onClick={handleRefresh}
+                loading={refreshing}
+              >
+                <RefreshCw className={`h-5 w-5 ${refreshing ? 'animate-spin' : ''}`} />
+              </Button>
+              <Button 
+                className="px-8 h-14 text-[10px] font-black uppercase tracking-widest rounded-2xl glow-blue transition-all active:scale-95"
+                onClick={fetchArqueo}
+                loading={loadingArqueo}
+              >
+                <DollarSign className="h-4 w-4 mr-2" />
+                GENERAR ARQUEO DIARIO
+              </Button>
+            </div>
           </div>
         </div>
 
