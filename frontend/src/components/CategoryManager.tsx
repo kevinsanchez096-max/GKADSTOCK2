@@ -99,14 +99,21 @@ export const CategoryManager = () => {
         <Card className="lg:col-span-8 p-0 glass-dark border-white/5 shadow-2xl overflow-hidden rounded-[2.5rem]">
           <div className="p-8 border-b border-white/5 bg-white/[0.02] flex items-center justify-between gap-4">
             <div className="relative flex-1">
-              <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-              <input 
-                type="text" 
-                placeholder="FILTRAR POR NOMBRE DE CLASIFICACIÓN..."
-                className="w-full h-12 pl-14 pr-6 bg-black/40 border border-white/10 rounded-2xl text-[10px] font-black tracking-widest focus:ring-2 focus:ring-brand-500 transition-all dark:text-white outline-none placeholder:text-zinc-700"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+              <div className="relative w-full max-w-2xl">
+                <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                  <Search className="w-5 h-5 text-gray-400 dark:text-gray-500" />
+                </div>
+                <input
+                  type="text"
+                  placeholder="FILTRAR POR NOMBRE DE CLASIFICACIÓN..."
+                  className="w-full pl-12 pr-4 py-3 rounded-full outline-none transition-all duration-300
+                             bg-white text-gray-900 border border-gray-200 placeholder:text-gray-400 shadow-sm
+                             dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:placeholder:text-gray-400 dark:shadow-none
+                             focus:ring-2 focus:ring-red-400 focus:border-transparent uppercase text-sm font-semibold tracking-wide"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
             </div>
           </div>
 

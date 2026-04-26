@@ -275,17 +275,20 @@ export const SalesHistory = () => {
                 </div>
                 <span className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">Configuración</span>
             </div>
-            <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">% Margen de Utilidad</p>
-            <div className="flex items-center gap-3">
-                <input 
+            <p className="text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2">% MARGEN DE UTILIDAD</p>
+            <div className="flex items-center w-full sm:w-32 rounded-xl transition-all duration-300
+                            bg-white border border-gray-200 shadow-sm
+                            dark:bg-gray-700 dark:border-gray-600 dark:shadow-none
+                            focus-within:ring-2 focus-within:ring-red-400">
+                <input
                   type="number"
                   min="0"
                   max="100"
-                  className="w-full bg-black/40 border border-white/5 h-12 px-4 rounded-xl text-xl font-black dark:text-white outline-none focus:border-brand-500 transition-all font-outfit"
+                  className="w-full bg-transparent text-gray-900 dark:text-white font-bold text-2xl text-center outline-none py-2 pl-4"
                   value={profitMargin}
                   onChange={(e) => setProfitMargin(Number(e.target.value) || 0)}
                 />
-                <span className="text-2xl font-black text-zinc-700">%</span>
+                <span className="text-gray-900 dark:text-white font-bold text-2xl pr-4">%</span>
             </div>
           </Card>
 
@@ -307,35 +310,38 @@ export const SalesHistory = () => {
           </Card>
         </div>
 
-        <Card className="p-0 glass-dark border-white/5 shadow-2xl overflow-hidden rounded-[2.5rem]">
-          <div className="p-6 border-b border-white/5 bg-white/[0.02] flex flex-col md:flex-row gap-6 items-center justify-between">
-            <div className="relative w-full md:w-[400px] group">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-500 group-focus-within:text-brand-500 transition-colors" />
-              <input 
-                type="text" 
-                placeholder="Rastrear por Factura ID o Método..."
-                className="w-full pl-12 pr-4 h-12 bg-black/40 border border-white/5 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-brand-500/50 transition-all dark:text-white outline-none placeholder:text-zinc-600"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            <div className="flex flex-wrap items-center gap-4">
-              <div className="flex bg-black/40 p-1 rounded-2xl border border-white/5">
-                {[10, 20, 50, 100].map((val) => (
-                  <button
-                    key={val}
-                    onClick={() => setDisplayLimit(val)}
-                    className={`px-4 py-1.5 rounded-xl text-[10px] font-black transition-all ${
-                      displayLimit === val 
-                        ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' 
-                        : 'text-zinc-500 hover:text-white'
-                    }`}
-                  >
-                    {val}
-                  </button>
-                ))}
+          <Card className="p-0 glass-dark border-white/5 shadow-2xl overflow-hidden rounded-[2.5rem]">
+            <div className="p-6 border-b border-white/5 bg-white/[0.02] flex flex-col md:flex-row gap-6 items-center justify-between">
+              <div className="flex items-center justify-between w-full rounded-full transition-all duration-300 p-1.5
+                              bg-white border border-gray-200 shadow-sm
+                              dark:bg-gray-700 dark:border-gray-600 dark:shadow-none
+                              focus-within:ring-2 focus-within:ring-red-400">
+                <div className="flex items-center flex-1 pl-3">
+                  <Search className="w-5 h-5 text-gray-400 dark:text-gray-500" />
+                  <input
+                    type="text"
+                    placeholder="Rastrear por Factura ID o Método..."
+                    className="w-full bg-transparent px-3 py-2 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-400 outline-none font-medium"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+                <div className="flex items-center space-x-1 px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-600/50 mr-1">
+                  {[10, 20, 50, 100].map((val) => (
+                    <button
+                      key={val}
+                      onClick={() => setDisplayLimit(val)}
+                      className={`px-3 py-1 text-xs font-bold transition-colors rounded-full ${
+                        displayLimit === val
+                          ? 'text-white bg-gradient-to-r from-orange-400 to-green-500 shadow-md'
+                          : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                      }`}
+                    >
+                      {val}
+                    </button>
+                  ))}
+                </div>
               </div>
-
               <div className="flex items-center gap-3 ml-2">
                 <div className="h-2 w-2 rounded-full bg-brand-500 animate-pulse" />
                 <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">
@@ -343,7 +349,6 @@ export const SalesHistory = () => {
                 </span>
               </div>
             </div>
-          </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
