@@ -159,8 +159,8 @@ export const Expenses = () => {
                 <tr className="bg-slate-100 dark:bg-black/40 text-slate-500 dark:text-zinc-500 text-[10px] uppercase font-black tracking-[0.2em] border-b border-slate-200 dark:border-white/5">
                   <th className="px-8 py-5">Cronología</th>
                   <th className="px-8 py-5">Concepto Operativo</th>
-                  <th className="px-8 py-5">Clasificación</th>
-                  <th className="px-8 py-5">Responsable</th>
+                  <th className="px-8 py-5 hidden md:table-cell">Clasificación</th>
+                  <th className="px-8 py-5 hidden md:table-cell">Responsable</th>
                   <th className="px-8 py-5 text-right">Monto Líquido</th>
                 </tr>
               </thead>
@@ -185,7 +185,7 @@ export const Expenses = () => {
                       <td className="px-8 py-5">
                         <p className="text-sm font-bold text-slate-800 dark:text-zinc-100 uppercase tracking-tight group-hover:text-brand-500 dark:group-hover:text-white transition-colors">{exp.description}</p>
                       </td>
-                      <td className="px-8 py-5">
+                      <td className="px-8 py-5 hidden md:table-cell">
                         <div className="flex items-center gap-2">
                           <div className={`h-1.5 w-1.5 rounded-full shadow-[0_0_8px_rgba(0,0,0,0.1)] ${
                             exp.category === 'Nómina' ? 'bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.4)]' :
@@ -203,7 +203,7 @@ export const Expenses = () => {
                           </span>
                         </div>
                       </td>
-                      <td className="px-8 py-5 text-[10px] font-bold text-slate-500 dark:text-zinc-500 uppercase tracking-widest">
+                      <td className="px-8 py-5 text-[10px] font-bold text-slate-500 dark:text-zinc-500 uppercase tracking-widest hidden md:table-cell">
                          <span className="bg-slate-100 dark:bg-white/5 px-3 py-1 rounded-lg border border-slate-200 dark:border-white/5">{exp.profiles?.full_name || 'Sistema'}</span>
                       </td>
                       <td className="px-8 py-5 text-right">

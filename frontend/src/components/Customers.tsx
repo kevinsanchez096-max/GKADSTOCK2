@@ -189,9 +189,9 @@ export const Customers = () => {
             <thead>
               <tr className="bg-slate-100 dark:bg-black/40 text-slate-500 dark:text-zinc-500 text-[10px] uppercase font-black tracking-[0.2em] border-b border-slate-200 dark:border-white/5">
                 <th className="px-8 py-5">Cliente</th>
-                <th className="px-8 py-5">Documento</th>
+                <th className="px-8 py-5 hidden md:table-cell">Documento</th>
                 <th className="px-8 py-5">Contacto</th>
-                <th className="px-8 py-5 hidden lg:table-cell">Dirección</th>
+                <th className="px-8 py-5 hidden md:table-cell">Dirección</th>
                 <th className="px-8 py-5 text-right">Acciones</th>
               </tr>
             </thead>
@@ -241,7 +241,7 @@ export const Customers = () => {
                     </td>
 
                     {/* Documento */}
-                    <td className="px-8 py-5">
+                    <td className="px-8 py-5 hidden md:table-cell">
                       {c.document_number ? (
                         <div className="flex flex-col">
                           <span className="text-[9px] font-black text-brand-500 uppercase tracking-widest">{c.document_type}</span>
@@ -274,7 +274,7 @@ export const Customers = () => {
                     </td>
 
                     {/* Dirección */}
-                    <td className="px-8 py-5 hidden lg:table-cell text-slate-500 dark:text-zinc-400 text-xs font-bold">
+                    <td className="px-8 py-5 hidden md:table-cell text-slate-500 dark:text-zinc-400 text-xs font-bold">
                       {c.address || <span className="text-zinc-300 dark:text-zinc-700">—</span>}
                     </td>
 
@@ -355,7 +355,7 @@ export const Customers = () => {
               </FieldGroup>
 
               {/* Documento */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FieldGroup label="Tipo de Documento">
                   <select
                     id="customer-doc-type"
@@ -385,7 +385,7 @@ export const Customers = () => {
               </div>
 
               {/* Email y Teléfono */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FieldGroup label="Correo Electrónico">
                   <div className="relative">
                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-300 dark:text-zinc-600" />

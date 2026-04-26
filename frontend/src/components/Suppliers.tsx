@@ -188,8 +188,8 @@ export const Suppliers = () => {
               <tr className="bg-slate-100 dark:bg-black/40 text-slate-500 dark:text-zinc-500 text-[10px] uppercase font-black tracking-[0.2em] border-b border-slate-200 dark:border-white/5">
                 <th className="px-8 py-5">Proveedor (Empresa)</th>
                 <th className="px-8 py-5">Representante</th>
-                <th className="px-8 py-5">Contacto Comercial</th>
-                <th className="px-8 py-5 hidden lg:table-cell">Región / Sede</th>
+                <th className="px-8 py-5 hidden md:table-cell">Contacto Comercial</th>
+                <th className="px-8 py-5 hidden md:table-cell">Región / Sede</th>
                 <th className="px-8 py-5 text-right">Acciones</th>
               </tr>
             </thead>
@@ -251,7 +251,7 @@ export const Suppliers = () => {
                     </td>
 
                     {/* ContactInfo */}
-                    <td className="px-8 py-5">
+                    <td className="px-8 py-5 hidden md:table-cell">
                       <div className="flex flex-col gap-1">
                         {s.email && (
                           <div className="flex items-center gap-2 text-slate-500 dark:text-zinc-400 text-xs font-bold">
@@ -272,7 +272,7 @@ export const Suppliers = () => {
                     </td>
 
                     {/* Address / Región */}
-                    <td className="px-8 py-5 hidden lg:table-cell text-slate-500 dark:text-zinc-400 text-xs font-bold">
+                    <td className="px-8 py-5 hidden md:table-cell text-slate-500 dark:text-zinc-400 text-xs font-bold">
                       {s.address ? (
                          <div className="flex items-center gap-2">
                             <MapPin className="h-3 w-3 text-red-400" />
@@ -363,7 +363,7 @@ export const Suppliers = () => {
               </FieldGroup>
 
               {/* NIT & Representante */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FieldGroup label="RUT / NIT">
                   <input
                     id="supplier-tax"
@@ -390,7 +390,7 @@ export const Suppliers = () => {
               </div>
 
               {/* Email y Teléfono */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FieldGroup label="Correo de Pedidos">
                   <div className="relative">
                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-300 dark:text-zinc-600" />

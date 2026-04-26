@@ -171,7 +171,7 @@ export const Dashboard = () => {
         
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-1">
-            <h1 className="text-4xl font-black dark:text-white tracking-tighter uppercase font-outfit">ANALYTICS ENGINE</h1>
+            <h1 className="text-3xl md:text-4xl font-black dark:text-white tracking-tighter uppercase font-outfit">ANALYTICS ENGINE</h1>
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-brand-500 animate-pulse shadow-lg shadow-brand-500/50" />
               <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.4em]">GKAD STOCK - MONITORIZACIÓN EN TIEMPO REAL</p>
@@ -213,7 +213,7 @@ export const Dashboard = () => {
           <KPICard title="Utilidad Real" value={`$${analytics.netUtility.toLocaleString()}`} icon={DollarSign} trendUp={analytics.netUtility > 0} trend="Neto" description="Margen del periodo" success={analytics.netUtility > 0} accentColor={accentColor} />
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
           <KPICard title="Transacciones Totales" value={analytics.transactionCount} icon={Package} trend="+3" trendUp={true} description="Facturas emitidas" variant="mini" accentColor={accentColor} />
           <KPICard title="Ticket Promedio" value={`$${analytics.averageTicket.toLocaleString()}`} icon={Layers} trend="Asset" trendUp={true} description="Gasto promedio por venta" variant="mini" accentColor={accentColor} />
           <KPICard title="Divisiones" value={baseStats.activeCategories} icon={ArrowUpRight} trend="Activas" description="Categorías de stock" variant="mini" accentColor={accentColor} />
@@ -346,7 +346,7 @@ const KPICard = ({ title, value, icon: Icon, trend, trendUp, description, alert,
       </div>
       <div className="flex flex-col space-y-1">
         <p className="text-xs font-extrabold text-gray-500 dark:text-gray-400 uppercase tracking-widest">{title}</p>
-        <h2 className={`${variant === 'large' ? 'text-4xl' : 'text-2xl'} font-black text-gray-900 dark:text-white tracking-tight font-outfit uppercase`}>{value}</h2>
+        <h2 className={`${variant === 'large' ? 'text-3xl md:text-4xl' : 'text-xl md:text-2xl'} font-black text-gray-900 dark:text-white tracking-tight font-outfit uppercase`}>{value}</h2>
         <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 mt-2 uppercase">{description}</p>
       </div>
     </div>

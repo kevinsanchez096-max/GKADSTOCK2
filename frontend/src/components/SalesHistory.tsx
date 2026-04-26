@@ -383,9 +383,9 @@ export const SalesHistory = () => {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-slate-100 dark:bg-black/40 border-b border-slate-200 dark:border-white/5">
-                  <th className="px-8 py-5 text-[10px] font-black text-slate-500 dark:text-zinc-500 uppercase tracking-[0.2em]">Referencia</th>
+                  <th className="px-8 py-5 text-[10px] font-black text-slate-500 dark:text-zinc-500 uppercase tracking-[0.2em] hidden md:table-cell">Referencia</th>
                   <th className="px-8 py-5 text-[10px] font-black text-slate-500 dark:text-zinc-500 uppercase tracking-[0.2em]">Cronología</th>
-                  <th className="px-8 py-5 text-[10px] font-black text-slate-500 dark:text-zinc-500 uppercase tracking-[0.2em]">Canal de Pago</th>
+                  <th className="px-8 py-5 text-[10px] font-black text-slate-500 dark:text-zinc-500 uppercase tracking-[0.2em] hidden md:table-cell">Canal de Pago</th>
                   <th className="px-8 py-5 text-[10px] font-black text-slate-500 dark:text-zinc-500 uppercase tracking-[0.2em]">Monto Liquido</th>
                   <th className="px-8 py-5 text-[10px] font-black text-slate-500 dark:text-zinc-500 uppercase tracking-[0.2em] text-right">Control</th>
                 </tr>
@@ -403,7 +403,7 @@ export const SalesHistory = () => {
                 ) : (
                   filteredSales?.map((sale) => (
                     <tr key={sale.id} className="hover:bg-white/[0.02] transition-colors group">
-                      <td className="px-8 py-5 whitespace-nowrap">
+                      <td className="px-8 py-5 whitespace-nowrap hidden md:table-cell">
                         <span className="font-mono text-[10px] font-black bg-white/5 px-3 py-1.5 rounded-lg text-zinc-300 border border-white/5 shadow-inner">
                           {sale.id.substring(0, 8).toUpperCase()}
                         </span>
@@ -416,7 +416,7 @@ export const SalesHistory = () => {
                           </span>
                         </div>
                       </td>
-                      <td className="px-8 py-5 whitespace-nowrap">
+                      <td className="px-8 py-5 whitespace-nowrap hidden md:table-cell">
                         <div className="flex items-center gap-2">
                           {(() => {
                             const method = (sale.payment_method || 'cash').toLowerCase();
@@ -576,7 +576,7 @@ export const SalesHistory = () => {
                  </div>
               </div>
 
-              <div className="p-8 pt-0 grid grid-cols-2 gap-3 pb-10">
+              <div className="p-8 pt-0 grid grid-cols-1 sm:grid-cols-2 gap-3 pb-10">
                   <Button variant="outline" onClick={() => setSelectedSale(null)} className="h-10 text-[9px] font-black uppercase tracking-widest rounded-xl transition-all">
                     CERRAR
                   </Button>
@@ -640,7 +640,7 @@ export const SalesHistory = () => {
                   </div>
                 ))}
               </div>
-              <div className="grid grid-cols-2 gap-4 pt-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
                 <Button variant="outline" onClick={() => setArqueoData(null)} className="h-14 text-[10px] font-black uppercase tracking-widest rounded-2xl">DESCARTAR</Button>
                 <Button icon={Printer} onClick={handlePrintArqueo} className="h-14 text-[10px] font-black uppercase tracking-widest rounded-2xl glow-blue">IMPRIMIR REPORTE</Button>
               </div>

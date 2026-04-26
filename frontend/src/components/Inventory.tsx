@@ -511,8 +511,8 @@ export const Inventory = () => {
               <thead>
                 <tr className="bg-slate-100 dark:bg-white/[0.02] border-b border-slate-200/60 dark:border-white/5">
                   <th className="px-8 py-6 text-[10px] font-black uppercase text-slate-400 dark:text-zinc-500 tracking-[0.2em]">Producto / Entidad</th>
-                  <th className="px-8 py-6 text-[10px] font-black uppercase text-slate-400 dark:text-zinc-500 tracking-[0.2em]">ID Logístico</th>
-                  <th className="px-8 py-6 text-[10px] font-black uppercase text-slate-400 dark:text-zinc-500 tracking-[0.2em]">Categoría</th>
+                  <th className="px-8 py-6 text-[10px] font-black uppercase text-slate-400 dark:text-zinc-500 tracking-[0.2em] hidden md:table-cell">ID Logístico</th>
+                  <th className="px-8 py-6 text-[10px] font-black uppercase text-slate-400 dark:text-zinc-500 tracking-[0.2em] hidden md:table-cell">Categoría</th>
                   <th className="px-8 py-6 text-[10px] font-black uppercase text-slate-400 dark:text-zinc-500 tracking-[0.2em] text-right">Precio / Medida</th>
                   <th className="px-8 py-6 text-[10px] font-black uppercase text-slate-400 dark:text-zinc-500 tracking-[0.2em] text-center">Stock Disponible</th>
                   <th className="px-8 py-6 text-[10px] font-black uppercase text-slate-400 dark:text-zinc-500 tracking-[0.2em] text-right">Acciones</th>
@@ -529,8 +529,8 @@ export const Inventory = () => {
                         <span className="font-outfit font-black text-sm text-zinc-800 dark:text-zinc-100 group-hover:text-zinc-900 dark:group-hover:text-white uppercase tracking-tight">{p.name}</span>
                       </div>
                     </td>
-                    <td className="px-8 py-5 text-zinc-500 dark:text-zinc-500 text-xs font-mono tracking-widest">{p.sku || 'N/A'}</td>
-                    <td className="px-8 py-5">
+                    <td className="px-8 py-5 text-zinc-500 dark:text-zinc-500 text-xs font-mono tracking-widest hidden md:table-cell">{p.sku || 'N/A'}</td>
+                    <td className="px-8 py-5 hidden md:table-cell">
                       <span className="px-3 py-1 text-[9px] font-black uppercase tracking-widest bg-brand-500/10 text-brand-500 rounded-lg border border-brand-500/20 shadow-sm shadow-brand-500/5">
                         {getCategoryName(p.category_id)}
                       </span>
