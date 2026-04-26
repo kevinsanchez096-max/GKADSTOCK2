@@ -130,6 +130,10 @@ export const Dashboard = () => {
     const totalSales = filteredSales.reduce((acc, s) => acc + Number(s.total), 0);
     const totalExpenses = filteredExpenses.reduce((acc, e) => acc + Number(e.amount), 0);
 
+    // Nuevos cálculos
+    const transactionCount = filteredSales.length;
+    const averageTicket = transactionCount > 0 ? totalSales / transactionCount : 0;
+
     // Generar Datos para Gráfica (Agrupación simple para el demo)
     const chartMap: Record<string, number> = {};
     filteredSales.slice().reverse().forEach(s => {
@@ -143,6 +147,8 @@ export const Dashboard = () => {
       totalSales,
       totalExpenses,
       netUtility: totalSales - totalExpenses,
+      transactionCount,
+      averageTicket,
       chartData: chartData.length > 0 ? chartData : [{ name: 'Sin Datos', ventas: 0 }]
     };
   }, [sales, expenses, timeFilter]);
@@ -151,7 +157,7 @@ export const Dashboard = () => {
 
   return (
     <PlanGuard restrictedPlans={['Esencial']} moduleName="Dashboard de Analítica">
-      <div className="space-y-10 animate-slide-up">
+      <div className="bg-gray-50 dark:bg-gray-900 space-y-10 animate-slide-up">
         
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-1">
@@ -186,8 +192,8 @@ export const Dashboard = () => {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          <KPICard title="Unidades" value={baseStats.totalProducts} icon={Package} trend="+3" trendUp={true} description="Items en catálogo" variant="mini" />
-          <KPICard title="Capital" value={`$${baseStats.inventoryValue.toLocaleString()}`} icon={Layers} trend="Asset" trendUp={true} description="Valorización total" variant="mini" />
+          <KPICard title="Transacciones Totales" value={analytics.transactionCount} icon={Package} trend="+3" trendUp={true} description="Facturas emitidas" variant="mini" />
+          <KPICard title="Ticket Promedio" value={`$${analytics.averageTicket.toLocaleString()}`} icon={Layers} trend="Asset" trendUp={true} description="Gasto promedio por venta" variant="mini" />
           <KPICard title="Divisiones" value={baseStats.activeCategories} icon={ArrowUpRight} trend="Activas" description="Categorías de stock" variant="mini" />
           <KPICard title="Riesgos" value={baseStats.lowStockCount} icon={AlertTriangle} trendUp={false} trend={baseStats.lowStockCount > 0 ? "ALERTA" : "OK"} alert={baseStats.lowStockCount > 0} description="Stock crítico detectado" variant="mini" />
         </div>
@@ -280,22 +286,24 @@ export const Dashboard = () => {
 };
 
 const KPICard = ({ title, value, icon: Icon, trend, trendUp, description, alert, success, variant = 'large' }: any) => (
-  <Card className={`${variant === 'large' ? 'p-8' : 'p-6'} glass-dark border-white/5 hover:border-brand-500/40 hover:-translate-y-1 transition-all group overflow-hidden relative shadow-[0_20px_50px_rgba(0,0,0,0.3)]`}>
-    <div className="absolute -right-6 -top-6 opacity-0 group-hover:opacity-10 transition-all duration-700 -rotate-12 scale-150"><Icon size={120} className="text-brand-500" /></div>
+  <Card className={`${variant === 'large' ? 'p-6' : 'p-6'} flex flex-col rounded-3xl transition-all duration-300
+                bg-white border border-gray-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)]
+                dark:bg-gray-800 dark:border-gray-700 dark:shadow-none
+                hover:shadow-lg dark:hover:bg-gray-750 group overflow-hidden relative`}>
     <div className="relative z-10">
-      <div className="flex items-center justify-between mb-8">
-        <div className={`p-4 rounded-[1.25rem] border transition-all duration-500 ${
-          alert ? 'bg-red-500/10 text-red-500 border-red-500/20' : 
-          success ? 'bg-green-500/10 text-green-500 border-green-500/20' : 
-          'bg-brand-500/10 text-brand-500 border-brand-500/20 shadow-[0_0_20px_rgba(59,130,246,0.1)] group-hover:bg-brand-500 group-hover:text-white'
+      <div className="flex justify-between items-start mb-4">
+        <div className={`p-3 rounded-2xl transition-all duration-500 ${
+          alert ? 'bg-red-50 text-red-500 dark:bg-red-500/10 dark:text-red-400' : 
+          success ? 'bg-green-50 text-green-500 dark:bg-green-500/10 dark:text-green-400' : 
+          'bg-brand-500/10 text-brand-500 dark:bg-brand-500/10 dark:text-brand-400 group-hover:bg-brand-500 group-hover:text-white'
         }`}>
           <Icon size={variant === 'large' ? 24 : 18} strokeWidth={2.5} />
         </div>
         {trend && (
-          <div className={`flex items-center gap-1.5 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest border transition-all duration-500 ${
-            trendUp === true ? 'text-green-500 bg-green-500/10 border-green-500/20' : 
-            trendUp === false ? 'text-red-500 bg-red-500/10 border-red-500/20' : 
-            'text-zinc-500 bg-white/5 border-white/5'
+          <div className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest transition-all duration-500 ${
+            trendUp === true ? 'bg-green-50 text-green-600 dark:bg-green-500/20 dark:text-green-400' : 
+            trendUp === false ? 'bg-red-50 text-red-600 dark:bg-red-500/20 dark:text-red-400' : 
+            'bg-gray-50 text-gray-600 dark:bg-gray-500/20 dark:text-gray-400'
           }`}>
             {trendUp === true && <ArrowUpRight size={10} />}
             {trendUp === false && <ArrowDownRight size={10} />}
@@ -303,10 +311,10 @@ const KPICard = ({ title, value, icon: Icon, trend, trendUp, description, alert,
           </div>
         )}
       </div>
-      <div className="space-y-1">
-        <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">{title}</p>
-        <h2 className={`${variant === 'large' ? 'text-4xl' : 'text-2xl'} font-black dark:text-white tracking-tighter font-outfit uppercase`}>{value}</h2>
-        <p className="text-[9px] text-zinc-600 font-bold uppercase tracking-widest mt-4">{description}</p>
+      <div className="flex flex-col space-y-1">
+        <p className="text-xs font-extrabold text-gray-500 dark:text-gray-400 uppercase tracking-widest">{title}</p>
+        <h2 className={`${variant === 'large' ? 'text-4xl' : 'text-2xl'} font-black text-gray-900 dark:text-white tracking-tight font-outfit uppercase`}>{value}</h2>
+        <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 mt-2 uppercase">{description}</p>
       </div>
     </div>
     <div className="absolute bottom-0 left-0 h-1 w-0 bg-brand-500 group-hover:w-full transition-all duration-700 shadow-[0_0_15px_rgba(59,130,246,0.5)]" />
