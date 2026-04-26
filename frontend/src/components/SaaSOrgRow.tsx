@@ -264,85 +264,97 @@ export const SaaSOrgRow = ({ org, isExpanded, onToggle, isMenuOpen, onToggleMenu
   const currentPlanStyle = planStyles[org.plan] || 'bg-slate-500/10 text-slate-500 border-slate-500/20';
 
   return (
-    <div className={`bg-white dark:bg-black/20 border border-slate-200 dark:border-white/5 rounded-3xl transition-all duration-500 shadow-sm hover:shadow-xl ${!org.is_active || org.billing_status === 'suspendido' ? 'grayscale-[0.8] opacity-60' : ''} relative`}>
-      
-      <div className="p-6 flex items-center justify-between cursor-pointer group" onClick={onToggle}>
-        <div className="flex items-center gap-6">
-          <div className={`h-11 w-11 rounded-2xl flex items-center justify-center transition-all ${isExpanded ? 'bg-slate-900 dark:bg-zinc-800 rotate-180 text-white' : 'bg-slate-50 dark:bg-zinc-900/40 text-slate-400'}`}>
-            <ChevronDown className="h-5 w-5" />
-          </div>
-          <div className={`h-14 w-14 rounded-2xl flex items-center justify-center text-white shadow-2xl ${org.is_active && org.billing_status === 'activo' ? 'bg-blue-600 shadow-blue-500/20' : 'bg-slate-400 dark:bg-zinc-800 shadow-none'}`}>
-             <Building2 className="h-7 w-7" />
-          </div>
-          <div>
-             <div className="flex items-center gap-3 mb-1">
-               <h3 className="text-lg font-black text-slate-900 dark:text-white font-outfit uppercase tracking-tight">{org.name}</h3>
-               <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase border ${currentPlanStyle}`}>{org.plan}</span>
-             </div>
-             <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em]">
-               {org.adminCount} ADM • {org.vendedorCount} VEN • ID: {org.id.split('-')[0]}
-             </p>
-             <div className="flex items-center gap-2 mt-2">
-                <div className={`px-2 py-0.5 rounded-md text-[8px] font-black uppercase border ${org.billing_status === 'activo' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-rose-500/10 text-rose-500 border-rose-500/20'}`}>
-                   {org.billing_status === 'activo' ? 'Licencia Activa' : 'Mora / Suspendido'}
-                </div>
-                {org.billing_status === 'activo' && (
-                   <span className="text-[8px] text-slate-400 font-bold uppercase">Próximo Corte: {new Date(org.next_billing_date).toLocaleDateString()}</span>
-                )}
-             </div>
-          </div>
-        </div>
-        <div className="flex items-center gap-8">
-          <div className="text-right">
-             <p className="text-lg font-black text-slate-900 dark:text-white font-outfit">${Number(org.license_price || 0).toLocaleString()}</p>
-             <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest leading-none">COSTO LICENCIA</p>
-          </div>
-          <div className="relative">
-            <button onClick={(e) => { e.stopPropagation(); onToggleMenu(); }} className="p-3 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full transition-colors text-slate-400 dark:text-zinc-600">
-              <MoreVertical size={20} />
-            </button>
-            {isMenuOpen && (
-              <div className="absolute right-0 top-14 w-52 bg-white dark:bg-zinc-950 border border-slate-100 dark:border-white/10 rounded-2xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] z-[100] p-2 animate-in fade-in zoom-in-95">
-                <button onClick={(e) => { e.stopPropagation(); onToggle(); onToggleMenu(); }} className="w-full flex items-center gap-4 px-4 py-3 text-[10px] font-black text-slate-600 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl transition-all uppercase tracking-widest"><Eye size={16} /> Ver Detalles</button>
-                <button 
-                  onClick={(e) => { e.stopPropagation(); handleToggleStatus(); }}
-                  className={`w-full flex items-center gap-4 px-4 py-3 text-[10px] font-black rounded-xl transition-all uppercase tracking-widest ${org.is_active ? 'text-amber-500 hover:bg-amber-50' : 'text-emerald-500 hover:bg-emerald-50'}`}
-                >
-                  <AlertCircle size={16} /> {org.is_active ? 'Suspender Operación' : 'Activar Operación'}
-                </button>
-                <button 
-                  onClick={(e) => { e.stopPropagation(); handleToggleBilling(); }}
-                  className={`w-full flex items-center gap-4 px-4 py-3 text-[10px] font-black rounded-xl transition-all uppercase tracking-widest ${org.billing_status === 'activo' ? 'text-rose-500 hover:bg-rose-50' : 'text-emerald-500 hover:bg-emerald-50'}`}
-                >
-                  <CreditCard size={16} /> {org.billing_status === 'activo' ? 'Suspender Licencia' : 'Reactivar Licencia'}
-                </button>
-                <button 
-                  onClick={(e) => { e.stopPropagation(); setIsChangePlanModalOpen(true); onToggleMenu(); }}
-                  className="w-full flex items-center gap-4 px-4 py-3 text-[10px] font-black text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-xl transition-all uppercase tracking-widest"
-                >
-                  <Settings size={16} /> Cambiar Plan
-                </button>
-                <button 
-                  onClick={(e) => { e.stopPropagation(); setIsDateModalOpen(true); onToggleMenu(); }}
-                  className="w-full flex items-center gap-4 px-4 py-3 text-[10px] font-black text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 rounded-xl transition-all uppercase tracking-widest"
-                >
-                  <CreditCard size={16} /> Cambiar Fecha Corte
-                </button>
-                <div className="h-px bg-slate-100 dark:bg-white/5 my-2 mx-2" />
-                <button 
-                  onClick={(e) => { e.stopPropagation(); setIsDeleteModalOpen(true); onToggleMenu(); }}
-                  className="w-full flex items-center gap-4 px-4 py-3 text-[10px] font-black text-red-500 hover:bg-red-50 rounded-xl transition-all uppercase tracking-widest"
-                >
-                  <Trash2 size={16} /> Purgar Empresa
-                </button>
+  return (
+    <>
+      <tr className={`group/row transition-colors hover:bg-white/[0.03] ${!org.is_active || org.billing_status === 'suspendido' ? 'opacity-50 grayscale' : ''}`}>
+        {/* ID Nodo */}
+        <td className="px-8 py-5 text-[10px] font-mono text-white/30 uppercase tracking-tighter">
+          {org.id.split('-')[0]}
+        </td>
+
+        {/* Empresa */}
+        <td className="px-8 py-5" onClick={onToggle}>
+           <div className="flex items-center gap-4 cursor-pointer">
+              <div className="h-10 w-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white/40 group-hover/row:text-white transition-all">
+                 <Building2 size={18} />
               </div>
-            )}
-          </div>
-        </div>
-      </div>
+              <div>
+                 <p className="text-[12px] font-black text-white uppercase tracking-tight">{org.name}</p>
+                 <p className="text-[9px] text-white/20 font-bold uppercase tracking-widest mt-0.5">Inquilino Activo</p>
+              </div>
+           </div>
+        </td>
+
+        {/* Plan */}
+        <td className="px-8 py-5">
+           <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase border ${currentPlanStyle}`}>
+              {org.plan}
+           </span>
+        </td>
+
+        {/* Usuarios */}
+        <td className="px-8 py-5">
+           <div className="flex items-center gap-2 text-white/40">
+              <Users size={12} />
+              <span className="text-[10px] font-bold uppercase tracking-widest">
+                 {org.adminCount + org.vendedorCount} PERS.
+              </span>
+           </div>
+        </td>
+
+        {/* Estado */}
+        <td className="px-8 py-5">
+           <div className="flex items-center gap-3">
+              <div className={`h-2 w-2 rounded-full ${org.is_active ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-rose-500'}`} />
+              <span className={`text-[10px] font-black uppercase tracking-widest ${org.is_active ? 'text-emerald-500' : 'text-rose-500'}`}>
+                 {org.is_active ? 'Online' : 'Offline'}
+              </span>
+           </div>
+        </td>
+
+        {/* Acciones */}
+        <td className="px-8 py-5 text-right">
+           <div className="flex items-center justify-end gap-3">
+              <button 
+                onClick={(e) => { e.stopPropagation(); onToggle(); }}
+                className="h-8 px-3 rounded-lg bg-white/5 hover:bg-white/10 text-[9px] font-black text-white/60 hover:text-white border border-white/5 transition-all uppercase tracking-widest"
+              >
+                Gestionar
+              </button>
+              
+              <div className="relative">
+                <button 
+                  onClick={(e) => { e.stopPropagation(); onToggleMenu(); }}
+                  className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-white/5 text-white/20 hover:text-white transition-all"
+                >
+                   <MoreVertical size={16} />
+                </button>
+                {isMenuOpen && (
+                  <div className="absolute right-0 top-10 w-52 bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-2xl z-[100] p-2 animate-in fade-in zoom-in-95 backdrop-blur-xl">
+                    <button onClick={(e) => { e.stopPropagation(); handleToggleStatus(); }} className={`w-full flex items-center gap-4 px-4 py-3 text-[10px] font-black rounded-xl transition-all uppercase tracking-widest ${org.is_active ? 'text-amber-500 hover:bg-amber-500/10' : 'text-emerald-500 hover:bg-emerald-500/10'}`}>
+                      <AlertCircle size={16} /> {org.is_active ? 'Suspender Operación' : 'Activar Operación'}
+                    </button>
+                    <button onClick={(e) => { e.stopPropagation(); handleToggleBilling(); }} className={`w-full flex items-center gap-4 px-4 py-3 text-[10px] font-black rounded-xl transition-all uppercase tracking-widest ${org.billing_status === 'activo' ? 'text-rose-500 hover:bg-rose-500/10' : 'text-emerald-500 hover:bg-emerald-500/10'}`}>
+                      <CreditCard size={16} /> {org.billing_status === 'activo' ? 'Suspender Licencia' : 'Reactivar Licencia'}
+                    </button>
+                    <div className="h-px bg-white/5 my-2 mx-2" />
+                    <button onClick={(e) => { e.stopPropagation(); setIsChangePlanModalOpen(true); onToggleMenu(); }} className="w-full flex items-center gap-4 px-4 py-3 text-[10px] font-black text-blue-500 hover:bg-blue-500/10 rounded-xl transition-all uppercase tracking-widest">
+                      <Settings size={16} /> Ajustar Plan
+                    </button>
+                    <button onClick={(e) => { e.stopPropagation(); setIsDeleteModalOpen(true); onToggleMenu(); }} className="w-full flex items-center gap-4 px-4 py-3 text-[10px] font-black text-red-500 hover:bg-red-500/10 rounded-xl transition-all uppercase tracking-widest">
+                      <Trash2 size={16} /> Purgar Datos
+                    </button>
+                  </div>
+                )}
+              </div>
+           </div>
+        </td>
+      </tr>
 
       {isExpanded && (
-        <div className="p-8 pt-2 animate-in slide-in-from-top-4 duration-500">
+        <tr>
+          <td colSpan={6} className="px-8 py-10 bg-white/[0.01]">
+             <div className="animate-in slide-in-from-top-4 duration-500">
            <div className="h-px bg-slate-100 dark:bg-white/5 mb-8" />
            <div className="space-y-6">
               <div className="flex items-center justify-between">
@@ -818,9 +830,10 @@ export const SaaSOrgRow = ({ org, isExpanded, onToggle, isMenuOpen, onToggleMenu
                    </div>
                 </div>
              </div>
-           )}
-        </div>
+            </div>
+          </td>
+        </tr>
       )}
-    </div>
+    </>
   );
 };

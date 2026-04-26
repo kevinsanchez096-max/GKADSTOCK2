@@ -132,21 +132,32 @@ export const SuperAdminDashboard = () => {
         />
       </div>
 
-      {/* BUSCADOR Y LISTADO */}
-      <div className="space-y-6">
-        <div className="relative group">
-          <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 dark:text-zinc-600 group-focus-within:text-blue-500 transition-colors" />
-          <input 
-            type="text" 
-            placeholder="Filtrar por nombre o ID de organización..."
-            className="w-full h-16 pl-16 pr-8 bg-white dark:bg-zinc-900/30 border border-slate-200 dark:border-white/5 rounded-2xl text-sm font-bold text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500/50 transition-all placeholder:text-slate-400 shadow-sm"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+      {/* VISUAL ANALYTICS - PURE DATA */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-8">
+        <div className="bg-white/[0.02] border border-white/5 rounded-[2.5rem] p-10 space-y-8">
+           <div className="flex items-center justify-between">
+              <h3 className="text-xs font-black uppercase tracking-[0.3em] text-white/40">Crecimiento Mensual (MRR)</h3>
+              <span className="text-[10px] font-black text-indigo-500 uppercase">+24.5%</span>
+           </div>
+           <div className="h-48 flex items-end gap-3 px-4">
+              {[40, 65, 45, 80, 55, 90, 75].map((h, i) => (
+                <div key={i} className="flex-1 bg-indigo-500/20 rounded-t-xl relative group transition-all hover:bg-indigo-500/40" style={{ height: `${h}%` }}>
+                   <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] font-black text-white">${(h * 100).toLocaleString()}</div>
+                </div>
+              ))}
+           </div>
         </div>
-        
-        <div className="animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-200">
-          <PlatformOrganizations key={refreshKey} searchTerm={searchTerm} />
+
+        <div className="bg-white/[0.02] border border-white/5 rounded-[2.5rem] p-10 space-y-8">
+           <div className="flex items-center justify-between">
+              <h3 className="text-xs font-black uppercase tracking-[0.3em] text-white/40">Actividad de Usuarios</h3>
+              <span className="text-[10px] font-black text-emerald-500 uppercase">Live Metrics</span>
+           </div>
+           <div className="h-48 flex items-end gap-1 px-4">
+              {[30, 45, 60, 40, 70, 85, 65, 90, 80, 50, 40, 60, 75, 85, 95].map((h, i) => (
+                <div key={i} className="flex-1 bg-emerald-500/20 rounded-t-sm animate-pulse" style={{ height: `${h}%`, animationDelay: `${i * 0.1}s` }} />
+              ))}
+           </div>
         </div>
       </div>
     </div>

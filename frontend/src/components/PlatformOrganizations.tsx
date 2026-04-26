@@ -3,6 +3,7 @@ import {
   Building2, 
   RefreshCcw, 
   ShieldAlert,
+  Search
 } from 'lucide-react';
 import { api } from '../lib/api';
 import { useAuthStore } from '../store/useAuthStore';
@@ -37,6 +38,8 @@ export const PlatformOrganizations = ({ searchTerm = '' }: Props) => {
 
   const isSuperAdmin = profile?.role === 'super_admin';
 
+  const [localSearchTerm, setLocalSearchTerm] = useState('');
+
   const fetchOrganizations = async () => {
     if (!isSuperAdmin) return;
     
@@ -57,8 +60,8 @@ export const PlatformOrganizations = ({ searchTerm = '' }: Props) => {
   }, [isSuperAdmin]);
 
   const filteredOrgs = organizations.filter(org => 
-    org.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    org.id.toLowerCase().includes(searchTerm.toLowerCase())
+    org.name.toLowerCase().includes(localSearchTerm.toLowerCase()) ||
+    org.id.toLowerCase().includes(localSearchTerm.toLowerCase())
   );
 
   const handleToggleOrg = (orgId: string) => {
@@ -96,33 +99,62 @@ export const PlatformOrganizations = ({ searchTerm = '' }: Props) => {
           >
             <RefreshCcw className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
           </button>
-          <p className="text-[10px] font-black text-slate-600 dark:text-zinc-600 uppercase tracking-[0.4em]">Lista de Organizaciones Activas</p>
+          <p className="text-[10px] font-black text-slate-600 dark:text-zinc-600 uppercase tracking-[0.4em]">Directorio Maestro de Inquilinos</p>
+        </div>
+
+        <div className="w-96 relative group">
+           <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-white/20 group-focus-within:text-blue-500 transition-colors" />
+           <input 
+             type="text" 
+             placeholder="Filtrar por nombre o ID..."
+             className="w-full h-11 pl-12 pr-4 bg-white/[0.02] border border-white/5 rounded-xl text-[11px] font-bold text-white outline-none focus:ring-2 focus:ring-blue-500/30 transition-all placeholder:text-white/10"
+             value={localSearchTerm}
+             onChange={(e) => setLocalSearchTerm(e.target.value)}
+           />
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4">
-        {loading && organizations.length === 0 ? (
-          [...Array(3)].map((_, i) => (
-            <div key={i} className="h-24 bg-white dark:bg-zinc-900/20 border border-slate-200 dark:border-white/5 rounded-2xl animate-pulse shadow-sm" />
-          ))
-        ) : filteredOrgs.length === 0 ? (
-          <div className="py-32 flex flex-col items-center opacity-20">
-            <Building2 className="h-20 w-20 mb-6 text-zinc-400" strokeWidth={1} />
-            <p className="text-[12px] font-black uppercase tracking-[0.6em] text-slate-500">No se encuentran coincidencias</p>
-          </div>
-        ) : (
-          filteredOrgs.map((org) => (
-            <SaaSOrgRow 
-              key={org.id} 
-              org={org} 
-              isExpanded={expandedOrgId === org.id}
-              onToggle={() => handleToggleOrg(org.id)}
-              isMenuOpen={openMenuId === org.id}
-              onToggleMenu={() => handleToggleMenu(org.id)}
-              onRefresh={fetchOrganizations}
-            />
-          ))
-        )}
+      <div className="bg-white/[0.02] border border-white/5 rounded-[2.5rem] overflow-hidden shadow-2xl">
+        <table className="w-full border-collapse">
+          <thead>
+            <tr className="bg-white/[0.05] border-b border-white/5">
+              <th className="px-8 py-6 text-left text-[9px] font-black text-white/40 uppercase tracking-[0.3em]">ID Nodo</th>
+              <th className="px-8 py-6 text-left text-[9px] font-black text-white/40 uppercase tracking-[0.3em]">Organización / Empresa</th>
+              <th className="px-8 py-6 text-left text-[9px] font-black text-white/40 uppercase tracking-[0.3em]">Plan / Licencia</th>
+              <th className="px-8 py-6 text-left text-[9px] font-black text-white/40 uppercase tracking-[0.3em]">Personal</th>
+              <th className="px-8 py-6 text-left text-[9px] font-black text-white/40 uppercase tracking-[0.3em]">Estado SaaS</th>
+              <th className="px-8 py-6 text-right text-[9px] font-black text-white/40 uppercase tracking-[0.3em]">Acciones</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-white/5">
+            {loading && organizations.length === 0 ? (
+              [...Array(5)].map((_, i) => (
+                <tr key={i} className="animate-pulse">
+                   <td colSpan={6} className="px-8 py-6 h-16 bg-white/[0.01]" />
+                </tr>
+              ))
+            ) : filteredOrgs.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="py-32 flex flex-col items-center opacity-20">
+                  <Building2 className="h-20 w-20 mb-6 text-zinc-400" strokeWidth={1} />
+                  <p className="text-[12px] font-black uppercase tracking-[0.6em] text-slate-500">No se encuentran coincidencias</p>
+                </td>
+              </tr>
+            ) : (
+              filteredOrgs.map((org) => (
+                <SaaSOrgRow 
+                  key={org.id} 
+                  org={org} 
+                  isExpanded={expandedOrgId === org.id}
+                  onToggle={() => handleToggleOrg(org.id)}
+                  isMenuOpen={openMenuId === org.id}
+                  onToggleMenu={() => handleToggleMenu(org.id)}
+                  onRefresh={fetchOrganizations}
+                />
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
 
       <div className="flex items-center justify-between px-6 py-8 border-t border-slate-200 dark:border-white/5 opacity-50">
