@@ -19,6 +19,7 @@ import { Customers } from './components/Customers';
 import { Suppliers } from './components/Suppliers';
 import { PlatformOrganizations } from './components/PlatformOrganizations';
 import { GlobalPlatformSettings } from './components/GlobalPlatformSettings';
+import { AdminWelcome } from './components/AdminWelcome';
 import { CreditCard } from 'lucide-react';
 
 function App() {
@@ -159,7 +160,7 @@ function App() {
   const renderContent = () => {
     switch (activeTab) {
       case 'home':
-        if (profile?.role === 'super_admin') return <SuperAdminDashboard />;
+        if (profile?.role === 'super_admin') return <AdminWelcome setActiveTab={setActiveTab} />;
         return <Home setActiveTab={setActiveTab} />;
       case 'dashboard':
         return <Dashboard />;
@@ -181,7 +182,7 @@ function App() {
         return <Settings />;
       
       // ── MÓDULOS DE SUPER ADMINISTRADOR ──
-      case 'admin_saas':
+      case 'admin_metrics':
         if (profile?.role !== 'super_admin') return <Dashboard />;
         return <SuperAdminDashboard />;
       case 'admin_organizations':
