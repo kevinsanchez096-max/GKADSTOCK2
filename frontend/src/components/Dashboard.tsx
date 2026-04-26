@@ -167,7 +167,7 @@ export const Dashboard = () => {
 
   return (
     <PlanGuard restrictedPlans={['Esencial']} moduleName="Dashboard de Analítica">
-      <div className="bg-gray-50 dark:bg-[#111827] rounded-[2rem] p-6 lg:p-8 space-y-10 animate-slide-up border border-transparent dark:border-white/5">
+      <div className="bg-transparent space-y-10 animate-slide-up">
         
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-1">
@@ -181,29 +181,19 @@ export const Dashboard = () => {
           <div className="flex items-center space-x-1 p-1 rounded-full transition-colors duration-300
                           bg-gray-100 border border-gray-200
                           dark:bg-gray-800 dark:border-gray-700">
-            {(['day', 'week', 'month', 'year'] as FilterRange[]).map((range) => {
-              // Mapeo seguro para Tailwind (evita problemas con el PurgeCSS)
-              const activeClassMap: Record<string, string> = {
-                violet: 'bg-violet-500 text-white shadow-md',
-                blue: 'bg-blue-500 text-white shadow-md',
-                teal: 'bg-teal-500 text-white shadow-md',
-                emerald: 'bg-emerald-500 text-white shadow-md'
-              };
-              
-              return (
-                <button
-                  key={range}
-                  onClick={() => setTimeFilter(range)}
-                  className={`px-4 py-1.5 text-xs font-extrabold uppercase tracking-wider transition-colors rounded-full ${
-                    timeFilter === range 
-                      ? activeClassMap[accentColor] || activeClassMap['emerald']
-                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                  }`}
-                >
-                  {range === 'day' ? 'Hoy' : range === 'week' ? 'Semana' : range === 'month' ? 'Mes' : 'Año'}
-                </button>
-              );
-            })}
+            {(['day', 'week', 'month', 'year'] as FilterRange[]).map((range) => (
+              <button
+                key={range}
+                onClick={() => setTimeFilter(range)}
+                className={`px-4 py-1.5 text-xs font-extrabold uppercase tracking-wider transition-all rounded-full shadow-sm ${
+                  timeFilter === range 
+                    ? 'bg-brand-500 text-white shadow-md shadow-brand-500/30'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                }`}
+              >
+                {range === 'day' ? 'Hoy' : range === 'week' ? 'Semana' : range === 'month' ? 'Mes' : 'Año'}
+              </button>
+            ))}
           </div>
         </div>
 

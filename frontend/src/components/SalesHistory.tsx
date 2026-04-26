@@ -263,9 +263,9 @@ export const SalesHistory = () => {
                 <button
                   key={range}
                   onClick={() => setTimeFilter(range)}
-                  className={`px-4 py-1.5 text-xs font-extrabold uppercase tracking-wider transition-colors rounded-full ${
+                  className={`px-4 py-1.5 text-xs font-extrabold uppercase tracking-wider transition-all rounded-full shadow-sm ${
                     timeFilter === range 
-                      ? 'text-white bg-gradient-to-r from-orange-400 to-green-500 shadow-md' 
+                      ? 'bg-brand-500 text-white shadow-md shadow-brand-500/30' 
                       : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                   }`}
                 >
