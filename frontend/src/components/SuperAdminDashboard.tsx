@@ -74,19 +74,30 @@ export const SuperAdminDashboard = () => {
       {/* HEADER MAESTRO */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div className="space-y-1">
-          <h1 className="text-3xl font-black text-slate-900 dark:text-white font-outfit uppercase tracking-tight leading-none">
-            SaaS Master Panel
-          </h1>
-          <p className="text-slate-500 dark:text-zinc-500 font-bold text-[11px] uppercase tracking-widest">Vista jerárquica de organizaciones y salud del ecosistema</p>
+          <div className="flex items-center gap-3">
+             <div className="h-8 w-8 bg-cyan-500/10 rounded-lg flex items-center justify-center text-cyan-500 border border-cyan-500/20">
+                <ShieldCheck size={18} />
+             </div>
+             <h1 className="text-3xl font-black text-slate-900 dark:text-white font-outfit uppercase tracking-tight leading-none">
+               PANEL DE CONTROL SAAS
+             </h1>
+          </div>
+          <p className="text-slate-500 dark:text-zinc-500 font-bold text-[11px] uppercase tracking-widest ml-11">Métricas Globales de la Plataforma • Gestión de Inquilinos</p>
         </div>
         
-        <button 
-          onClick={() => setIsCreateModalOpen(true)}
-          className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-[11px] font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-600/20 active:scale-95"
-        >
-          <Building2 className="h-4 w-4" />
-          Nueva Organización
-        </button>
+        <div className="flex items-center gap-3">
+           <div className="hidden sm:flex items-center gap-2 px-4 py-2 bg-emerald-500/5 border border-emerald-500/10 rounded-xl">
+              <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
+              <span className="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">CLÚSTER ONLINE</span>
+           </div>
+           <button 
+             onClick={() => setIsCreateModalOpen(true)}
+             className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-[11px] font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-600/20 active:scale-95"
+           >
+             <Building2 className="h-4 w-4" />
+             Nueva Organización
+           </button>
+        </div>
       </div>
 
       {/* MÉTRICAS DE COMANDO */}

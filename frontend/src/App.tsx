@@ -20,7 +20,21 @@ import { Suppliers } from './components/Suppliers';
 
 function App() {
   const { user, profile, isInitialized, setProfile, setUser } = useAuthStore();
-  const [activeTab, setActiveTab] = useState('home');
+  const [activeTab, setActiveTab] = useState(() => {
+    // Si ya hay sesión, intentar determinar la pestaña inicial
+    const storedProfile = localStorage.getItem('auth-storage'); // O como se guarde en tu store
+    if (profile?.role === 'super_admin') return 'admin_saas';
+    return 'home';
+  });
+
+  // Ajustar pestaña si el perfil cambia (ej. al loguear)
+  useEffect(() => {
+    if (profile?.role === 'super_admin') {
+      setActiveTab('admin_saas');
+    } else if (profile) {
+      setActiveTab('home');
+    }
+  }, [profile?.role]);
 
   // ══════════════════════════════════════════════════════════════════
   // EFECTO DE ARRANQUE: Rehidratación de sesión con PURGA TOTAL en error
@@ -163,18 +177,33 @@ function App() {
         return <Customers />;
       case 'suppliers':
         return <Suppliers />;
-      case 'users':
-        // ── RBAC: Solo super_admin puede acceder al módulo de Usuarios ──
-        if (profile?.role !== 'super_admin') return <Dashboard />;
-        return <GlobalUserAudit />;
       case 'settings':
         return <Settings />;
+      
+      // ── MÓDULOS DE SUPER ADMINISTRADOR ──
       case 'admin_saas':
-        // Protección extra de la ruta en el frontend
         if (profile?.role !== 'super_admin') return <Dashboard />;
         return <SuperAdminDashboard />;
+      case 'admin_organizations':
+        if (profile?.role !== 'super_admin') return <Dashboard />;
+        return <PlatformOrganizations />;
+      case 'admin_users':
+        if (profile?.role !== 'super_admin') return <Dashboard />;
+        return <GlobalUserAudit />;
+      case 'admin_subscriptions':
+        if (profile?.role !== 'super_admin') return <Dashboard />;
+        return (
+          <div className="p-20 text-center opacity-40">
+            <CreditCard size={64} className="mx-auto mb-6" />
+            <h2 className="text-xl font-black uppercase tracking-widest">Módulo de Suscripciones</h2>
+            <p className="text-xs font-bold uppercase mt-2">Próximamente en v4.1</p>
+          </div>
+        );
+      case 'admin_settings':
+        if (profile?.role !== 'super_admin') return <Dashboard />;
+        return <GlobalPlatformSettings />;
       default:
-        return <Dashboard />;
+        return profile?.role === 'super_admin' ? <SuperAdminDashboard /> : <Dashboard />;
     }
   };
 

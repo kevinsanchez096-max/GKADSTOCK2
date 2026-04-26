@@ -20,7 +20,8 @@ import {
   Contact,
   Truck,
   ChevronRight,
-  ChevronLeft
+  ChevronLeft,
+  CreditCard
 } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
 import { useShopStore } from '../store/useShopStore';
@@ -74,7 +75,8 @@ export const DashboardLayout = ({
     localStorage.setItem('sidebar_state', isCollapsed ? 'collapsed' : 'expanded');
   }, [isCollapsed]);
 
-  const menuItems = [
+  // ── CONFIGURACIÓN DE MENÚS BASADA EN ROLES (RBAC) ──
+  const standardMenuItems = [
     { id: 'home', label: 'Inicio', icon: LayoutGrid, color: 'text-blue-500' },
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, color: 'text-indigo-500' },
     { id: 'pos', label: 'Punto de Venta', icon: ShoppingCart, color: 'text-emerald-500' },
@@ -87,12 +89,15 @@ export const DashboardLayout = ({
     { id: 'settings', label: 'Ajustes', icon: Settings, color: 'text-slate-500' },
   ];
 
-  // ── RBAC: Módulos exclusivos del Súper Administrador ──
-  if (profile?.role === 'super_admin') {
-    // Insertamos "Usuarios" antes de "Ajustes" para mantener orden lógico
-    menuItems.splice(menuItems.length - 1, 0, { id: 'users', label: 'Usuarios', icon: Users, color: 'text-orange-500' });
-    menuItems.push({ id: 'admin_saas', label: 'SaaS Panel', icon: Building2, color: 'text-cyan-500' });
-  }
+  const saasMenuItems = [
+    { id: 'admin_saas', label: 'SaaS Dashboard', icon: LayoutDashboard, color: 'text-cyan-500' },
+    { id: 'admin_organizations', label: 'Organizaciones', icon: Building2, color: 'text-blue-500' },
+    { id: 'admin_users', label: 'Usuarios Globales', icon: Users, color: 'text-orange-500' },
+    { id: 'admin_subscriptions', label: 'Suscripciones', icon: CreditCard, color: 'text-emerald-500' },
+    { id: 'admin_settings', label: 'Ajustes SaaS', icon: Settings, color: 'text-slate-500' },
+  ];
+
+  const menuItems = profile?.role === 'super_admin' ? saasMenuItems : standardMenuItems;
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 flex transition-colors duration-500 font-sans">
