@@ -20,6 +20,7 @@ import { Suppliers } from './components/Suppliers';
 import { PlatformOrganizations } from './components/PlatformOrganizations';
 import { GlobalPlatformSettings } from './components/GlobalPlatformSettings';
 import { AdminWelcome } from './components/AdminWelcome';
+import { SubscriptionsManager } from './components/SubscriptionsManager';
 import { CreditCard } from 'lucide-react';
 
 function App() {
@@ -193,13 +194,7 @@ function App() {
         return <GlobalUserAudit />;
       case 'admin_subscriptions':
         if (profile?.role !== 'super_admin') return <Dashboard />;
-        return (
-          <div className="p-20 text-center opacity-40">
-            <CreditCard size={64} className="mx-auto mb-6" />
-            <h2 className="text-xl font-black uppercase tracking-widest">Módulo de Suscripciones</h2>
-            <p className="text-xs font-bold uppercase mt-2">Próximamente en v4.1</p>
-          </div>
-        );
+        return <SubscriptionsManager />;
       case 'admin_settings':
         if (profile?.role !== 'super_admin') return <Dashboard />;
         return <GlobalPlatformSettings />;
