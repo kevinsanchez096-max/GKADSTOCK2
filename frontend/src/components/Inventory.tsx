@@ -49,6 +49,16 @@ export const Inventory = () => {
   const [historyDate, setHistoryDate] = useState(new Date().toISOString().split('T')[0]);
   const [editingProduct, setEditingProduct] = useState<any | null>(null);
 
+  const [isMermaModalOpen, setIsMermaModalOpen] = useState(false);
+  const [selectedMermaProduct, setSelectedMermaProduct] = useState<any | null>(null);
+  const [mermaData, setMermaData] = useState({ quantity: '', reason: 'Vencido' });
+
+  const handleOpenMerma = (product: any) => {
+    setSelectedMermaProduct(product);
+    setMermaData({ quantity: '', reason: 'Vencido' });
+    setIsMermaModalOpen(true);
+  };
+
   // MÉTTRICAS DINÁMICAS (TIEMPO REAL)
   const metrics = useMemo(() => {
     const safeProducts = Array.isArray(products) ? products : [];
@@ -142,6 +152,32 @@ export const Inventory = () => {
     if (window.confirm('¿Estás seguro de que deseas eliminar este producto físicamente? Esta acción no se puede deshacer.')) {
       if (!profile?.organization_id) return;
       await deleteProduct(id, profile.organization_id);
+    }
+  };
+
+  const handleMermaSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedMermaProduct || !profile?.organization_id) return;
+    
+    const deductQty = Number(mermaData.quantity);
+    if (isNaN(deductQty) || deductQty <= 0) {
+      toast.error('La cantidad debe ser mayor a 0');
+      return;
+    }
+    
+    if (deductQty > selectedMermaProduct.stock) {
+      toast.error('La cantidad no puede superar el stock actual');
+      return;
+    }
+
+    const newStock = selectedMermaProduct.stock - deductQty;
+
+    const success = await updateProduct(selectedMermaProduct.id, { stock: newStock }, profile.organization_id);
+    
+    if (success) {
+      toast.success(`Merma registrada: -${deductQty} (${mermaData.reason})`, { icon: '📉' });
+      setIsMermaModalOpen(false);
+      setSelectedMermaProduct(null);
     }
   };
 
@@ -549,6 +585,13 @@ export const Inventory = () => {
                     <td className="px-8 py-5 text-right">
                       <div className="flex justify-end gap-3 opacity-40 group-hover:opacity-100 transition-all">
                         <button 
+                          onClick={() => handleOpenMerma(p)}
+                          title="Registrar Merma"
+                          className="p-2.5 bg-zinc-100 dark:bg-white/5 text-orange-500 hover:bg-orange-500/10 rounded-xl border border-transparent hover:border-orange-500/20 transition-all cursor-pointer"
+                        >
+                          <AlertTriangle size={16} />
+                        </button>
+                        <button 
                           onClick={() => handleEdit(p)}
                           className="p-2.5 bg-zinc-100 dark:bg-white/5 text-zinc-500 hover:text-brand-500 hover:bg-brand-500/10 rounded-xl border border-transparent hover:border-brand-500/20 transition-all cursor-pointer"
                         >
@@ -595,7 +638,7 @@ export const Inventory = () => {
                 <p className="text-[9px] font-mono text-zinc-400 dark:text-zinc-500 tracking-widest">{p.sku || 'N/A'}</p>
               </div>
 
-              <div className="flex items-end justify-between border-t border-zinc-100 dark:border-white/5 pt-5 mt-auto">
+              <div className="flex items-end justify-between border-t border-zinc-100 dark:border-white/5 pt-5 mt-auto mb-4">
                 <div className="flex flex-col">
                    <span className="text-[8px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.2em] mb-1">Precio Mercado</span>
                    <span className="text-2xl font-black text-brand-500 font-outfit tracking-tighter leading-none">${p.price.toLocaleString()}</span>
@@ -604,6 +647,21 @@ export const Inventory = () => {
                    <span className="text-[8px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.2em] mb-1">Disponible</span>
                    <span className="text-sm font-black text-zinc-800 dark:text-zinc-300 font-mono italic leading-none">{p.stock} <span className="text-zinc-400 dark:text-zinc-600 text-[10px] non-italic">{p.unit}</span></span>
                 </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 relative z-10">
+                 <button 
+                   onClick={() => handleOpenMerma(p)}
+                   className="w-full py-2 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-orange-100 dark:hover:bg-orange-500/20 transition-colors flex items-center justify-center gap-1.5"
+                 >
+                   <AlertTriangle size={12} /> Merma
+                 </button>
+                 <button 
+                   onClick={() => handleEdit(p)}
+                   className="w-full py-2 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-slate-200 dark:hover:bg-white/10 transition-colors flex items-center justify-center gap-1.5"
+                 >
+                   <Edit2 size={12} /> Editar
+                 </button>
               </div>
 
               <div className="absolute bottom-0 left-0 h-1.5 w-0 bg-brand-500 group-hover:w-full transition-all duration-700" />
@@ -752,6 +810,72 @@ export const Inventory = () => {
             </div>
          </div>
       )}
+
+      {/* MODAL DE MERMA */}
+      {isMermaModalOpen && selectedMermaProduct && (
+         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm">
+            <div className="bg-white dark:bg-zinc-900 w-full max-w-sm rounded-[2rem] shadow-2xl border border-slate-200 dark:border-white/10 overflow-hidden animate-fade-in flex flex-col">
+               <div className="p-6 border-b border-slate-100 dark:border-white/5 flex items-center justify-between bg-orange-50 dark:bg-orange-500/5">
+                  <div className="flex items-center gap-3">
+                     <div className="h-10 w-10 bg-orange-100 dark:bg-orange-500/20 text-orange-500 flex items-center justify-center rounded-xl">
+                        <AlertTriangle size={20} />
+                     </div>
+                     <div>
+                        <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight">Registrar Merma</h3>
+                        <p className="text-[10px] text-slate-500 dark:text-zinc-400 uppercase tracking-widest">{selectedMermaProduct.name}</p>
+                     </div>
+                  </div>
+                  <button onClick={() => setIsMermaModalOpen(false)} className="h-8 w-8 flex items-center justify-center text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 rounded-full transition-all">
+                     <X size={16} />
+                  </button>
+               </div>
+               <form onSubmit={handleMermaSubmit} className="p-6 space-y-5">
+                  <div className="space-y-1">
+                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-zinc-400">Stock Actual</label>
+                     <p className="text-xl font-black text-slate-900 dark:text-white font-mono">{selectedMermaProduct.stock} {selectedMermaProduct.unit}</p>
+                  </div>
+                  <div className="space-y-3">
+                     <div>
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-zinc-400 mb-1.5 block">Cantidad a Descontar</label>
+                        <Input
+                           type="number"
+                           step={selectedMermaProduct.is_weighted ? "0.001" : "1"}
+                           value={mermaData.quantity}
+                           onChange={(e) => setMermaData({...mermaData, quantity: e.target.value})}
+                           placeholder="Ej. 1.5"
+                           autoFocus
+                           required
+                           className="text-lg font-black"
+                        />
+                     </div>
+                     <div>
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-zinc-400 mb-1.5 block">Motivo</label>
+                        <select
+                           value={mermaData.reason}
+                           onChange={(e) => setMermaData({...mermaData, reason: e.target.value})}
+                           className="w-full h-12 px-4 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-zinc-900 text-sm font-bold text-slate-900 dark:text-white focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none transition-all"
+                        >
+                           <option value="Vencido">Vencido</option>
+                           <option value="Dañado">Dañado</option>
+                           <option value="Defecto de fábrica">Defecto de fábrica</option>
+                           <option value="Robo / Extravío">Robo / Extravío</option>
+                           <option value="Otro">Otro</option>
+                        </select>
+                     </div>
+                  </div>
+                  <div className="pt-4 grid grid-cols-2 gap-3">
+                     <Button type="button" variant="outline" onClick={() => setIsMermaModalOpen(false)} className="w-full">
+                        Cancelar
+                     </Button>
+                     <Button type="submit" className="w-full bg-orange-500 hover:bg-orange-600 text-white border-none shadow-lg shadow-orange-500/20 uppercase tracking-widest text-[10px] font-black">
+                        Confirmar Baja
+                     </Button>
+                  </div>
+               </form>
+            </div>
+         </div>
+      )}
+
     </div>
   );
 };

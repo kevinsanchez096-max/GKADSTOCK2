@@ -269,6 +269,11 @@ export const POSTerminal = () => {
         setDiscount(0);
         setActiveStep('cart');
         setShowSuccess(true);
+        
+        // Reset scroll to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        const posContainer = document.getElementById('pos-main-container');
+        if (posContainer) posContainer.scrollTo({ top: 0, behavior: 'smooth' });
       }
     } catch (e) {
       // Los errores ya se atrapan y notifican dentro del processSale del store
@@ -358,7 +363,7 @@ export const POSTerminal = () => {
   }, [products, activeStep, cart, canFinalize, loading, handleFinalizeSale, showSuccess, isReadingScale]);
 
   return (
-    <div className="h-full flex flex-col lg:flex-row bg-white dark:bg-zinc-950 text-slate-900 dark:text-white overflow-hidden animate-fade-in relative selection:bg-brand-500/30 transition-colors duration-300 font-outfit">
+    <div id="pos-main-container" className="h-full flex flex-col lg:flex-row bg-white dark:bg-zinc-950 text-slate-900 dark:text-white overflow-y-auto lg:overflow-hidden animate-fade-in relative selection:bg-brand-500/30 transition-colors duration-300 font-outfit">
       
       {/* IZQUIERDA: LIBRERÍA DE PRODUCTOS (FIJA) */}
       <div className="flex-1 flex flex-col min-w-0 p-4 lg:p-6 space-y-6 bg-slate-50 dark:bg-zinc-950/20 backdrop-blur-sm">
@@ -499,7 +504,7 @@ export const POSTerminal = () => {
         </AnimatePresence>
 
         {/* GRID DE PRODUCTOS */}
-        <div className={`flex-1 overflow-y-auto grid gap-3 custom-scrollbar pr-1 ${
+        <div className={`flex-1 overflow-y-auto grid gap-3 custom-scrollbar pr-1 pb-24 lg:pb-0 ${
           viewMode === 'grid' 
             ? 'grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5' 
             : 'grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6'
