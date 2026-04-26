@@ -826,9 +826,10 @@ export const SaaSOrgRow = ({ org, isExpanded, onToggle, isMenuOpen, onToggleMenu
                       >
                          AJUSTAR CALENDARIO
                       </Button>
-                   </div>
-                </div>
-             </div>
+                    </div>
+                 </div>
+              </div>
+            )}
             </div>
           </td>
         </tr>
