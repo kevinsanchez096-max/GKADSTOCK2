@@ -168,15 +168,15 @@ export const Dashboard = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 p-1.5 bg-black/40 rounded-2xl border border-white/5 shadow-inner">
+          <div className="flex items-center space-x-1 p-1 rounded-full bg-gray-100 dark:bg-gray-700/50 border border-gray-200/50 dark:border-gray-600">
             {(['day', 'week', 'month', 'year'] as FilterRange[]).map((range) => (
               <button
                 key={range}
                 onClick={() => setTimeFilter(range)}
-                className={`px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${
+                className={`px-4 py-1.5 text-xs font-extrabold uppercase tracking-wider transition-colors rounded-full ${
                   timeFilter === range 
-                    ? 'bg-brand-500 text-white shadow-xl shadow-brand-500/20 scale-105' 
-                    : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5'
+                    ? 'text-white bg-gradient-to-r from-orange-400 to-green-500 shadow-md' 
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                 }`}
               >
                 {range === 'day' ? 'Hoy' : range === 'week' ? 'Semana' : range === 'month' ? 'Mes' : 'Año'}
