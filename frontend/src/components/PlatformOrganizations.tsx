@@ -25,20 +25,15 @@ interface Org {
   license_price: number;
 }
 
-interface Props {
-  searchTerm?: string;
-}
-
-export const PlatformOrganizations = ({ searchTerm = '' }: Props) => {
+export const PlatformOrganizations = () => {
   const { profile } = useAuthStore();
   const [organizations, setOrganizations] = useState<Org[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedOrgId, setExpandedOrgId] = useState<string | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [localSearchTerm, setLocalSearchTerm] = useState('');
 
   const isSuperAdmin = profile?.role === 'super_admin';
-
-  const [localSearchTerm, setLocalSearchTerm] = useState('');
 
   const fetchOrganizations = async () => {
     if (!isSuperAdmin) return;

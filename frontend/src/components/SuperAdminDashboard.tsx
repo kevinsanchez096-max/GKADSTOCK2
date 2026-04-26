@@ -1,19 +1,14 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Building2, 
-  Users, 
   TrendingUp, 
   AlertCircle, 
   RefreshCcw,
-  Search,
-  Terminal,
   Activity,
-  Cpu,
   ShieldCheck
 } from 'lucide-react';
 import { api } from '../lib/api';
 import { toast } from 'sonner';
-import { PlatformOrganizations } from './PlatformOrganizations';
 import { SaaSCreateOrgModal } from './SaaSCreateOrgModal';
 
 interface Stats {
@@ -26,12 +21,48 @@ interface Stats {
   requiresAttention?: number;
 }
 
+interface MetricCardProps {
+  icon: React.ElementType;
+  label: string;
+  value: string | number;
+  color: 'blue' | 'emerald' | 'indigo' | 'red';
+  detail: string;
+}
+
+const MetricCard = ({ icon: Icon, label, value, color, detail }: MetricCardProps) => {
+  const colorClasses = {
+    blue: 'text-blue-500 bg-blue-500/10 border-blue-500/20 group-hover:bg-blue-500 shadow-blue-500/10',
+    emerald: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20 group-hover:bg-emerald-500 shadow-emerald-500/10',
+    indigo: 'text-indigo-500 bg-indigo-500/10 border-indigo-500/20 group-hover:bg-indigo-500 shadow-indigo-500/10',
+    red: 'text-red-500 bg-red-500/10 border-red-500/20 group-hover:bg-red-500 shadow-red-500/10'
+  };
+
+  return (
+    <div className="bg-white dark:bg-zinc-900/40 p-7 rounded-[2.5rem] border border-slate-200 dark:border-white/5 relative group shadow-sm overflow-hidden">
+      <div className={`absolute top-[-10%] right-[-10%] opacity-10 group-hover:scale-125 group-hover:rotate-12 transition-all duration-700 ${color === 'red' ? 'text-red-500' : 'text-slate-500'}`}>
+        <Icon className="h-24 w-24" />
+      </div>
+      
+      <div className="relative z-10">
+        <p className="text-[10px] font-black text-slate-500 dark:text-zinc-500 uppercase tracking-widest mb-1">{label}</p>
+        <p className="text-[9px] font-bold text-slate-400 dark:text-zinc-600 uppercase tracking-widest mb-4 opacity-0 group-hover:opacity-100 transition-opacity translate-y-2 group-hover:translate-y-0 duration-500">{detail}</p>
+        
+        <div className="flex items-center justify-between">
+           <h3 className={`text-4xl font-black ${color === 'red' ? 'text-red-500' : 'text-slate-900 dark:text-white'} font-outfit tracking-tighter`}>{value}</h3>
+           <div className={`h-12 w-12 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-lg ${colorClasses[color]} group-hover:text-white`}>
+              <Icon className="h-6 w-6" />
+           </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export const SuperAdminDashboard = () => {
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [searchTerm, setSearchTerm] = useState('');
 
   const fetchStats = async () => {
     setLoading(true);
@@ -163,23 +194,3 @@ export const SuperAdminDashboard = () => {
     </div>
   );
 };
-
-const MetricCard = ({ icon: Icon, label, value, color, detail }: any) => (
-  <div className="bg-white dark:bg-zinc-900/40 p-7 rounded-[2.5rem] border border-slate-200 dark:border-white/5 relative group shadow-sm overflow-hidden">
-    <div className={`absolute top-[-10%] right-[-10%] opacity-10 group-hover:scale-125 group-hover:rotate-12 transition-all duration-700 text-${color}-500`}>
-      <Icon className="h-24 w-24" />
-    </div>
-    
-    <div className="relative z-10">
-      <p className="text-[10px] font-black text-slate-500 dark:text-zinc-500 uppercase tracking-widest mb-1">{label}</p>
-      <p className="text-[9px] font-bold text-slate-400 dark:text-zinc-600 uppercase tracking-widest mb-4 opacity-0 group-hover:opacity-100 transition-opacity translate-y-2 group-hover:translate-y-0 duration-500">{detail}</p>
-      
-      <div className="flex items-center justify-between">
-         <h3 className={`text-4xl font-black ${color === 'red' ? 'text-red-500' : 'text-slate-900 dark:text-white'} font-outfit tracking-tighter`}>{value}</h3>
-         <div className={`h-12 w-12 bg-${color}-500/10 rounded-2xl flex items-center justify-center text-${color}-500 border border-${color}-500/20 group-hover:bg-${color}-500 group-hover:text-white transition-all duration-500 shadow-lg shadow-${color}-500/10`}>
-            <Icon className="h-6 w-6" />
-         </div>
-      </div>
-    </div>
-  </div>
-);
