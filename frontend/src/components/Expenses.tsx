@@ -20,7 +20,7 @@ interface Expense {
   id: string;
   description: string;
   amount: number;
-  category: 'Servicios' | 'Mercancía' | 'Nómina' | 'Otros';
+  category: 'Servicios' | 'Mercancía' | 'Nómina' | 'Otros' | 'MERMA_INVENTARIO';
   created_at: string;
   profiles?: { full_name: string };
 }
@@ -183,23 +183,38 @@ export const Expenses = () => {
                         <span className="text-[10px] font-black text-slate-400 dark:text-zinc-500 uppercase tracking-widest">{new Date(exp.created_at).toLocaleDateString()}</span>
                       </td>
                       <td className="px-8 py-5">
-                        <p className="text-sm font-bold text-slate-800 dark:text-zinc-100 uppercase tracking-tight group-hover:text-brand-500 dark:group-hover:text-white transition-colors">{exp.description}</p>
+                        <div className="flex flex-col">
+                           <span className="text-sm font-bold text-slate-800 dark:text-zinc-100 uppercase tracking-tight group-hover:text-brand-500 dark:group-hover:text-white transition-colors">
+                              {exp.description}
+                           </span>
+                           {exp.category === 'MERMA_INVENTARIO' ? (
+                              <span className="mt-1.5 w-max px-2.5 py-0.5 text-[9px] font-black text-orange-600 bg-orange-100 rounded-full dark:text-orange-400 dark:bg-orange-500/10 uppercase tracking-widest border border-orange-200 dark:border-orange-500/20">
+                                 Pérdida / Merma
+                              </span>
+                           ) : (
+                              <span className="mt-1.5 w-max px-2.5 py-0.5 text-[9px] font-black text-slate-500 bg-slate-100 rounded-full dark:text-zinc-400 dark:bg-white/5 uppercase tracking-widest border border-slate-200 dark:border-white/5">
+                                 Gasto Operativo
+                              </span>
+                           )}
+                        </div>
                       </td>
                       <td className="px-8 py-5 hidden md:table-cell">
                         <div className="flex items-center gap-2">
                           <div className={`h-1.5 w-1.5 rounded-full shadow-[0_0_8px_rgba(0,0,0,0.1)] ${
                             exp.category === 'Nómina' ? 'bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.4)]' :
                             exp.category === 'Servicios' ? 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.4)]' :
-                            exp.category === 'Mercancía' ? 'bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.4)]' :
+                            exp.category === 'Mercancía' ? 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.4)]' :
+                            exp.category === 'MERMA_INVENTARIO' ? 'bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.4)]' :
                             'bg-slate-400'
                           }`} />
                           <span className={`text-[9px] font-black uppercase tracking-widest ${
                             exp.category === 'Nómina' ? 'text-purple-500' :
                             exp.category === 'Servicios' ? 'text-blue-500' :
-                            exp.category === 'Mercancía' ? 'text-orange-500' :
+                            exp.category === 'Mercancía' ? 'text-amber-500' :
+                            exp.category === 'MERMA_INVENTARIO' ? 'text-orange-500' :
                             'text-slate-500'
                           }`}>
-                            {exp.category}
+                            {exp.category === 'MERMA_INVENTARIO' ? 'MERMA' : exp.category}
                           </span>
                         </div>
                       </td>

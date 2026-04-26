@@ -23,6 +23,7 @@ import {
 import { useShopStore } from '../store/useShopStore';
 import { useAuthStore } from '../store/useAuthStore';
 import { supabase } from '../lib/supabase';
+import { api } from '../lib/api';
 import { useMemo } from 'react';
 import { BulkImport } from './BulkImport';
 import { toast } from 'sonner';
@@ -175,6 +176,21 @@ export const Inventory = () => {
     const success = await updateProduct(selectedMermaProduct.id, { stock: newStock }, profile.organization_id);
     
     if (success) {
+      // 1. Calcular el costo de la pérdida (usando fallback por ahora)
+      const precioBase = selectedMermaProduct.costPrice || selectedMermaProduct.price;
+      const valorPerdida = precioBase * deductQty;
+      
+      // 2. Registrar el Gasto Automático
+      try {
+        await api.post('/expenses', {
+          description: `Merma de Inventario: ${mermaData.reason} - ${selectedMermaProduct.name}`,
+          amount: valorPerdida,
+          category: 'MERMA_INVENTARIO'
+        });
+      } catch (err) {
+        console.error('Error al registrar gasto de merma:', err);
+      }
+
       toast.success(`Merma registrada: -${deductQty} (${mermaData.reason})`, { icon: '📉' });
       setIsMermaModalOpen(false);
       setSelectedMermaProduct(null);
