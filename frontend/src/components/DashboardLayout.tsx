@@ -210,12 +210,12 @@ export const DashboardLayout = ({
              </h2>
           </div>
 
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-2 sm:gap-5 shrink-0">
             <button 
               onClick={handleGlobalSync}
               disabled={isSyncing}
               title="Sincronizar Datos"
-              className="p-2.5 bg-slate-50 dark:bg-white/5 text-slate-500 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-white hover:border-slate-200 border border-transparent rounded-xl transition-all"
+              className="hidden sm:flex p-2.5 bg-slate-50 dark:bg-white/5 text-slate-500 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-white hover:border-slate-200 border border-transparent rounded-xl transition-all"
             >
               <RefreshCw size={18} className={isSyncing ? 'animate-spin text-brand-500' : ''} />
             </button>

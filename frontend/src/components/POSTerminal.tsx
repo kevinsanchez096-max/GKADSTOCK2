@@ -563,7 +563,7 @@ export const POSTerminal = () => {
       </div>
 
       {/* DERECHA: CONSOLA DE ACCIÓN */}
-      <div className="w-full lg:w-[400px] flex flex-col bg-white dark:bg-zinc-950 border-l border-slate-200 dark:border-zinc-900 rounded-tl-[2.5rem] shadow-[-10px_0_30px_-10px_rgba(0,0,0,0.05)] dark:shadow-[-20px_0_50px_-20px_rgba(0,0,0,0.5)] font-outfit">
+      <div id="cart-panel" className="w-full lg:w-[400px] flex flex-col bg-white dark:bg-zinc-950 border-l border-slate-200 dark:border-zinc-900 rounded-tl-[2.5rem] shadow-[-10px_0_30px_-10px_rgba(0,0,0,0.05)] dark:shadow-[-20px_0_50px_-20px_rgba(0,0,0,0.5)] font-outfit">
         
         {/* ENCABEZADO HEADER */}
         <div className="p-4 border-b border-slate-200 dark:border-zinc-900 flex items-center justify-between bg-slate-50/50 dark:bg-zinc-950/30">
@@ -854,6 +854,29 @@ export const POSTerminal = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* FAB PARA MÓVILES: VER CARRITO */}
+      <div className="fixed bottom-4 right-4 z-[90] lg:hidden">
+        <button 
+          onClick={() => {
+            const panel = document.getElementById('cart-panel');
+            if (panel) panel.scrollIntoView({ behavior: 'smooth' });
+          }}
+          className="h-14 px-6 bg-brand-600 text-white rounded-full shadow-2xl flex items-center gap-3 hover:bg-brand-700 active:scale-95 transition-all border-2 border-brand-400"
+        >
+          <div className="relative">
+            <ShoppingCart size={20} />
+            {cart.length > 0 && (
+              <span className="absolute -top-2 -right-2 h-4 w-4 bg-white text-brand-600 text-[10px] font-black flex items-center justify-center rounded-full shadow-sm">
+                {cart.length}
+              </span>
+            )}
+          </div>
+          <span className="text-xs font-black uppercase tracking-widest border-l border-white/20 pl-3">
+            ${total.toLocaleString()}
+          </span>
+        </button>
+      </div>
 
       {/* PLANTILLA DE IMPRESIÓN PRO (UNIFICADA) */}
       <PrintableTicket sale={lastSaleData} profile={profile} />
