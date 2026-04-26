@@ -171,37 +171,43 @@ export const Inventory = () => {
       return;
     }
 
-    const newStock = selectedMermaProduct.stock - deductQty;
-
-    const success = await updateProduct(selectedMermaProduct.id, { stock: newStock }, profile.organization_id);
-    
-    if (success) {
+    try {
       // 1. Calcular el costo de la pérdida (usando fallback por ahora)
       const precioBase = selectedMermaProduct.costPrice || selectedMermaProduct.price;
       const valorPerdida = precioBase * deductQty;
-      
-      // 2. Registrar el Gasto Automático
-      try {
-        const { error: supabaseError } = await supabase
-          .from('expenses')
-          .insert([{
-            description: `Merma de Inventario: ${mermaData.reason} - ${selectedMermaProduct.name}`,
-            amount: valorPerdida,
-            category: 'MERMA_INVENTARIO',
-            organization_id: profile.organization_id
-          }]);
-          
-        if (supabaseError) {
-          throw supabaseError;
-        }
-      } catch (err: any) {
-        console.error('Error al registrar gasto de merma:', err);
-        toast.error(`Error al registrar gasto: ${err.message || 'supabase error'}`);
-      }
+      const newStock = selectedMermaProduct.stock - deductQty;
 
+      // 2. Actualizar el inventario (PATCH al backend)
+      await api.patch(`/inventory/${selectedMermaProduct.id}`, { 
+        stock: newStock,
+        organization_id: profile.organization_id 
+      });
+
+      // 3. Registrar el Gasto directamente en Supabase
+      const { error: expenseError } = await supabase
+        .from('expenses')
+        .insert([{
+          description: `Merma de Inventario: ${mermaData.reason} - ${selectedMermaProduct.name}`,
+          amount: valorPerdida,
+          category: 'MERMA_INVENTARIO',
+          organization_id: profile.organization_id
+        }]);
+
+      if (expenseError) throw new Error(`Fallo al registrar gasto: ${expenseError.message}`);
+
+      // 4. Éxito: Feedback, cerrar modal, limpiar y recargar
       toast.success(`Merma registrada: -${deductQty} (${mermaData.reason})`, { icon: '📉' });
+      
       setIsMermaModalOpen(false);
       setSelectedMermaProduct(null);
+      setMermaData({ quantity: '', reason: 'Vencido' });
+      
+      // Recargar inventario para reflejar cambios
+      fetchProducts(profile.organization_id);
+
+    } catch (error: any) {
+      console.error('Error en el flujo de merma:', error);
+      toast.error(error.message || 'Error al procesar la merma');
     }
   };
 
