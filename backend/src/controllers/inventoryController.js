@@ -84,7 +84,7 @@ const inventoryController = {
       // 3. REGISTRO AUTOMÁTICO EN KARDEX (Si nace con stock > 0)
       if (Number(stock) > 0) {
         console.log(`[KARDEX] Registrando carga inicial de ${stock} unidades para: ${name}`);
-        await supabase
+        await supabaseAdmin
           .from('inventory_movements')
           .insert([{
             organization_id: orgId,
@@ -148,7 +148,7 @@ const inventoryController = {
       if (!name) return res.status(400).json({ error: 'El nombre de la categoría es obligatorio' });
 
       // 1. Verificación manual de duplicados para devolver error amigable
-      const { data: existing } = await supabase
+      const { data: existing } = await supabaseAdmin
         .from('categories')
         .select('id')
         .eq('organization_id', orgId)
@@ -185,7 +185,7 @@ const inventoryController = {
       const { name } = req.body;
 
       // 1. Verificación manual de duplicados para devolver error amigable
-      const { data: existing } = await supabase
+      const { data: existing } = await supabaseAdmin
         .from('categories')
         .select('id')
         .eq('organization_id', orgId)
@@ -218,7 +218,7 @@ const inventoryController = {
       const orgId = inventoryController.getOrgId(req);
       const { id } = req.params;
 
-      const { error } = await supabase
+      const { error } = await supabaseAdmin
         .from('categories')
         .delete()
         .eq('id', id)
@@ -246,7 +246,7 @@ const inventoryController = {
       const { name, sku, category_id, price, stock, unit, min_stock, barcode, is_weighted } = req.body;
 
       // 1. Obtener estado previo para el Kardex
-      const { data: existing, error: fetchError } = await supabase
+      const { data: existing, error: fetchError } = await supabaseAdmin
         .from('products')
         .select('id, stock, name')
         .eq('id', id)
@@ -286,7 +286,7 @@ const inventoryController = {
         const diff = newStockValue - prevStock;
         console.log(`[KARDEX] Registrando ingreso de ${diff} unidades para: ${existing.name}`);
         
-        await supabase
+        await supabaseAdmin
           .from('inventory_movements')
           .insert([{
             organization_id: orgId,
@@ -310,7 +310,7 @@ const inventoryController = {
       const orgId = inventoryController.getOrgId(req);
       const { date } = req.query; // Formato YYYY-MM-DD
       
-      let query = supabase
+      let query = supabaseAdmin
         .from('inventory_movements')
         .select('*')
         .eq('organization_id', orgId)
