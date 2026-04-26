@@ -17,6 +17,7 @@ interface AuthState {
   signOut: () => Promise<void>;
   requestOTP: (email: string) => Promise<void>;
   verifyOTP: (email: string, token: string) => Promise<any>;
+  activateOrganization: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -58,9 +59,14 @@ export const useAuthStore = create<AuthState>((set) => ({
         // Cerrar sesión local si la org está bloqueada
         await supabase.auth.signOut();
         localStorage.removeItem('gkad_token');
-        const reason = organization.billing_status === 'suspendido'
-          ? 'La licencia de su organización se encuentra suspendida por falta de pago.'
-          : 'Su organización ha sido suspendida administrativamente.';
+        
+        let reason = 'Su organización se encuentra inactiva.';
+        if (organization.billing_status === 'suspendido') {
+          reason = 'La licencia de su organización se encuentra suspendida por falta de pago.';
+        } else if (organization.is_active === false) {
+          reason = 'Su cuenta está pendiente de verificación. Por favor, revise su correo electrónico para activar su organización.';
+        }
+        
         throw new Error(reason);
       }
 
@@ -239,6 +245,18 @@ export const useAuthStore = create<AuthState>((set) => ({
       return { user: data.user, profile: profileData };
     } catch (error) {
       set({ loading: false });
+      throw error;
+    }
+  },
+  
+  activateOrganization: async () => {
+    try {
+      await api.post('/auth/activate');
+      // Refrescar perfil localmente para que is_active sea true
+      const profileData = await api.get('/auth/me');
+      set({ profile: profileData });
+    } catch (error) {
+      console.error('Error al activar organización:', error);
       throw error;
     }
   }

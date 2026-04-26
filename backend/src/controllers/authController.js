@@ -253,31 +253,38 @@ const authController = {
             }
 
             // ---------------------------------------------------------
-            // FASE A: Autenticación (Service Role — STATELESS, sin mutar el singleton)
+            // FASE A: Autenticación (Service Role — STATELESS)
             // ---------------------------------------------------------
-            const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({ 
-                email, 
-                password,
-                email_confirm: true,
-                user_metadata: { full_name: fullName }
-            });
+            let authData;
+            const { data: existingUser } = await supabaseAdmin.auth.admin.listUsers();
+            const userInAuth = existingUser.users.find(u => u.email === email.toLowerCase());
 
-            if (authError) {
-                console.error('❌ Error en Auth:', authError.message);
-                throw authError;
+            if (userInAuth) {
+                console.log('ℹ️ El usuario ya existe en Auth. Vinculando infraestructura...');
+                authData = { user: userInAuth };
+            } else {
+                const { data: newAuth, error: authError } = await supabaseAdmin.auth.admin.createUser({ 
+                    email, 
+                    password,
+                    email_confirm: false, // Forzar verificación
+                    user_metadata: { full_name: fullName }
+                });
+
+                if (authError) throw authError;
+                authData = newAuth;
             }
 
-            console.log('✅ Usuario creado en Auth. Pasando a fase de persistencia...');
+            console.log('✅ Usuario identificado en Auth. Pasando a fase de persistencia...');
 
             // ---------------------------------------------------------
-            // FASE B: Administración Dinámica (Usando shared supabaseAdmin)
+            // FASE B: Administración Dinámica
             // ---------------------------------------------------------
             
-            // B. Crear Organización (Resiliente a duplicidad)
+            // B. Crear Organización (Inactiva por defecto hasta verificación)
             let orgId;
             const { data: orgData, error: orgError } = await supabaseAdmin
                 .from('organizations')
-                .insert([{ name: orgName, is_active: true }])
+                .insert([{ name: orgName, is_active: false }])
                 .select()
                 .single();
 
@@ -605,6 +612,36 @@ const authController = {
                 error: 'Error al procesar la imagen en el servidor.',
                 details: error.message 
             });
+        }
+    },
+    
+    // 10. Activar Organización (Post-Verificación)
+    activate: async (req, res) => {
+        try {
+            const userId = req.user.id;
+            
+            // Buscar perfil y organización
+            const { data: profile, error: pErr } = await supabaseAdmin
+                .from('profiles')
+                .select('organization_id, role')
+                .eq('id', userId)
+                .single();
+            
+            if (pErr || !profile) throw new Error('Perfil no encontrado.');
+            if (profile.role !== 'admin') throw new Error('Solo el administrador puede activar la organización.');
+
+            // Activar
+            const { error: oErr } = await supabaseAdmin
+                .from('organizations')
+                .update({ is_active: true })
+                .eq('id', profile.organization_id);
+
+            if (oErr) throw oErr;
+
+            res.status(200).json({ message: 'Organización activada con éxito.' });
+        } catch (error) {
+            console.error('Error en activate:', error);
+            res.status(500).json({ error: 'No se pudo activar la organización.' });
         }
     }
 };

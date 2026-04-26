@@ -12,10 +12,12 @@ import {
   ShieldCheck,
   Sun,
   Moon,
-  Sparkles
+  Sparkles,
+  Lock
 } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
 import { toast } from 'sonner';
+import { supabase } from '../lib/supabase';
 
 interface AuthFormProps {
   darkMode: boolean;
@@ -30,13 +32,15 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  const { requestOTP, verifyOTP, register } = useAuthStore();
+  const { login, register } = useAuthStore();
   
   // States
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [otpToken, setOtpToken] = useState('');
   const [fullName, setFullName] = useState('');
   const [orgName, setOrgName] = useState('');
+  const [showSuccessScreen, setShowSuccessScreen] = useState(false);
 
   const handleNext = async (e?: React.FormEvent) => {
      if (e) e.preventDefault();
@@ -48,9 +52,9 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
               setError('Ingresa un correo profesional válido.');
               return;
            }
-           await handleRequestOTP();
+           setStep(2);
         } else if (step === 2) {
-           await handleVerifyOTP();
+           await handleLogin();
         }
      } else {
         // MODO REGISTRO
@@ -62,62 +66,91 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
            setStep(3);
         } else if (step === 3) {
            if (!orgName.trim()) return setError('Falta el nombre de la organización.');
-           await handleRequestOTP();
+           setStep(4);
         } else if (step === 4) {
-           await handleRegistration();
+           if (password.length < 6) return setError('La contraseña debe tener al menos 6 caracteres.');
+           await handleSignUp();
+        } else if (step === 5) {
+           await handleVerifyRegistration();
         }
      }
   };
 
-  const handleRequestOTP = async () => {
+  const handleLogin = async () => {
     setLoading(true);
     try {
-      await requestOTP(email.trim().toLowerCase());
-      toast.success('Código de acceso enviado a tu correo.');
-      setStep(mode === 'login' ? 2 : 4);
+      await login(email.trim().toLowerCase(), password);
+      toast.success('Sesión iniciada con éxito.');
     } catch (err: any) {
-      setError(err.message || 'Error al enviar código.');
-      toast.error('Fallo al enviar OTP');
+      setError(err.message || 'Error en credenciales.');
+      toast.error('Fallo de acceso');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleVerifyOTP = async () => {
-    if (otpToken.length < 6) return setError('El código debe tener 6 dígitos.');
+  const handleSignUp = async () => {
     setLoading(true);
     try {
-      await verifyOTP(email.trim().toLowerCase(), otpToken);
-      toast.success('¡Identidad verificada!');
+      // 1. Registro inicial en Supabase Auth (Cliente)
+      // Esto enviará el correo de confirmación
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email: email.trim().toLowerCase(),
+        password,
+        options: {
+          data: {
+            full_name: fullName.trim(),
+            organization_name: orgName.trim()
+          },
+          emailRedirectTo: window.location.origin
+        }
+      });
+
+      if (signUpError) throw signUpError;
+
+      // 2. Notificar al backend para crear la infraestructura (Org, Perfil)
+      // El backend lo creará como "pendiente" o "inactivo"
+      await register({
+        email: email.trim().toLowerCase(),
+        password,
+        fullName: fullName.trim(),
+        orgName: orgName.trim()
+      });
+
+      toast.success('Registro procesado. Verifica tu email.');
+      setStep(5);
+    } catch (err: any) {
+      setError(err.message || 'Error en registro.');
+      toast.error('Fallo de registro');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyRegistration = async () => {
+    if (otpToken.length < 6) return setError('Ingresa el código de 6 dígitos.');
+    setLoading(true);
+    try {
+      const { error: verifyError } = await supabase.auth.verifyOtp({
+        email: email.trim().toLowerCase(),
+        token: otpToken,
+        type: 'signup'
+      });
+
+      if (verifyError) throw verifyError;
+
+      // ── PASO 2: Activar la organización en el backend ──
+      // Una vez verificado en Auth, activamos la infraestructura SaaS
+      await useAuthStore.getState().activateOrganization();
+
+      toast.success('¡Cuenta verificada! Ya puedes entrar.');
+      setShowSuccessScreen(true);
     } catch (err: any) {
       setError('Código inválido o expirado.');
       toast.error('Error de verificación');
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleRegistration = async () => {
-     setLoading(true);
-     try {
-        // Primero verificamos el OTP
-        await verifyOTP(email.trim().toLowerCase(), otpToken);
-        
-        // Si el OTP es válido, creamos la organización en el backend
-        // Nota: El backend registrar ya no pide contraseña en este nuevo flujo
-        await register({ 
-          email: email.trim().toLowerCase(), 
-          fullName: fullName.trim(), 
-          orgName: orgName.trim(),
-          password: 'OTP_VERIFIED' // Password dummy para compatibilidad
-        });
-        
-        toast.success('Cuenta activada con éxito. Imperio creado.');
-     } catch (err: any) {
-        setError(err.message || 'Error en registro.');
-     } finally {
-        setLoading(false);
-     }
   };
 
   const prevStep = () => {
@@ -129,7 +162,9 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
      setMode(newMode);
      setStep(1);
      setError(null);
+     setPassword('');
      setOtpToken('');
+     setShowSuccessScreen(false);
   };
 
   const variants = {
@@ -137,6 +172,23 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
     animate: { opacity: 1, y: 0, filter: 'blur(0px)' },
     exit:    { opacity: 0, y: -15, filter: 'blur(5px)' }
   };
+
+  if (showSuccessScreen) {
+    return (
+      <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-6">
+        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="w-full max-w-md bg-white dark:bg-black/20 backdrop-blur-3xl border border-zinc-200 dark:border-white/10 rounded-[2rem] p-10 text-center shadow-2xl">
+           <div className="h-20 w-20 bg-emerald-500/10 rounded-3xl flex items-center justify-center text-emerald-500 mx-auto mb-6">
+              <CheckCircle2 size={40} />
+           </div>
+           <h2 className="text-3xl font-black text-slate-900 dark:text-white uppercase font-outfit tracking-tighter">¡Operación Exitosa!</h2>
+           <p className="text-slate-600 dark:text-zinc-400 mt-4 font-medium">Tu identidad ha sido verificada y tu organización está lista para el despliegue.</p>
+           <Button onClick={() => switchMode('login')} className="w-full h-14 mt-10 rounded-2xl bg-brand-500 text-white font-black uppercase tracking-widest shadow-xl shadow-brand-500/20">
+              INICIAR SESIÓN AHORA
+           </Button>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-950 flex flex-col font-sans text-slate-900 dark:text-zinc-100 relative overflow-hidden transition-colors duration-500">
@@ -179,14 +231,14 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
             
             <div className="text-center mb-16 px-4">
                <h1 className="text-3xl md:text-5xl font-black text-slate-900 dark:text-white leading-tight tracking-tighter font-outfit uppercase">
-                  {mode === 'login' ? 'Acceso mediante ' : 'Crea tu '}
+                  {mode === 'login' ? 'Bienvenido a la ' : 'Crea tu '}
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-500 to-blue-500">
-                     {mode === 'login' ? 'Identidad Segura' : 'Imperio Comercial'}
+                     {mode === 'login' ? 'Nueva Era POS' : 'Imperio Comercial'}
                   </span>
                </h1>
                <p className="text-slate-600 dark:text-zinc-400 font-medium text-xs md:text-sm mt-4 max-w-md mx-auto tracking-wide">
                   {mode === 'login' 
-                     ? 'Sin contraseñas. Solo tu correo y un código de acceso blindado.' 
+                     ? 'Acceso blindado mediante credenciales maestras corporativas.' 
                      : 'Inicia tu despliegue operativo con verificación inmediata.'}
                </p>
             </div>
@@ -194,7 +246,7 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
             <div className="w-full max-w-md bg-white dark:bg-black/20 backdrop-blur-3xl border border-zinc-200 dark:border-white/10 rounded-[2rem] p-8 md:p-10 shadow-2xl relative">
                
                {/* STEP INDICATOR */}
-               {step > 1 && (
+               {step > 1 && !showSuccessScreen && (
                   <button onClick={prevStep} className="absolute top-10 -left-6 md:-left-10 bg-white dark:bg-zinc-800 p-2 rounded-full border border-zinc-200 dark:border-white/10 text-zinc-500 hover:text-brand-500 shadow-md transition-all z-50">
                      <ArrowLeft size={16} />
                   </button>
@@ -227,21 +279,16 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
                         </motion.div>
                      )}
 
-                     {/* PASO 2: OTP (Login) */}
+                     {/* PASO 2: Password (Login) */}
                      {step === 2 && mode === 'login' && (
                         <motion.div key="s2" variants={variants} initial="initial" animate="animate" exit="exit" className="space-y-6">
-                           <div className="text-center p-4 bg-brand-500/5 border border-brand-500/10 rounded-2xl mb-6">
-                              <ShieldCheck className="mx-auto text-brand-500 mb-2" size={24} />
-                              <p className="text-[10px] font-black text-brand-500 uppercase tracking-widest">Código enviado a {email}</p>
-                              <p className="text-[9px] text-zinc-500 mt-1 uppercase">Revisa tu bandeja de entrada o spam.</p>
-                           </div>
                            <Input 
-                              label="Código de Acceso" 
-                              type="text" 
-                              placeholder="123456" 
-                              icon={KeyRound} 
-                              value={otpToken} 
-                              onChange={e => setOtpToken(e.target.value.replace(/\D/g, '').slice(0, 6))} 
+                              label="Contraseña" 
+                              type="password" 
+                              placeholder="••••••••" 
+                              icon={Lock} 
+                              value={password} 
+                              onChange={e => setPassword(e.target.value)} 
                               autoFocus 
                               required 
                            />
@@ -262,15 +309,25 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
                         </motion.div>
                      )}
 
-                     {/* REGISTRO: PASO 4 (OTP Confirm) */}
+                     {/* REGISTRO: PASO 4 (Password) */}
                      {step === 4 && mode === 'register' && (
                         <motion.div key="r4" variants={variants} initial="initial" animate="animate" exit="exit" className="space-y-6">
-                           <div className="text-center p-4 bg-emerald-500/5 border border-emerald-500/10 rounded-2xl mb-6">
-                              <CheckCircle2 className="mx-auto text-emerald-500 mb-2" size={24} />
-                              <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Verificación en curso</p>
-                              <p className="text-[9px] text-zinc-500 mt-1 uppercase tracking-widest">Ingresa el código enviado a {email}</p>
+                           <Input label="Crea tu Contraseña" type="password" placeholder="Mínimo 6 caracteres" icon={Lock} value={password} onChange={e => setPassword(e.target.value)} autoFocus required />
+                        </motion.div>
+                     )}
+
+                     {/* REGISTRO: PASO 5 (Verification) */}
+                     {step === 5 && mode === 'register' && (
+                        <motion.div key="r5" variants={variants} initial="initial" animate="animate" exit="exit" className="space-y-6">
+                           <div className="text-center p-6 bg-brand-500/5 border border-brand-500/10 rounded-2xl mb-6">
+                              <ShieldCheck className="mx-auto text-brand-500 mb-3" size={32} />
+                              <p className="text-[11px] font-black text-brand-500 uppercase tracking-widest">Verifica tu cuenta</p>
+                              <p className="text-[10px] text-zinc-500 mt-2 uppercase tracking-wide leading-relaxed">
+                                Hemos enviado un código de 6 dígitos a <span className="text-slate-900 dark:text-white font-bold">{email}</span>.
+                                Por favor ingrésalo abajo para activar tu acceso.
+                              </p>
                            </div>
-                           <Input label="Código de Confirmación" type="text" placeholder="123456" icon={KeyRound} value={otpToken} onChange={e => setOtpToken(e.target.value.replace(/\D/g, '').slice(0, 6))} autoFocus required />
+                           <Input label="Código de 6 Dígitos" type="text" placeholder="123456" icon={KeyRound} value={otpToken} onChange={e => setOtpToken(e.target.value.replace(/\D/g, '').slice(0, 6))} autoFocus required />
                         </motion.div>
                      )}
                   </AnimatePresence>
@@ -279,14 +336,14 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
                      type="submit" 
                      loading={loading}
                      className="w-full h-14 rounded-2xl bg-zinc-900 dark:bg-white text-white dark:text-black font-black uppercase tracking-[0.2em] shadow-xl hover:scale-[1.02] active:scale-95 transition-all"
-                     icon={step === (mode === 'login' ? 2 : 4) ? LogIn : ArrowRight}
+                     icon={step === (mode === 'login' ? 2 : 5) ? LogIn : ArrowRight}
                   >
-                     {step === (mode === 'login' ? 2 : 4) ? 'VERIFICAR Y ENTRAR' : 'OBTENER CÓDIGO'}
+                     {step === (mode === 'login' ? 2 : 5) ? (mode === 'login' ? 'INICIAR SESIÓN' : 'ACTIVAR CUENTA') : 'CONTINUAR'}
                   </Button>
 
                   <div className="pt-4 text-center">
                      <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">
-                        Seguridad de Grado Militar Blindada por Supabase
+                        {step === 5 ? '¿No recibiste el código? Revisa Spam o espera 60s' : 'Infraestructura de Seguridad GKAD STOCK v5'}
                      </p>
                   </div>
                </form>
