@@ -44,6 +44,16 @@ export const Dashboard = () => {
   const [ranking, setRanking] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Color dinámico de acento
+  const [accentColor, setAccentColor] = useState('emerald');
+
+  useEffect(() => {
+    // Ciclar o aleatorizar el color al cargar
+    const colors = ['violet', 'blue', 'teal', 'emerald'];
+    const randomColor = colors[Math.floor(Math.random() * colors.length)];
+    setAccentColor(randomColor);
+  }, []);
+
   // Estados Base (Fallback)
   const [baseStats, setBaseStats] = useState({
     totalProducts: 0,
@@ -157,7 +167,7 @@ export const Dashboard = () => {
 
   return (
     <PlanGuard restrictedPlans={['Esencial']} moduleName="Dashboard de Analítica">
-      <div className="bg-gray-50 dark:bg-gray-900 space-y-10 animate-slide-up">
+      <div className="bg-gray-50 dark:bg-[#111827] rounded-[2rem] p-6 lg:p-8 space-y-10 animate-slide-up border border-transparent dark:border-white/5">
         
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-1">
@@ -171,33 +181,43 @@ export const Dashboard = () => {
           <div className="flex items-center space-x-1 p-1 rounded-full transition-colors duration-300
                           bg-gray-100 border border-gray-200
                           dark:bg-gray-800 dark:border-gray-700">
-            {(['day', 'week', 'month', 'year'] as FilterRange[]).map((range) => (
-              <button
-                key={range}
-                onClick={() => setTimeFilter(range)}
-                className={`px-4 py-1.5 text-xs font-extrabold uppercase tracking-wider transition-colors rounded-full ${
-                  timeFilter === range 
-                    ? 'text-white bg-gradient-to-r from-orange-400 to-green-500 shadow-md' 
-                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                }`}
-              >
-                {range === 'day' ? 'Hoy' : range === 'week' ? 'Semana' : range === 'month' ? 'Mes' : 'Año'}
-              </button>
-            ))}
+            {(['day', 'week', 'month', 'year'] as FilterRange[]).map((range) => {
+              // Mapeo seguro para Tailwind (evita problemas con el PurgeCSS)
+              const activeClassMap: Record<string, string> = {
+                violet: 'bg-violet-500 text-white shadow-md',
+                blue: 'bg-blue-500 text-white shadow-md',
+                teal: 'bg-teal-500 text-white shadow-md',
+                emerald: 'bg-emerald-500 text-white shadow-md'
+              };
+              
+              return (
+                <button
+                  key={range}
+                  onClick={() => setTimeFilter(range)}
+                  className={`px-4 py-1.5 text-xs font-extrabold uppercase tracking-wider transition-colors rounded-full ${
+                    timeFilter === range 
+                      ? activeClassMap[accentColor] || activeClassMap['emerald']
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  }`}
+                >
+                  {range === 'day' ? 'Hoy' : range === 'week' ? 'Semana' : range === 'month' ? 'Mes' : 'Año'}
+                </button>
+              );
+            })}
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <KPICard title="Ingresos Brutos" value={`$${analytics.totalSales.toLocaleString()}`} icon={TrendingUp} trend="+12.5%" trendUp={true} description={`Ventas en el periodo: ${timeFilter}`} />
-          <KPICard title="Egresos Operativos" value={`$${analytics.totalExpenses.toLocaleString()}`} icon={ArrowDownRight} trendUp={false} trend="Fijo" description="Gastos detectados" alert={analytics.totalExpenses > analytics.totalSales} />
-          <KPICard title="Utilidad Real" value={`$${analytics.netUtility.toLocaleString()}`} icon={DollarSign} trendUp={analytics.netUtility > 0} trend="Neto" description="Margen del periodo" success={analytics.netUtility > 0} />
+          <KPICard title="Ingresos Brutos" value={`$${analytics.totalSales.toLocaleString()}`} icon={TrendingUp} trend="+12.5%" trendUp={true} description={`Ventas en el periodo: ${timeFilter}`} accentColor={accentColor} />
+          <KPICard title="Egresos Operativos" value={`$${analytics.totalExpenses.toLocaleString()}`} icon={ArrowDownRight} trendUp={false} trend="Fijo" description="Gastos detectados" alert={analytics.totalExpenses > analytics.totalSales} accentColor={accentColor} />
+          <KPICard title="Utilidad Real" value={`$${analytics.netUtility.toLocaleString()}`} icon={DollarSign} trendUp={analytics.netUtility > 0} trend="Neto" description="Margen del periodo" success={analytics.netUtility > 0} accentColor={accentColor} />
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          <KPICard title="Transacciones Totales" value={analytics.transactionCount} icon={Package} trend="+3" trendUp={true} description="Facturas emitidas" variant="mini" />
-          <KPICard title="Ticket Promedio" value={`$${analytics.averageTicket.toLocaleString()}`} icon={Layers} trend="Asset" trendUp={true} description="Gasto promedio por venta" variant="mini" />
-          <KPICard title="Divisiones" value={baseStats.activeCategories} icon={ArrowUpRight} trend="Activas" description="Categorías de stock" variant="mini" />
-          <KPICard title="Riesgos" value={baseStats.lowStockCount} icon={AlertTriangle} trendUp={false} trend={baseStats.lowStockCount > 0 ? "ALERTA" : "OK"} alert={baseStats.lowStockCount > 0} description="Stock crítico detectado" variant="mini" />
+          <KPICard title="Transacciones Totales" value={analytics.transactionCount} icon={Package} trend="+3" trendUp={true} description="Facturas emitidas" variant="mini" accentColor={accentColor} />
+          <KPICard title="Ticket Promedio" value={`$${analytics.averageTicket.toLocaleString()}`} icon={Layers} trend="Asset" trendUp={true} description="Gasto promedio por venta" variant="mini" accentColor={accentColor} />
+          <KPICard title="Divisiones" value={baseStats.activeCategories} icon={ArrowUpRight} trend="Activas" description="Categorías de stock" variant="mini" accentColor={accentColor} />
+          <KPICard title="Riesgos" value={baseStats.lowStockCount} icon={AlertTriangle} trendUp={false} trend={baseStats.lowStockCount > 0 ? "ALERTA" : "OK"} alert={baseStats.lowStockCount > 0} description="Stock crítico detectado" variant="mini" accentColor={accentColor} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -287,7 +307,18 @@ export const Dashboard = () => {
   );
 };
 
-const KPICard = ({ title, value, icon: Icon, trend, trendUp, description, alert, success, variant = 'large' }: any) => (
+const KPICard = ({ title, value, icon: Icon, trend, trendUp, description, alert, success, variant = 'large', accentColor = 'emerald' }: any) => {
+  // Mapa de clases para tendencias positivas basado en el color de acento
+  const trendClassesMap: Record<string, string> = {
+    violet: 'text-violet-600 bg-violet-50/20 dark:text-violet-400 dark:bg-violet-500/10',
+    blue: 'text-blue-600 bg-blue-50/20 dark:text-blue-400 dark:bg-blue-500/10',
+    teal: 'text-teal-600 bg-teal-50/20 dark:text-teal-400 dark:bg-teal-500/10',
+    emerald: 'text-emerald-600 bg-emerald-50/20 dark:text-emerald-400 dark:bg-emerald-500/10'
+  };
+
+  const activeTrendClass = trendClassesMap[accentColor] || trendClassesMap['emerald'];
+
+  return (
   <Card className={`${variant === 'large' ? 'p-6' : 'p-6'} flex flex-col rounded-3xl transition-all duration-300
                 bg-white border border-gray-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)]
                 dark:bg-gray-800 dark:border-gray-700 dark:shadow-none
@@ -303,7 +334,7 @@ const KPICard = ({ title, value, icon: Icon, trend, trendUp, description, alert,
         </div>
         {trend && (
           <div className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest transition-all duration-500 ${
-            trendUp === true ? 'bg-green-50 text-green-600 dark:bg-green-500/20 dark:text-green-400' : 
+            trendUp === true ? activeTrendClass : 
             trendUp === false ? 'bg-red-50 text-red-600 dark:bg-red-500/20 dark:text-red-400' : 
             'bg-gray-50 text-gray-600 dark:bg-gray-500/20 dark:text-gray-400'
           }`}>
@@ -322,3 +353,4 @@ const KPICard = ({ title, value, icon: Icon, trend, trendUp, description, alert,
     <div className="absolute bottom-0 left-0 h-1 w-0 bg-brand-500 group-hover:w-full transition-all duration-700 shadow-[0_0_15px_rgba(59,130,246,0.5)]" />
   </Card>
 );
+};
