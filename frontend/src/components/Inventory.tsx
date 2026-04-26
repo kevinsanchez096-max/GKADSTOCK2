@@ -182,13 +182,21 @@ export const Inventory = () => {
       
       // 2. Registrar el Gasto Automático
       try {
-        await api.post('/expenses', {
-          description: `Merma de Inventario: ${mermaData.reason} - ${selectedMermaProduct.name}`,
-          amount: valorPerdida,
-          category: 'MERMA_INVENTARIO'
-        });
-      } catch (err) {
+        const { error: supabaseError } = await supabase
+          .from('expenses')
+          .insert([{
+            description: `Merma de Inventario: ${mermaData.reason} - ${selectedMermaProduct.name}`,
+            amount: valorPerdida,
+            category: 'MERMA_INVENTARIO',
+            organization_id: profile.organization_id
+          }]);
+          
+        if (supabaseError) {
+          throw supabaseError;
+        }
+      } catch (err: any) {
         console.error('Error al registrar gasto de merma:', err);
+        toast.error(`Error al registrar gasto: ${err.message || 'supabase error'}`);
       }
 
       toast.success(`Merma registrada: -${deductQty} (${mermaData.reason})`, { icon: '📉' });
