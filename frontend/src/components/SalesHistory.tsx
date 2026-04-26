@@ -256,7 +256,9 @@ export const SalesHistory = () => {
 
           <div className="flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:space-x-4">
             {/* Selector de Periodo de Tiempo */}
-            <div className="flex items-center space-x-1 p-1 rounded-full bg-gray-100 dark:bg-gray-700/50 border border-gray-200/50 dark:border-gray-600">
+            <div className="flex items-center space-x-1 p-1 rounded-full transition-colors duration-300
+                           bg-gray-100 border border-gray-200
+                           dark:bg-gray-800 dark:border-gray-700">
               {(['day', 'week', 'month', 'year'] as FilterRange[]).map((range) => (
                 <button
                   key={range}
@@ -351,35 +353,22 @@ export const SalesHistory = () => {
         </div>
 
           <Card className="p-0 glass-dark border-white/5 shadow-2xl overflow-hidden rounded-[2.5rem]">
-            <div className="p-6 border-b border-white/5 bg-white/[0.02] flex flex-col md:flex-row gap-6 items-center justify-between">
-              <div className="flex items-center justify-between w-full rounded-full transition-all duration-300 p-1.5
+            <div className="p-6 border-b border-gray-200 dark:border-white/5 bg-gray-50/50 dark:bg-white/[0.02] flex flex-col md:flex-row gap-6 items-center justify-between transition-colors duration-300">
+              <div className="flex items-center w-full rounded-full p-1.5 transition-colors duration-300
                               bg-white border border-gray-200 shadow-sm
-                              dark:bg-gray-700 dark:border-gray-600 dark:shadow-none
+                              dark:bg-gray-800 dark:border-gray-700 dark:shadow-none
                               focus-within:ring-2 focus-within:ring-red-400">
-                <div className="flex items-center flex-1 pl-3">
+                <div className="flex items-center flex-1 pl-4 pr-2">
                   <Search className="w-5 h-5 text-gray-400 dark:text-gray-500" />
                   <input
                     type="text"
                     placeholder="Rastrear por Factura ID o Método..."
-                    className="w-full bg-transparent px-3 py-2 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-400 outline-none font-medium"
+                    className="w-full bg-transparent px-3 py-2 outline-none font-medium
+                               text-gray-900 placeholder:text-gray-400
+                               dark:text-white dark:placeholder:text-gray-500"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
-                </div>
-                <div className="flex items-center space-x-1 px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-600/50 mr-1">
-                  {[10, 20, 50, 100].map((val) => (
-                    <button
-                      key={val}
-                      onClick={() => setDisplayLimit(val)}
-                      className={`px-3 py-1 text-xs font-bold transition-colors rounded-full ${
-                        displayLimit === val
-                          ? 'text-white bg-gradient-to-r from-orange-400 to-green-500 shadow-md'
-                          : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                      }`}
-                    >
-                      {val}
-                    </button>
-                  ))}
                 </div>
               </div>
               <div className="flex items-center gap-3 ml-2">

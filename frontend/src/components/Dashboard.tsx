@@ -168,7 +168,9 @@ export const Dashboard = () => {
             </div>
           </div>
 
-          <div className="flex items-center space-x-1 p-1 rounded-full bg-gray-100 dark:bg-gray-700/50 border border-gray-200/50 dark:border-gray-600">
+          <div className="flex items-center space-x-1 p-1 rounded-full transition-colors duration-300
+                          bg-gray-100 border border-gray-200
+                          dark:bg-gray-800 dark:border-gray-700">
             {(['day', 'week', 'month', 'year'] as FilterRange[]).map((range) => (
               <button
                 key={range}
