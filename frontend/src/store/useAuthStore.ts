@@ -15,6 +15,8 @@ interface AuthState {
   updateProfile: (updates: any) => void;
   updateSecureSettings: (data: { currentPassword: string, newPassword?: string, newFullName?: string, newEmail?: string }) => Promise<void>;
   signOut: () => Promise<void>;
+  requestOTP: (email: string) => Promise<void>;
+  verifyOTP: (email: string, token: string) => Promise<any>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -199,4 +201,45 @@ export const useAuthStore = create<AuthState>((set) => ({
       console.warn('Error al cerrar sesión en Supabase:', error);
     }
   },
+
+  requestOTP: async (email) => {
+    set({ loading: true });
+    const { error } = await supabase.auth.signInWithOtp({ 
+      email,
+      options: {
+        emailRedirectTo: window.location.origin
+      }
+    });
+    set({ loading: false });
+    if (error) throw error;
+  },
+
+  verifyOTP: async (email, token) => {
+    set({ loading: true });
+    try {
+      const { data, error } = await supabase.auth.verifyOtp({
+        email,
+        token,
+        type: 'email'
+      });
+
+      if (error) throw error;
+      if (!data.session) throw new Error('No se pudo establecer la sesión.');
+
+      localStorage.setItem('gkad_token', data.session.access_token);
+      const profileData = await api.get('/auth/me');
+
+      set({
+        user: data.user,
+        profile: profileData,
+        loading: false,
+        isInitialized: true
+      });
+
+      return { user: data.user, profile: profileData };
+    } catch (error) {
+      set({ loading: false });
+      throw error;
+    }
+  }
 }));

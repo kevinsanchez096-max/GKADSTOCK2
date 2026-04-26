@@ -48,6 +48,8 @@ export const Settings = () => {
     billing_resolution: orgData?.billing_resolution || 'Res. 187640321 del 2024',
     footer_message: orgData?.footer_message || '¡Gracias por su compra! Vuelva pronto.',
     logo_url: orgData?.logo_url || '',
+    legal_representative: orgData?.legal_representative || '',
+    nit: orgData?.nit || '',
   });
 
   const isSuperAdmin = profile?.role === 'super_admin';
@@ -335,7 +337,8 @@ export const Settings = () => {
                 <Input label="Razón Social" value={formData.organization_name} onChange={(e) => setFormData({...formData, organization_name: e.target.value})} icon={Building2} />
                 <Input label="Email Corporativo" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} icon={Mail} />
                 <Input label="Teléfono de Contacto" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} icon={Phone} />
-                <Input label="Dominio Web" defaultValue="www.negocio.com" icon={Globe} />
+                <Input label="Representante Legal" value={formData.legal_representative} onChange={(e) => setFormData({...formData, legal_representative: e.target.value})} icon={User} />
+                <Input label="NIT / RUT" value={formData.nit} onChange={(e) => setFormData({...formData, nit: e.target.value})} icon={FileText} />
                 <div className="md:col-span-2">
                   <Input label="Sede Principal / Dirección" value={formData.address} onChange={(e) => setFormData({...formData, address: e.target.value})} icon={MapPin} />
                 </div>

@@ -37,6 +37,11 @@ interface Org {
   billing_status: string;
   next_billing_date: string;
   license_price: number;
+  legal_representative?: string;
+  nit?: string;
+  address?: string;
+  phone?: string;
+  email?: string;
 }
 
 interface UserData {
@@ -354,8 +359,56 @@ export const SaaSOrgRow = ({ org, isExpanded, onToggle, isMenuOpen, onToggleMenu
         <tr>
           <td colSpan={6} className="px-8 py-10 bg-white/[0.01]">
              <div className="animate-in slide-in-from-top-4 duration-500">
-           <div className="h-px bg-slate-100 dark:bg-white/5 mb-8" />
-           <div className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
+               {/* INFO CORPORATIVA */}
+               <div className="lg:col-span-2 bg-slate-50 dark:bg-zinc-950/20 rounded-[2rem] p-8 border border-slate-200 dark:border-white/5">
+                  <div className="flex items-center gap-3 mb-6">
+                     <Building2 className="text-brand-500 h-5 w-5" />
+                     <h4 className="text-[11px] font-black text-slate-900 dark:text-white uppercase tracking-[0.3em]">Perfil Corporativo</h4>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
+                     <div className="space-y-1">
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Representante Legal</p>
+                        <p className="text-[12px] font-bold text-slate-900 dark:text-white uppercase">{org.legal_representative || 'No registrado'}</p>
+                     </div>
+                     <div className="space-y-1">
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">NIT / Identificación</p>
+                        <p className="text-[12px] font-bold text-slate-900 dark:text-white uppercase">{org.nit || 'Sin NIT'}</p>
+                     </div>
+                     <div className="space-y-1">
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Dirección Principal</p>
+                        <p className="text-[11px] font-medium text-slate-600 dark:text-zinc-400">{org.address || 'Sin dirección'}</p>
+                     </div>
+                     <div className="space-y-1">
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Contacto Directo</p>
+                        <div className="flex flex-col gap-1">
+                           <span className="text-[11px] font-medium text-slate-600 dark:text-zinc-400 flex items-center gap-2"><Phone size={10} /> {org.phone || 'Sin teléfono'}</span>
+                           <span className="text-[11px] font-medium text-slate-600 dark:text-zinc-400 flex items-center gap-2"><Mail size={10} /> {org.email || 'Sin email'}</span>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+
+               {/* ESTADO FINANCIERO RÁPIDO */}
+               <div className="bg-brand-500/5 rounded-[2rem] p-8 border border-brand-500/10 flex flex-col justify-between">
+                  <div className="space-y-1">
+                     <p className="text-[10px] font-black text-brand-500 uppercase tracking-widest">Valor Licencia</p>
+                     <p className="text-3xl font-black text-slate-900 dark:text-white font-outfit tracking-tighter">${Number(org.license_price).toLocaleString()}</p>
+                  </div>
+                  <div className="pt-6 border-t border-brand-500/10">
+                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Próximo Corte</p>
+                     <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-bold text-slate-900 dark:text-white">{org.next_billing_date ? new Date(org.next_billing_date).toLocaleDateString('es-CO', { day: 'numeric', month: 'long' }) : 'Pendiente'}</span>
+                        <span className={`px-2 py-0.5 rounded-lg text-[8px] font-black uppercase ${org.billing_status === 'activo' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`}>
+                           {org.billing_status}
+                        </span>
+                     </div>
+                  </div>
+               </div>
+            </div>
+
+            <div className="h-px bg-slate-100 dark:bg-white/5 mb-10" />
+            <div className="space-y-6">
               <div className="flex items-center justify-between">
                  <div className="space-y-1">
                     <p className="text-[11px] font-black text-slate-900 dark:text-white uppercase tracking-[0.3em]">Gestión Maestra de Personal</p>

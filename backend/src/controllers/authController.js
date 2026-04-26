@@ -395,7 +395,7 @@ const authController = {
             const profileOnlyFields  = ['full_name'];
             const orgOnlyFields      = ['organization_name', 'address', 'phone', 'email',
                                         'tax_percentage', 'currency', 'billing_resolution',
-                                        'footer_message', 'logo_url'];
+                                        'footer_message', 'logo_url', 'legal_representative', 'nit'];
             const sharedThemeFields  = ['theme_color', 'theme_secondary_color', 'theme_style'];
 
             const profileUpdates = {};
