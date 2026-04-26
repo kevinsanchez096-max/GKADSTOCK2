@@ -20,6 +20,7 @@ import { Suppliers } from './components/Suppliers';
 import { PlatformOrganizations } from './components/PlatformOrganizations';
 import { GlobalPlatformSettings } from './components/GlobalPlatformSettings';
 import { AdminWelcome } from './components/AdminWelcome';
+import { AdminAppearance } from './components/AdminAppearance';
 import { SubscriptionsManager } from './components/SubscriptionsManager';
 import { CreditCard } from 'lucide-react';
 
@@ -97,9 +98,14 @@ function App() {
 
   // INYECCIÓN DINÁMICA DE TEMA INDIVIDUAL (Marca Blanca V5)
   useEffect(() => {
-    // 1. Escudo Super Admin (Hard Stop)
+    // 1. Escudo Super Admin (Configuración Persistente)
     if (user?.role === 'super_admin' || profile?.role === 'super_admin') {
-      document.documentElement.style.removeProperty('--brand-primary');
+      const savedColor = localStorage.getItem('admin_accent_color');
+      if (savedColor) {
+        document.documentElement.style.setProperty('--brand-primary', savedColor);
+      } else {
+        document.documentElement.style.removeProperty('--brand-primary');
+      }
       return;
     }
 
@@ -198,6 +204,9 @@ function App() {
       case 'admin_settings':
         if (profile?.role !== 'super_admin') return <Dashboard />;
         return <GlobalPlatformSettings />;
+      case 'admin_appearance':
+        if (profile?.role !== 'super_admin') return <Dashboard />;
+        return <AdminAppearance />;
       default:
         return profile?.role === 'super_admin' ? <SuperAdminDashboard /> : <Dashboard />;
     }
