@@ -17,21 +17,20 @@ import { GlobalUserAudit } from './components/GlobalUserAudit';
 import { Home } from './components/Home';
 import { Customers } from './components/Customers';
 import { Suppliers } from './components/Suppliers';
+import { PlatformOrganizations } from './components/PlatformOrganizations';
+import { GlobalPlatformSettings } from './components/GlobalPlatformSettings';
+import { CreditCard } from 'lucide-react';
 
 function App() {
   const { user, profile, isInitialized, setProfile, setUser } = useAuthStore();
   const [activeTab, setActiveTab] = useState(() => {
-    // Si ya hay sesión, intentar determinar la pestaña inicial
-    const storedProfile = localStorage.getItem('auth-storage'); // O como se guarde en tu store
-    if (profile?.role === 'super_admin') return 'admin_saas';
+    if (profile?.role === 'super_admin') return 'home';
     return 'home';
   });
 
   // Ajustar pestaña si el perfil cambia (ej. al loguear)
   useEffect(() => {
-    if (profile?.role === 'super_admin') {
-      setActiveTab('admin_saas');
-    } else if (profile) {
+    if (profile) {
       setActiveTab('home');
     }
   }, [profile?.role]);
@@ -160,6 +159,7 @@ function App() {
   const renderContent = () => {
     switch (activeTab) {
       case 'home':
+        if (profile?.role === 'super_admin') return <SuperAdminDashboard />;
         return <Home setActiveTab={setActiveTab} />;
       case 'dashboard':
         return <Dashboard />;

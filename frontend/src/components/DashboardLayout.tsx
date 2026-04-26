@@ -90,7 +90,7 @@ export const DashboardLayout = ({
   ];
 
   const saasMenuItems = [
-    { id: 'admin_saas', label: 'SaaS Dashboard', icon: LayoutDashboard, color: 'text-cyan-500' },
+    { id: 'home', label: 'Inicio', icon: LayoutGrid, color: 'text-blue-500' },
     { id: 'admin_organizations', label: 'Organizaciones', icon: Building2, color: 'text-blue-500' },
     { id: 'admin_users', label: 'Usuarios Globales', icon: Users, color: 'text-orange-500' },
     { id: 'admin_subscriptions', label: 'Suscripciones', icon: CreditCard, color: 'text-emerald-500' },
