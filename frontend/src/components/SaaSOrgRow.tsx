@@ -264,7 +264,6 @@ export const SaaSOrgRow = ({ org, isExpanded, onToggle, isMenuOpen, onToggleMenu
   const currentPlanStyle = planStyles[org.plan] || 'bg-slate-500/10 text-slate-500 border-slate-500/20';
 
   return (
-  return (
     <>
       <tr className={`group/row transition-colors hover:bg-white/[0.03] ${!org.is_active || org.billing_status === 'suspendido' ? 'opacity-50 grayscale' : ''}`}>
         {/* ID Nodo */}
