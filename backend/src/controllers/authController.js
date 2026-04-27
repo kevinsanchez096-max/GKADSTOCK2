@@ -615,33 +615,63 @@ const authController = {
         }
     },
     
-    // 10. Activar Organización (Post-Verificación)
-    activate: async (req, res) => {
+    // 10. Activar Organización y Cuenta (Post-Verificación OTP)
+    activateAccount: async (req, res) => {
         try {
-            const userId = req.user.id;
+            const { email, code } = req.body;
             
-            // Buscar perfil y organización
+            if (!email || !code) {
+                return res.status(400).json({ error: 'Email y código son requeridos.' });
+            }
+
+            // A. Verificar el código OTP con Supabase (Stateless Client)
+            const { createClient } = require('@supabase/supabase-js');
+            const tempClient = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY, {
+                auth: { persistSession: false, autoRefreshToken: false }
+            });
+
+            const { data: verifyData, error: verifyError } = await tempClient.auth.verifyOtp({
+                email,
+                token: code,
+                type: 'signup'
+            });
+
+            if (verifyError || !verifyData.user) {
+                return res.status(400).json({ error: 'Código inválido o expirado.', details: verifyError?.message });
+            }
+
+            const userId = verifyData.user.id;
+
+            // B. Buscar perfil y organización
             const { data: profile, error: pErr } = await supabaseAdmin
                 .from('profiles')
-                .select('organization_id, role')
+                .select('organization_id')
                 .eq('id', userId)
                 .single();
             
-            if (pErr || !profile) throw new Error('Perfil no encontrado.');
-            if (profile.role !== 'admin') throw new Error('Solo el administrador puede activar la organización.');
+            if (pErr || !profile) {
+                console.error("Perfil no encontrado tras verificación OTP:", pErr);
+                // Si no hay perfil aún, podemos dejar que el login se encargue (Auto-curación)
+            } else {
+                // C. Activar la organización
+                const { error: oErr } = await supabaseAdmin
+                    .from('organizations')
+                    .update({ is_active: true, billing_status: 'activo' })
+                    .eq('id', profile.organization_id);
 
-            // Activar
-            const { error: oErr } = await supabaseAdmin
-                .from('organizations')
-                .update({ is_active: true })
-                .eq('id', profile.organization_id);
+                if (oErr) console.error("Error al activar organización:", oErr);
+            }
 
-            if (oErr) throw oErr;
-
-            res.status(200).json({ message: 'Organización activada con éxito.' });
+            // Retornamos la sesión para que el frontend inicie sesión automáticamente
+            res.status(200).json({ 
+                message: 'Cuenta activada con éxito.',
+                session: verifyData.session,
+                user: verifyData.user
+            });
+            
         } catch (error) {
-            console.error('Error en activate:', error);
-            res.status(500).json({ error: 'No se pudo activar la organización.' });
+            console.error('Error en activateAccount:', error);
+            res.status(500).json({ error: 'Error técnico al activar la cuenta.' });
         }
     }
 };

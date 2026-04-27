@@ -37,10 +37,43 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
   // States
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [otpToken, setOtpToken] = useState('');
+  const [otpValues, setOtpValues] = useState<string[]>(Array(6).fill(''));
   const [fullName, setFullName] = useState('');
   const [orgName, setOrgName] = useState('');
   const [showSuccessScreen, setShowSuccessScreen] = useState(false);
+  const otpRefs = React.useRef<(HTMLInputElement | null)[]>([]);
+
+  const handleOtpChange = (index: number, value: string) => {
+    if (value.length > 1) {
+       // Paste logic
+       const pastedData = value.replace(/\D/g, '').slice(0, 6).split('');
+       const newOtp = [...otpValues];
+       pastedData.forEach((char, i) => { if (index + i < 6) newOtp[index + i] = char; });
+       setOtpValues(newOtp);
+       if (index + pastedData.length < 6) {
+          otpRefs.current[index + pastedData.length]?.focus();
+       } else {
+          otpRefs.current[5]?.focus();
+       }
+       return;
+    }
+    
+    if (!/^\d*$/.test(value)) return;
+
+    const newOtp = [...otpValues];
+    newOtp[index] = value;
+    setOtpValues(newOtp);
+
+    if (value && index < 5) {
+      otpRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace' && !otpValues[index] && index > 0) {
+      otpRefs.current[index - 1]?.focus();
+    }
+  };
 
   const handleNext = async (e?: React.FormEvent) => {
      if (e) e.preventDefault();
@@ -128,25 +161,15 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
   };
 
   const handleVerifyRegistration = async () => {
-    if (otpToken.length < 6) return setError('Ingresa el código de 6 dígitos.');
+    const code = otpValues.join('');
+    if (code.length < 6) return setError('Ingresa el código de 6 dígitos completo.');
     setLoading(true);
     try {
-      const { error: verifyError } = await supabase.auth.verifyOtp({
-        email: email.trim().toLowerCase(),
-        token: otpToken,
-        type: 'signup'
-      });
-
-      if (verifyError) throw verifyError;
-
-      // ── PASO 2: Activar la organización en el backend ──
-      // Una vez verificado en Auth, activamos la infraestructura SaaS
-      await useAuthStore.getState().activateOrganization();
-
-      toast.success('¡Cuenta verificada! Ya puedes entrar.');
+      await useAuthStore.getState().activateAccount(email.trim().toLowerCase(), code);
+      toast.success('¡Cuenta verificada y activada! Ya puedes entrar.');
       setShowSuccessScreen(true);
     } catch (err: any) {
-      setError('Código inválido o expirado.');
+      setError(err.response?.data?.error || err.message || 'Código inválido o expirado.');
       toast.error('Error de verificación');
     } finally {
       setLoading(false);
@@ -327,7 +350,24 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
                                 Por favor ingrésalo abajo para activar tu acceso.
                               </p>
                            </div>
-                           <Input label="Código de 6 Dígitos" type="text" placeholder="123456" icon={KeyRound} value={otpToken} onChange={e => setOtpToken(e.target.value.replace(/\D/g, '').slice(0, 6))} autoFocus required />
+                           
+                           <div className="flex justify-between gap-2 sm:gap-3">
+                              {otpValues.map((value, index) => (
+                                 <input
+                                    key={`otp-${index}`}
+                                    ref={el => otpRefs.current[index] = el}
+                                    type="text"
+                                    inputMode="numeric"
+                                    maxLength={1}
+                                    value={value}
+                                    onChange={(e) => handleOtpChange(index, e.target.value)}
+                                    onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                                    className="w-10 h-12 sm:w-12 sm:h-14 text-center text-xl sm:text-2xl font-black rounded-xl bg-white dark:bg-black/40 border border-zinc-200 dark:border-white/10 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all shadow-sm"
+                                    autoFocus={index === 0}
+                                    required
+                                 />
+                              ))}
+                           </div>
                         </motion.div>
                      )}
                   </AnimatePresence>

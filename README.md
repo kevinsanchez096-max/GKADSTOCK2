@@ -1,4 +1,4 @@
-# GKAD STOCK — Sistema POS & Inventario Multi-Tenant (V4.1 Enterprise)
+# GKAD STOCK — Sistema POS & Inventario Multi-Tenant (V5.0 Enterprise)
 
 Sistema de Punto de Venta (POS), Gestión de Inventarios y Administración SaaS Multi-Tenant, diseñado con arquitectura desacoplada **MVC** para máxima escalabilidad, seguridad y resiliencia operativa.
 
@@ -34,9 +34,9 @@ Sistema de Punto de Venta (POS), Gestión de Inventarios y Administración SaaS 
 | :---------------- | :--------------------------- | :------------------------------------------------------ |
 | **Frontend**      | React 19, TypeScript, Vite 8 | Interfaz reactiva de alto rendimiento                   |
 | **Estado**        | Zustand 5                    | Gestión de estado global (Sesión, Carrito, Catálogo)    |
-| **Estilos**       | TailwindCSS 4, Framer Motion | Diseño premium con animaciones fluidas                  |
+| **Estilos**       | TailwindCSS 4, Framer Motion | Diseño premium "Luxury Dark" con Glassmorphism          |
 | **Backend**       | Node.js, Express 4           | API RESTful con arquitectura MVC                        |
-| **Seguridad**     | Helmet, JWT, RLS             | Protección de cabeceras, tokens y aislamiento de datos  |
+| **Seguridad**     | Helmet, JWT, RLS, OTP        | Verificación en 2 pasos, tokens y aislamiento de datos  |
 | **Base de Datos** | Supabase (PostgreSQL)        | Persistencia, Auth, Storage y Realtime (WebSockets)     |
 | **Gráficos**      | Recharts 3                   | Visualización de KPIs y métricas financieras            |
 | **Reportes**      | xlsx.js                      | Importación/Exportación masiva de inventarios vía Excel |
@@ -58,7 +58,7 @@ PRUEBA INVENTARIO/
 │   │   │   ├── isSuperAdmin.js          # Guardia de privilegios SaaS
 │   │   │   └── superHardenedMiddleware.js  # Rate Limiting Anti-DDoS
 │   │   ├── controllers/
-│   │   │   ├── authController.js        # Login, Registro Atómico, Gestión de Sesión
+│   │   │   ├── authController.js        # Login, Registro OTP, Activación de Org
 │   │   │   ├── salesController.js       # Facturación Atómica con Rollback
 │   │   │   ├── inventoryController.js   # CRUD de Productos + Kardex Automatizado
 │   │   │   ├── superAdminController.js  # Provisión de Inquilinos, Métricas SaaS
@@ -84,20 +84,20 @@ PRUEBA INVENTARIO/
 │   │   ├── App.tsx                      # Orquestador de hidratación y rutas protegidas
 │   │   ├── main.tsx                     # Punto de entrada React
 │   │   ├── store/
-│   │   │   ├── useAuthStore.ts          # Sesión, Branding dinámico, isInitialized
+│   │   │   ├── useAuthStore.ts          # Sesión, Verificación OTP, isInitialized
 │   │   │   └── useShopStore.ts          # Carrito Global, Catálogo, Historial
 │   │   ├── lib/
 │   │   │   ├── api.ts                   # Cliente HTTP con interceptor de token
 │   │   │   └── supabase.ts              # Cliente Supabase para Realtime
 │   │   └── components/
-│   │       ├── AuthForm.tsx             # Login/Registro Multi-paso
+│   │       ├── AuthForm.tsx             # Autenticación OTP (Registro) / Password (Login)
 │   │       ├── POSTerminal.tsx          # Terminal de Ventas (Escáner, Báscula)
 │   │       ├── Inventory.tsx            # Gestión de Stock + Kardex
 │   │       ├── SalesHistory.tsx         # Historial con Realtime + Rentabilidad
 │   │       ├── Dashboard.tsx            # Panel de KPIs Financieros
-│   │       ├── DashboardLayout.tsx      # Layout Apple Design (Sidebar + Header)
-│   │       ├── Home.tsx                 # Landing de Bienvenida
-│   │       ├── Settings.tsx             # Configuración de Empresa y Branding
+│   │       ├── DashboardLayout.tsx      # Layout "Apple Design" (Sidebar + Header)
+│   │       ├── AdminWelcome.tsx         # Pantalla de Bienvenida Minimalista SaaS
+│   │       ├── Settings.tsx             # Configuración de Empresa (Perfil Corporativo)
 │   │       ├── Users.tsx                # Gestión de Colaboradores
 │   │       ├── Customers.tsx            # Base de Datos de Clientes
 │   │       ├── Suppliers.tsx            # Gestión de Proveedores
@@ -107,13 +107,13 @@ PRUEBA INVENTARIO/
 │   │       ├── PrintableTicket.tsx      # Generador de Recibos Térmicos (80mm)
 │   │       ├── ReturnSaleModal.tsx      # Módulo de Devoluciones
 │   │       ├── ProfileSettingsModal.tsx # Ajustes Personales de Cuenta
-│   │       ├── SuperAdminDashboard.tsx  # Consola SaaS (Modo Dios)
-│   │       ├── PlatformOrganizations.tsx# Lista de Inquilinos
+│   │       ├── SuperAdminDashboard.tsx  # Consola SaaS (Métricas Dinámicas, MRR)
+│   │       ├── PlatformOrganizations.tsx# Matriz de Inquilinos y Suscripciones
 │   │       ├── SaaSCreateOrgModal.tsx   # Provisión de Nuevas Empresas
-│   │       ├── SaaSOrgRow.tsx           # Ficha de Organización Expandible
+│   │       ├── SaaSOrgRow.tsx           # Ficha de Organización (Perfil Corporativo Expandible)
 │   │       ├── GlobalPlatformSettings.tsx # Configuración Global del SaaS
 │   │       ├── GlobalUserAudit.tsx      # Auditoría Forense de Actividad
-│   │       ├── ui-components.tsx        # Librería de Componentes Premium
+│   │       ├── ui-components.tsx        # Librería de Componentes Premium (Glassmorphism)
 │   │       └── common/
 │   │           └── PlanGuard.tsx         # Guardia de Límites por Plan
 │   └── vite.config.ts
@@ -157,33 +157,35 @@ PRUEBA INVENTARIO/
 - Impresión directa desde el navegador.
 - Re-impresión desde el historial de ventas.
 
-### 👥 Gestión de Personal
+### 👥 Gestión de Personal y Perfil Corporativo
 
 - Roles jerárquicos: `super_admin`, `admin`, `vendedor/cashier`.
+- **Perfil Corporativo Detallado**: Registro del Representante Legal y NIT para cumplimiento legal.
 - Creación de colaboradores con rollback atómico (Auth ↔ Perfil).
 - Trazabilidad de creación (`created_by`).
 - Restricción de acciones por nivel de privilegio.
 
-### 🏢 Plataforma SaaS Multi-Tenant
+### 🏢 Plataforma SaaS Multi-Tenant (Super Admin)
 
 - **Provisión Atómica de Inquilinos**: Creación de organización + admin en una sola operación con rollback.
-- Panel de control global con métricas de salud, MRR y usuarios activos.
+- **Dashboard Dinámico SaaS**: Panel de control con métricas de salud (MRR, Usuarios Activos, Org. Activas) y filtros de tiempo.
+- **Matriz de Inquilinos**: Vista detallada de cada organización, su perfil corporativo y estatus financiero.
 - Gestión de planes: Esencial, Avanzado, Emprendedor, Premium.
 - Límites de usuarios por plan (enforcement automático).
 - Suspensión/Activación de organizaciones.
 - Purga total de inquilinos (cascada: datos → perfiles → Auth).
 - Inyección directa de usuarios en cualquier organización.
-- Reset de contraseñas con flag de cambio obligatorio.
 
-### 🔐 Seguridad y Resiliencia
+### 🔐 Seguridad y Resiliencia (V5.0)
 
+- **Registro Verificado por OTP**: El registro de nuevos inquilinos requiere verificación mediante un código de 6 dígitos enviado por correo para evitar cuentas fantasma. La organización permanece inactiva hasta su activación manual por el usuario validado.
 - **Aislamiento Multi-Tenant**: Filtrado mandatorio por `organization_id` en cada consulta.
 - **Row Level Security (RLS)**: Políticas de PostgreSQL que impiden acceso cross-tenant a nivel de BD.
 - **Auto-Curación de Perfiles**: Si un usuario autenticado no tiene perfil, el middleware lo crea al vuelo.
 - **Rollback Manual de Transacciones**: Las ventas implementan limpieza automática si fallan parcialmente.
 - **Centinelas Anti-Colapso**: `uncaughtException` y `unhandledRejection` en `app.js`.
 - **Protección JWT**: Validación criptográfica de tokens en cada petición.
-- **Branding Dinámico**: Cada organización personaliza colores y logo sin afectar a las demás.
+- **Motor de Temas "Luxury Dark"**: Diseño premium basado en el diseño Apple (Glassmorphism), adaptativo y dinámico respetando el color principal (`--brand-primary`) de cada organización.
 
 ### ⚡ Sincronización en Tiempo Real
 
@@ -275,6 +277,7 @@ Todas las tablas de negocio tienen Row Level Security activado, filtrando por `o
 | :----- | :------------------------------------------- | :---------------------------------- |
 | `POST` | `/api/auth/login`                            | Autenticación de usuario            |
 | `POST` | `/api/auth/register`                         | Registro atómico (Org + Perfil)     |
+| `POST` | `/api/auth/activate`                         | Activación de Org post-OTP          |
 | `GET`  | `/api/inventory/products`                    | Listar productos (filtrado por org) |
 | `POST` | `/api/inventory/products`                    | Crear producto + Kardex inicial     |
 | `POST` | `/api/sales/process`                         | Procesar venta atómica              |
@@ -299,4 +302,4 @@ Todas las tablas de negocio tienen Row Level Security activado, filtrando por `o
 ---
 
 _Desarrollado por Kevin Sánchez — Ingeniería de Software, 2026._
-_GKAD STOCK V4.1 Enterprise — Sistema POS Multi-Tenant de Alta Disponibilidad._
+_GKAD STOCK V5.0 Enterprise — Sistema POS Multi-Tenant de Alta Disponibilidad._

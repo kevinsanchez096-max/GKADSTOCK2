@@ -44,7 +44,7 @@ router.post('/profile/update-secure', authMiddleware, authController.updateSecur
 // 9. [STORAGE] Subir Logo vía Backend (POST /api/auth/upload-logo)
 router.post('/upload-logo', authMiddleware, upload.single('logo'), authController.uploadLogo);
 
-// 10. Activar Organización (POST /api/auth/activate) - PROTEGIDA
-router.post('/activate', authMiddleware, authController.activate);
+// 10. Activar Organización y Cuenta (POST /api/auth/activate) - PÚBLICA (Usa OTP)
+router.post('/activate', authController.activateAccount);
 
 module.exports = router;

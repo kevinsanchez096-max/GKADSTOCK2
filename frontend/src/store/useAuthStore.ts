@@ -17,7 +17,7 @@ interface AuthState {
   signOut: () => Promise<void>;
   requestOTP: (email: string) => Promise<void>;
   verifyOTP: (email: string, token: string) => Promise<any>;
-  activateOrganization: () => Promise<void>;
+  activateAccount: (email: string, code: string) => Promise<any>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -249,14 +249,32 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
   
-  activateOrganization: async () => {
+  activateAccount: async (email: string, code: string) => {
+    set({ loading: true });
     try {
-      await api.post('/auth/activate');
+      const response = await api.post('/auth/activate', { email, code });
+      
+      // La respuesta incluye la session de Supabase y el user
+      const session = response.session;
+      const user = response.user;
+
+      if (session?.access_token) {
+         localStorage.setItem('gkad_token', session.access_token);
+      }
+
       // Refrescar perfil localmente para que is_active sea true
       const profileData = await api.get('/auth/me');
-      set({ profile: profileData });
+      
+      set({ 
+         user,
+         profile: profileData,
+         loading: false,
+         isInitialized: true
+      });
+      return { user, profile: profileData };
     } catch (error) {
-      console.error('Error al activar organización:', error);
+      set({ loading: false });
+      console.error('Error al activar cuenta:', error);
       throw error;
     }
   }
