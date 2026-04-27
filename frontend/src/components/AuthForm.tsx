@@ -13,7 +13,8 @@ import {
   Sun,
   Moon,
   Sparkles,
-  Lock
+  Lock,
+  Circle
 } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
 import { toast } from 'sonner';
@@ -75,6 +76,16 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
     }
   };
 
+  const passwordValidations = [
+    { id: 'length', text: 'Mínimo 8 caracteres', check: (pwd: string) => pwd.length >= 8 },
+    { id: 'uppercase', text: 'Una letra mayúscula', check: (pwd: string) => /[A-Z]/.test(pwd) },
+    { id: 'lowercase', text: 'Una letra minúscula', check: (pwd: string) => /[a-z]/.test(pwd) },
+    { id: 'number', text: 'Un número', check: (pwd: string) => /[0-9]/.test(pwd) },
+    { id: 'special', text: 'Un carácter especial', check: (pwd: string) => /[^A-Za-z0-9]/.test(pwd) }
+  ];
+
+  const isPasswordValid = passwordValidations.every(v => v.check(password));
+
   const handleNext = async (e?: React.FormEvent) => {
      if (e) e.preventDefault();
      setError(null);
@@ -101,7 +112,7 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
            if (!orgName.trim()) return setError('Falta el nombre de la organización.');
            setStep(4);
         } else if (step === 4) {
-           if (password.length < 6) return setError('La contraseña debe tener al menos 6 caracteres.');
+           if (!isPasswordValid) return setError('La contraseña no cumple con los requisitos de seguridad.');
            await handleSignUp();
         } else if (step === 5) {
            await handleVerifyRegistration();
@@ -186,7 +197,7 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
      setStep(1);
      setError(null);
      setPassword('');
-     setOtpToken('');
+     setOtpValues(Array(6).fill(''));
      setShowSuccessScreen(false);
   };
 
@@ -335,7 +346,26 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
                      {/* REGISTRO: PASO 4 (Password) */}
                      {step === 4 && mode === 'register' && (
                         <motion.div key="r4" variants={variants} initial="initial" animate="animate" exit="exit" className="space-y-6">
-                           <Input label="Crea tu Contraseña" type="password" placeholder="Mínimo 6 caracteres" icon={Lock} value={password} onChange={e => setPassword(e.target.value)} autoFocus required />
+                           <Input label="Crea tu Contraseña" type="password" placeholder="Mínimo 8 caracteres" icon={Lock} value={password} onChange={e => setPassword(e.target.value)} autoFocus required />
+                           
+                           <div className="bg-white/5 dark:bg-black/20 p-4 rounded-2xl border border-zinc-200 dark:border-white/5 space-y-2">
+                              <p className="text-xs font-bold text-slate-800 dark:text-zinc-300 uppercase tracking-widest mb-3">Políticas de Seguridad</p>
+                              {passwordValidations.map(validation => {
+                                 const isValid = validation.check(password);
+                                 return (
+                                    <div key={validation.id} className="flex items-center gap-3 transition-colors duration-300">
+                                       {isValid ? (
+                                          <CheckCircle2 size={16} className="text-emerald-500" />
+                                       ) : (
+                                          <Circle size={16} className="text-zinc-400 dark:text-zinc-600" />
+                                       )}
+                                       <span className={`text-xs font-medium transition-colors duration-300 ${isValid ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-500 dark:text-zinc-500'}`}>
+                                          {validation.text}
+                                       </span>
+                                    </div>
+                                 );
+                              })}
+                           </div>
                         </motion.div>
                      )}
 
@@ -375,7 +405,12 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
                   <Button 
                      type="submit" 
                      loading={loading}
-                     className="w-full h-14 rounded-2xl bg-zinc-900 dark:bg-white text-white dark:text-black font-black uppercase tracking-[0.2em] shadow-xl hover:scale-[1.02] active:scale-95 transition-all"
+                     disabled={mode === 'register' && step === 4 && !isPasswordValid}
+                     className={`w-full h-14 rounded-2xl font-black uppercase tracking-[0.2em] shadow-xl transition-all ${
+                        mode === 'register' && step === 4 && !isPasswordValid
+                           ? 'bg-zinc-300 dark:bg-zinc-700 text-zinc-500 dark:text-zinc-400 cursor-not-allowed opacity-60'
+                           : 'bg-zinc-900 dark:bg-white text-white dark:text-black hover:scale-[1.02] active:scale-95'
+                     }`}
                      icon={step === (mode === 'login' ? 2 : 5) ? LogIn : ArrowRight}
                   >
                      {step === (mode === 'login' ? 2 : 5) ? (mode === 'login' ? 'INICIAR SESIÓN' : 'ACTIVAR CUENTA') : 'CONTINUAR'}
