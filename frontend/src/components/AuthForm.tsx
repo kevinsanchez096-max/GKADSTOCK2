@@ -15,19 +15,26 @@ interface AuthFormProps {
 
 type FlowMode = 'login' | 'register';
 
-// ── Input oscuro reutilizable ────────────────────────────────────────────────
+// ── Input reutilizable (Dark + Light mode) ────────────────────────────────
 const DarkInput = ({
   label, type = 'text', placeholder, value, onChange,
   autoFocus = false, required = false, icon: Icon,
+  accentClass = 'focus:ring-blue-500/50 focus:border-blue-500',
+  isLight = false,
 }: {
   label: string; type?: string; placeholder?: string;
   value: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   autoFocus?: boolean; required?: boolean; icon?: React.ElementType;
+  accentClass?: string; isLight?: boolean;
 }) => (
   <div className="flex flex-col gap-1.5">
-    <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest pl-1">{label}</label>
+    <label className={`text-[10px] font-bold uppercase tracking-widest pl-1 ${
+      isLight ? 'text-slate-500' : 'text-zinc-400'
+    }`}>{label}</label>
     <div className="relative">
-      {Icon && <Icon size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" />}
+      {Icon && <Icon size={15} className={`absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none ${
+        isLight ? 'text-slate-400' : 'text-zinc-500'
+      }`} />}
       <input
         type={type}
         placeholder={placeholder}
@@ -35,7 +42,11 @@ const DarkInput = ({
         onChange={onChange}
         autoFocus={autoFocus}
         required={required}
-        className={`w-full bg-slate-900/60 border border-slate-700/50 rounded-xl px-4 py-3.5 text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition-all duration-300 backdrop-blur-md shadow-inner${Icon ? ' pl-11' : ''}`}
+        className={`w-full rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 transition-all duration-300 backdrop-blur-md shadow-inner ${accentClass}${Icon ? ' pl-11' : ''} ${
+          isLight
+            ? 'bg-white/80 border border-slate-200 text-slate-800 placeholder:text-slate-400'
+            : 'bg-slate-900/60 border border-slate-700/50 text-white placeholder:text-slate-500'
+        }`}
       />
     </div>
   </div>
@@ -182,17 +193,29 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
 
   const handleSignUp = async () => {
     setLoading(true);
+    let signUpFailed = false;
     try {
       const { error: signUpError } = await supabase.auth.signUp({
         email: email.trim().toLowerCase(),
         password,
         options: {
           data: { full_name: fullName.trim(), organization_name: orgName.trim() },
-          emailRedirectTo: window.location.origin,
         },
       });
-      if (signUpError) throw signUpError;
 
+      if (signUpError) {
+        const msg = signUpError.message?.toLowerCase() ?? '';
+        // Único error definitivamente bloqueante: correo ya registrado
+        if (msg.includes('already registered') || msg.includes('user already registered')) {
+          throw new Error('Este correo ya está registrado. Por favor inicia sesión.');
+        }
+        // Cualquier otro error (500, SMTP, etc.) → lo logueamos pero continuamos
+        // El backend es resiliente y crea el usuario si no existe
+        console.warn('[SignUp] Error no crítico de Supabase (procediendo al backend):', signUpError.message);
+        signUpFailed = true;
+      }
+
+      // El backend crea usuario (si no existe), organización y perfil
       await register({
         email: email.trim().toLowerCase(),
         password,
@@ -200,11 +223,43 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
         orgName: orgName.trim(),
       });
 
-      toast.success('Registro procesado. Verifica tu email.');
+      if (signUpFailed) {
+        toast.warning('Cuenta creada. Revisa tu bandeja de entrada o carpeta Spam.');
+      } else {
+        toast.success('✅ Código enviado — revisa tu correo.');
+      }
       setStep(5);
     } catch (err: any) {
       setError(err.message || 'Error en registro.');
       toast.error('Fallo de registro');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ── Reenviar código OTP ────────────────────────────────────────────────────
+  const [resendCooldown, setResendCooldown] = React.useState(0);
+  
+  const handleResendOtp = async () => {
+    if (resendCooldown > 0) return;
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: email.trim().toLowerCase(),
+      });
+      if (error) throw error;
+      toast.success('Código reenviado. Revisa tu bandeja.');
+      // Cooldown de 60 segundos
+      setResendCooldown(60);
+      const interval = setInterval(() => {
+        setResendCooldown(prev => {
+          if (prev <= 1) { clearInterval(interval); return 0; }
+          return prev - 1;
+        });
+      }, 1000);
+    } catch (err: any) {
+      toast.error('No se pudo reenviar el código. Intenta en unos minutos.');
     } finally {
       setLoading(false);
     }
@@ -263,12 +318,25 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
 
   // ── Render principal ─────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen w-full bg-[#0a0a0f] flex flex-col font-sans text-white relative overflow-hidden">
+    <div className={`min-h-screen w-full flex flex-col font-sans relative overflow-hidden transition-colors duration-700 ${
+      darkMode ? 'bg-[#0a0a0f] text-white' : 'bg-slate-100 text-slate-900'
+    }`}>
 
-      {/* Ambient glows */}
+      {/* Ambient glows — modo login = azul, modo registro = verde/teal */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-20%] left-[10%] w-[70%] h-[70%] bg-brand-600/10 blur-[160px] rounded-full" />
-        <div className="absolute bottom-[-10%] right-[5%]  w-[60%] h-[60%] bg-blue-800/10 blur-[180px] rounded-full" />
+        <div className={`absolute top-[-30%] left-[-10%] w-[90%] h-[90%] blur-[200px] rounded-full transition-all duration-[1500ms] ${
+          !darkMode
+            ? (mode === 'login' ? 'bg-blue-400/30' : 'bg-emerald-400/25')
+            : (mode === 'login' ? 'bg-blue-600/25' : 'bg-emerald-500/25')
+        }`} />
+        <div className={`absolute bottom-[-20%] right-[-5%] w-[80%] h-[80%] blur-[220px] rounded-full transition-all duration-[1500ms] ${
+          !darkMode
+            ? (mode === 'login' ? 'bg-indigo-300/25' : 'bg-teal-300/25')
+            : (mode === 'login' ? 'bg-blue-900/20' : 'bg-teal-400/20')
+        }`} />
+        <div className={`absolute top-[20%] left-[20%] w-[60%] h-[60%] blur-[250px] rounded-full transition-all duration-[1500ms] ${
+          mode === 'register' ? 'opacity-100' : 'opacity-0'
+        } ${!darkMode ? 'bg-green-300/20' : 'bg-green-500/15'}`} />
       </div>
 
       {/* Header */}
@@ -298,11 +366,21 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
       <main className="flex-1 w-full flex items-center justify-center relative z-10 px-4 pt-24 pb-12">
         <div className="w-full max-w-md flex flex-col items-center gap-10">
 
-          {/* Headline */}
-          <div className="text-center px-4">
+          {/* Headline — gradiente cambia con el modo */}
+          <motion.div
+            key={mode}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="text-center px-4"
+          >
             <h1 className="text-4xl md:text-5xl font-black text-white leading-tight tracking-tighter uppercase">
               {mode === 'login' ? 'Acceso ' : 'Crea tu '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-blue-400">
+              <span className={`text-transparent bg-clip-text bg-gradient-to-r ${
+                mode === 'login'
+                  ? 'from-blue-400 to-brand-400'
+                  : 'from-emerald-400 to-teal-300'
+              }`}>
                 {mode === 'login' ? 'Corporativo' : 'Imperio'}
               </span>
             </h1>
@@ -311,10 +389,14 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
                 ? 'Acceso blindado mediante credenciales maestras corporativas.'
                 : 'Inicia tu despliegue operativo con verificación inmediata.'}
             </p>
-          </div>
+          </motion.div>
 
           {/* Tarjeta glassmorphism */}
-          <div className="w-full bg-white/[0.04] backdrop-blur-3xl border border-white/10 rounded-[2rem] p-8 md:p-10 shadow-2xl relative">
+          <div className={`w-full backdrop-blur-3xl rounded-[2rem] p-8 md:p-10 shadow-2xl relative border transition-all duration-[1200ms] ${
+            mode === 'login'
+              ? 'bg-white/[0.04] border-white/10'
+              : 'bg-white/[0.05] border-emerald-500/20'
+          }`}>
 
             {/* Botón atrás */}
             {step > 1 && (
@@ -324,11 +406,15 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
               </button>
             )}
 
-            {/* Barra de progreso */}
+            {/* Barra de progreso — color según modo */}
             <div className="flex gap-1.5 mb-8">
               {Array.from({ length: totalSteps }).map((_, i) => (
                 <div key={i}
-                  className={`h-1 flex-1 rounded-full transition-all duration-500 ${i < step ? 'bg-brand-500' : 'bg-white/10'}`} />
+                  className={`h-1 flex-1 rounded-full transition-all duration-700 ${
+                    i < step
+                      ? mode === 'login' ? 'bg-blue-500' : 'bg-emerald-500'
+                      : 'bg-white/10'
+                  }`} />
               ))}
             </div>
 
@@ -350,7 +436,8 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
                 {step === 1 && mode === 'login' && (
                   <motion.div key="l1" variants={slide} initial="initial" animate="animate" exit="exit" className="space-y-5">
                     <DarkInput label="Correo Electrónico" type="email" placeholder="TU CORREO ELECTRÓNICO"
-                      icon={Mail} value={email} onChange={e => setEmail(e.target.value)} autoFocus required />
+                      icon={Mail} value={email} onChange={e => setEmail(e.target.value)} autoFocus required
+                      accentClass="focus:ring-blue-500/50 focus:border-blue-500" isLight={!darkMode} />
                   </motion.div>
                 )}
 
@@ -374,7 +461,8 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
                     </div>
 
                     <DarkInput label="Llave de Acceso" type="password" placeholder="••••••••"
-                      icon={Lock} value={password} onChange={e => setPassword(e.target.value)} autoFocus required />
+                      icon={Lock} value={password} onChange={e => setPassword(e.target.value)} autoFocus required
+                      accentClass="focus:ring-blue-500/50 focus:border-blue-500" isLight={!darkMode} />
                   </motion.div>
                 )}
 
@@ -382,7 +470,8 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
                 {step === 1 && mode === 'register' && (
                   <motion.div key="r1" variants={slide} initial="initial" animate="animate" exit="exit" className="space-y-5">
                     <DarkInput label="Correo Electrónico" type="email" placeholder="TU CORREO ELECTRÓNICO"
-                      icon={Mail} value={email} onChange={e => setEmail(e.target.value)} autoFocus required />
+                      icon={Mail} value={email} onChange={e => setEmail(e.target.value)} autoFocus required
+                      accentClass="focus:ring-emerald-500/50 focus:border-emerald-500" isLight={!darkMode} />
                   </motion.div>
                 )}
 
@@ -390,7 +479,8 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
                 {step === 2 && mode === 'register' && (
                   <motion.div key="r2" variants={slide} initial="initial" animate="animate" exit="exit" className="space-y-5">
                     <DarkInput label="Tu Nombre Completo" type="text" placeholder="EJ. JUAN PÉREZ"
-                      icon={Sparkles} value={fullName} onChange={e => setFullName(e.target.value)} autoFocus />
+                      icon={Sparkles} value={fullName} onChange={e => setFullName(e.target.value)} autoFocus
+                      accentClass="focus:ring-emerald-500/50 focus:border-emerald-500" isLight={!darkMode} />
                   </motion.div>
                 )}
 
@@ -398,7 +488,8 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
                 {step === 3 && mode === 'register' && (
                   <motion.div key="r3" variants={slide} initial="initial" animate="animate" exit="exit" className="space-y-5">
                     <DarkInput label="Nombre de tu Organización" type="text" placeholder="MI EMPRESA SAS"
-                      icon={Package} value={orgName} onChange={e => setOrgName(e.target.value)} autoFocus />
+                      icon={Package} value={orgName} onChange={e => setOrgName(e.target.value)} autoFocus
+                      accentClass="focus:ring-emerald-500/50 focus:border-emerald-500" isLight={!darkMode} />
                   </motion.div>
                 )}
 
@@ -406,7 +497,8 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
                 {step === 4 && mode === 'register' && (
                   <motion.div key="r4" variants={slide} initial="initial" animate="animate" exit="exit" className="space-y-5">
                     <DarkInput label="Llave de Acceso" type="password" placeholder="MÍNIMO 8 CARACTERES"
-                      icon={Lock} value={password} onChange={e => setPassword(e.target.value)} autoFocus required />
+                      icon={Lock} value={password} onChange={e => setPassword(e.target.value)} autoFocus required
+                      accentClass="focus:ring-emerald-500/50 focus:border-emerald-500" />
 
                     <div className="bg-white/[0.03] border border-white/8 p-4 rounded-2xl space-y-2.5">
                       <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
@@ -432,14 +524,15 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
                 {/* ── REGISTRO paso 5: OTP ── */}
                 {step === 5 && mode === 'register' && (
                   <motion.div key="r5" variants={slide} initial="initial" animate="animate" exit="exit" className="space-y-6">
-                    <div className="text-center p-5 bg-brand-500/5 border border-brand-500/15 rounded-2xl">
-                      <ShieldCheck className="mx-auto text-brand-400 mb-3" size={30} />
-                      <p className="text-[11px] font-black text-brand-400 uppercase tracking-widest">Verifica tu Cuenta</p>
+                    <div className="text-center p-5 bg-emerald-500/5 border border-emerald-500/15 rounded-2xl">
+                      <ShieldCheck className="mx-auto text-emerald-400 mb-3" size={30} />
+                      <p className="text-[11px] font-black text-emerald-400 uppercase tracking-widest">Verifica tu Cuenta</p>
                       <p className="text-[10px] text-zinc-500 mt-2 uppercase tracking-wide leading-relaxed">
                         Enviamos un código de 6 dígitos a{' '}
                         <span className="text-white font-bold">{email}</span>.
                         Ingrésalo para activar tu acceso.
                       </p>
+                      <p className="text-[9px] text-zinc-600 mt-1">⚠️ Revisa también la carpeta de Spam.</p>
                     </div>
 
                     <div className="flex justify-between gap-2 sm:gap-3">
@@ -450,8 +543,26 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
                           onChange={e => handleOtpChange(i, e.target.value)}
                           onKeyDown={e => handleOtpKeyDown(i, e)}
                           autoFocus={i === 0} required
-                          className="w-10 h-12 sm:w-12 sm:h-14 text-center text-xl sm:text-2xl font-black rounded-xl bg-slate-900/60 border border-slate-700/50 text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition-all duration-300 backdrop-blur-md shadow-inner" />
+                          className="w-10 h-12 sm:w-12 sm:h-14 text-center text-xl sm:text-2xl font-black rounded-xl bg-slate-900/60 border border-slate-700/50 text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all duration-300 backdrop-blur-md shadow-inner" />
                       ))}
+                    </div>
+
+                    {/* Botón reenviar con cooldown */}
+                    <div className="text-center">
+                      <button
+                        type="button"
+                        onClick={handleResendOtp}
+                        disabled={resendCooldown > 0 || loading}
+                        className={`text-[11px] font-bold uppercase tracking-widest transition-colors ${
+                          resendCooldown > 0
+                            ? 'text-zinc-600 cursor-not-allowed'
+                            : 'text-emerald-400 hover:text-emerald-300'
+                        }`}
+                      >
+                        {resendCooldown > 0
+                          ? `↺ Reenviar código (${resendCooldown}s)`
+                          : '↺ No llegó el código — Reenviar'}
+                      </button>
                     </div>
                   </motion.div>
                 )}

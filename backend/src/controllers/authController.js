@@ -336,7 +336,27 @@ const authController = {
                 }
             }
 
-            console.log('✨ Registro completado bajo autoridad administrativa resiliente.');
+            console.log('✨ Registro completado. Disparando correo OTP desde el backend...');
+
+            // Reintento de envío OTP via cliente anónimo (maximiza entrega)
+            try {
+                const { createClient } = require('@supabase/supabase-js');
+                const anonClient = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY, {
+                    auth: { persistSession: false, autoRefreshToken: false }
+                });
+                const { error: resendErr } = await anonClient.auth.resend({
+                    type: 'signup',
+                    email: email.toLowerCase()
+                });
+                if (resendErr) {
+                    console.warn('⚠️ Reintento OTP no crítico:', resendErr.message);
+                } else {
+                    console.log('📧 Correo OTP redisparado correctamente.');
+                }
+            } catch (resendEx) {
+                console.warn('⚠️ Excepción OTP no crítica:', resendEx.message);
+            }
+
             res.status(201).json({ 
                 message: 'Registro exitoso. Bienvenido a GKAD STOCK.', 
                 user: authData.user, 
