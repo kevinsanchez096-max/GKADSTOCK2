@@ -215,7 +215,7 @@ export const Dashboard = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
-          <Card className="lg:col-span-2 p-8 h-[450px] flex flex-col glass-dark border-white/5 relative overflow-hidden group">
+          <Card className="lg:col-span-2 p-8 h-[450px] flex flex-col bg-white/80 dark:bg-slate-900/40 backdrop-blur-md border border-gray-200/50 dark:border-slate-700/50 rounded-3xl relative overflow-hidden group">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-brand-500 to-transparent opacity-30" />
             <div className="flex items-center justify-between mb-8">
               <div>
@@ -253,10 +253,10 @@ export const Dashboard = () => {
             </div>
           </Card>
 
-          <Card className="p-8 flex flex-col glass-dark border-white/5 relative overflow-hidden">
+          <Card className="p-8 flex flex-col bg-white/80 dark:bg-slate-900/40 backdrop-blur-md border border-gray-200/50 dark:border-slate-700/50 rounded-3xl relative overflow-hidden">
             <div className="absolute top-[-10%] right-[-10%] w-40 h-40 bg-brand-500/10 blur-[60px] rounded-full" />
             <h3 className="font-black text-xl dark:text-white mb-8 font-outfit uppercase tracking-tight flex items-center gap-3">
-               <div className="p-2 bg-zinc-900 rounded-lg border border-white/5 text-zinc-400"><ShoppingCart size={20} /></div>
+               <div className="p-2 bg-slate-800/50 rounded-lg border border-slate-700/50 text-slate-400"><ShoppingCart size={20} /></div>
                TOP VENTAS
             </h3>
             <div className="flex-1 space-y-8 py-2">
@@ -313,10 +313,10 @@ const KPICard = ({ title, value, icon: Icon, trend, trendUp, description, alert,
   const activeTrendClass = trendClassesMap[accentColor] || trendClassesMap['emerald'];
 
   return (
-  <Card className={`${variant === 'large' ? 'p-8' : 'p-6'} flex flex-col rounded-[2rem] transition-all duration-300
-                bg-white border border-gray-100 shadow-sm
-                dark:bg-gray-900 dark:border-white/5 dark:shadow-none
-                hover:shadow-lg hover:-translate-y-1 dark:hover:bg-gray-800 group overflow-hidden relative`}>
+  <Card className={`${variant === 'large' ? 'p-8' : 'p-6'} flex flex-col rounded-3xl transition-all duration-300
+                bg-white/80 border border-gray-200/50 shadow-sm backdrop-blur-md
+                dark:bg-slate-900/40 dark:border-slate-700/50 dark:shadow-none
+                hover:shadow-lg hover:-translate-y-1 dark:hover:bg-slate-800/50 group overflow-hidden relative`}>
     <div className="relative z-10">
       <div className="flex justify-between items-start mb-4">
         <div className={`p-3 rounded-2xl transition-all duration-500 ${
