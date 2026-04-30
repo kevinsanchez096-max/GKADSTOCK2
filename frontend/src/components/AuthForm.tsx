@@ -1,20 +1,8 @@
 import React, { useState } from 'react';
-import { Button, Input } from './ui-components';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  LogIn, 
-  Mail, 
-  ArrowRight, 
-  ArrowLeft, 
-  Package, 
-  CheckCircle2, 
-  KeyRound,
-  ShieldCheck,
-  Sun,
-  Moon,
-  Sparkles,
-  Lock,
-  Circle
+import {
+  Mail, ArrowLeft, Package, CheckCircle2, KeyRound,
+  ShieldCheck, Sun, Moon, Sparkles, Lock, Circle, LogIn, ArrowRight
 } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
 import { toast } from 'sonner';
@@ -27,106 +15,165 @@ interface AuthFormProps {
 
 type FlowMode = 'login' | 'register';
 
+// ── Input oscuro reutilizable ────────────────────────────────────────────────
+const DarkInput = ({
+  label, type = 'text', placeholder, value, onChange,
+  autoFocus = false, required = false, icon: Icon,
+}: {
+  label: string; type?: string; placeholder?: string;
+  value: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  autoFocus?: boolean; required?: boolean; icon?: React.ElementType;
+}) => (
+  <div className="flex flex-col gap-1.5">
+    <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest pl-1">{label}</label>
+    <div className="relative">
+      {Icon && <Icon size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" />}
+      <input
+        type={type}
+        placeholder={placeholder}
+        value={value}
+        onChange={onChange}
+        autoFocus={autoFocus}
+        required={required}
+        className={`w-full bg-slate-900/60 border border-slate-700/50 rounded-xl px-4 py-3.5 text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition-all duration-300 backdrop-blur-md shadow-inner${Icon ? ' pl-11' : ''}`}
+      />
+    </div>
+  </div>
+);
+
+// ── Botón primario (blanco) ──────────────────────────────────────────────────
+const PrimaryBtn = ({
+  children, onClick, type = 'button', disabled = false, loading = false
+}: {
+  children: React.ReactNode; onClick?: () => void;
+  type?: 'button' | 'submit'; disabled?: boolean; loading?: boolean;
+}) => (
+  <button
+    type={type}
+    onClick={onClick}
+    disabled={disabled || loading}
+    className={`w-full py-4 rounded-2xl font-black uppercase tracking-[0.18em] text-sm
+      transition-all shadow-xl flex items-center justify-center gap-2
+      ${disabled || loading
+        ? 'bg-white/10 text-zinc-600 cursor-not-allowed'
+        : 'bg-white text-black hover:bg-zinc-100 active:scale-[0.98]'}`}
+  >
+    {loading ? <span className="animate-pulse">PROCESANDO...</span> : children}
+  </button>
+);
+
+// ── Componente principal ─────────────────────────────────────────────────────
 export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
-  const [mode, setMode] = useState<FlowMode>('login');
-  const [step, setStep] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  
-  const { login, register } = useAuthStore();
-  
-  // States
-  const [email, setEmail] = useState('');
+  const [mode, setMode]               = useState<FlowMode>('login');
+  const [step, setStep]               = useState(1);
+  const [loading, setLoading]         = useState(false);
+  const [error, setError]             = useState<string | null>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
-  const [otpValues, setOtpValues] = useState<string[]>(Array(6).fill(''));
   const [fullName, setFullName] = useState('');
-  const [orgName, setOrgName] = useState('');
-  const [showSuccessScreen, setShowSuccessScreen] = useState(false);
+  const [orgName,  setOrgName]  = useState('');
+  const [otpValues, setOtpValues] = useState<string[]>(Array(6).fill(''));
   const otpRefs = React.useRef<(HTMLInputElement | null)[]>([]);
 
+  const { login, register } = useAuthStore();
+
+  const totalSteps = mode === 'login' ? 2 : 5;
+
+  // ── Validaciones de contraseña ───────────────────────────────────────────
+  const passwordRules = [
+    { id: 'len',   text: 'Mínimo 8 caracteres',  check: (p: string) => p.length >= 8 },
+    { id: 'up',    text: 'Una letra mayúscula',   check: (p: string) => /[A-Z]/.test(p) },
+    { id: 'low',   text: 'Una letra minúscula',   check: (p: string) => /[a-z]/.test(p) },
+    { id: 'num',   text: 'Un número',             check: (p: string) => /[0-9]/.test(p) },
+    { id: 'spec',  text: 'Un carácter especial',  check: (p: string) => /[^A-Za-z0-9]/.test(p) },
+  ];
+  const isPasswordValid = passwordRules.every(r => r.check(password));
+
+  // ── OTP handlers ────────────────────────────────────────────────────────
   const handleOtpChange = (index: number, value: string) => {
     if (value.length > 1) {
-       // Paste logic
-       const pastedData = value.replace(/\D/g, '').slice(0, 6).split('');
-       const newOtp = [...otpValues];
-       pastedData.forEach((char, i) => { if (index + i < 6) newOtp[index + i] = char; });
-       setOtpValues(newOtp);
-       if (index + pastedData.length < 6) {
-          otpRefs.current[index + pastedData.length]?.focus();
-       } else {
-          otpRefs.current[5]?.focus();
-       }
-       return;
+      const digits = value.replace(/\D/g, '').slice(0, 6).split('');
+      const next = [...otpValues];
+      digits.forEach((d, i) => { if (index + i < 6) next[index + i] = d; });
+      setOtpValues(next);
+      const focus = Math.min(index + digits.length, 5);
+      otpRefs.current[focus]?.focus();
+      return;
     }
-    
     if (!/^\d*$/.test(value)) return;
-
-    const newOtp = [...otpValues];
-    newOtp[index] = value;
-    setOtpValues(newOtp);
-
-    if (value && index < 5) {
-      otpRefs.current[index + 1]?.focus();
-    }
+    const next = [...otpValues];
+    next[index] = value;
+    setOtpValues(next);
+    if (value && index < 5) otpRefs.current[index + 1]?.focus();
   };
-
   const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Backspace' && !otpValues[index] && index > 0) {
+    if (e.key === 'Backspace' && !otpValues[index] && index > 0)
       otpRefs.current[index - 1]?.focus();
+  };
+
+  // ── Flujo de navegación ──────────────────────────────────────────────────
+  const handleNext = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setError(null);
+
+    if (mode === 'login') {
+      if (step === 1) {
+        if (!email.trim() || !email.includes('@'))
+          return setError('Ingresa un correo profesional válido.');
+        setStep(2);
+      } else {
+        await handleLogin();
+      }
+    } else {
+      if (step === 1) {
+        if (!email.trim() || !email.includes('@')) return setError('Correo inválido.');
+        setStep(2);
+      } else if (step === 2) {
+        if (!fullName.trim()) return setError('El nombre es obligatorio.');
+        setStep(3);
+      } else if (step === 3) {
+        if (!orgName.trim()) return setError('Falta el nombre de la organización.');
+        setStep(4);
+      } else if (step === 4) {
+        if (!isPasswordValid) return setError('La contraseña no cumple los requisitos de seguridad.');
+        await handleSignUp();
+      } else {
+        await handleVerifyRegistration();
+      }
     }
   };
 
-  const passwordValidations = [
-    { id: 'length', text: 'Mínimo 8 caracteres', check: (pwd: string) => pwd.length >= 8 },
-    { id: 'uppercase', text: 'Una letra mayúscula', check: (pwd: string) => /[A-Z]/.test(pwd) },
-    { id: 'lowercase', text: 'Una letra minúscula', check: (pwd: string) => /[a-z]/.test(pwd) },
-    { id: 'number', text: 'Un número', check: (pwd: string) => /[0-9]/.test(pwd) },
-    { id: 'special', text: 'Un carácter especial', check: (pwd: string) => /[^A-Za-z0-9]/.test(pwd) }
-  ];
-
-  const isPasswordValid = passwordValidations.every(v => v.check(password));
-
-  const handleNext = async (e?: React.FormEvent) => {
-     if (e) e.preventDefault();
-     setError(null);
-     
-     if (mode === 'login') {
-        if (step === 1) {
-           if (!email.trim() || !email.includes('@')) {
-              setError('Ingresa un correo profesional válido.');
-              return;
-           }
-           setStep(2);
-        } else if (step === 2) {
-           await handleLogin();
-        }
-     } else {
-        // MODO REGISTRO
-        if (step === 1) {
-           if (!email.trim() || !email.includes('@')) return setError('Correo inválido.');
-           setStep(2);
-        } else if (step === 2) {
-           if (!fullName.trim()) return setError('El nombre es obligatorio.');
-           setStep(3);
-        } else if (step === 3) {
-           if (!orgName.trim()) return setError('Falta el nombre de la organización.');
-           setStep(4);
-        } else if (step === 4) {
-           if (!isPasswordValid) return setError('La contraseña no cumple con los requisitos de seguridad.');
-           await handleSignUp();
-        } else if (step === 5) {
-           await handleVerifyRegistration();
-        }
-     }
-  };
-
+  // ── Login — con guards explícitos para evitar el 400 ────────────────────
   const handleLogin = async () => {
+    const cleanEmail    = email.trim().toLowerCase();
+    const cleanPassword = password.trim();
+
+    // Guard: evitar payload vacío que causa Error 400 en Supabase
+    if (!cleanEmail || !cleanEmail.includes('@')) {
+      setError('El correo es inválido. Haz clic en CAMBIAR para corregirlo.');
+      setStep(1);
+      return;
+    }
+    if (!cleanPassword) {
+      setError('La llave de acceso no puede estar vacía.');
+      return;
+    }
+
+    console.log('[LOGIN] Enviando → email:', cleanEmail, '| password length:', cleanPassword.length);
+
     setLoading(true);
     try {
-      await login(email.trim().toLowerCase(), password);
-      toast.success('Sesión iniciada con éxito.');
+      await login(cleanEmail, cleanPassword);
+      toast.success('Sincronización exitosa.');
     } catch (err: any) {
-      setError(err.message || 'Error en credenciales.');
+      console.error('[LOGIN ERROR]', err);
+      const msg = err?.message || '';
+      if (msg.includes('Invalid login credentials') || msg.includes('400'))
+        setError('Email o llave de acceso incorrectos. Verifica tus datos.');
+      else
+        setError(msg || 'Error al iniciar sesión.');
       toast.error('Fallo de acceso');
     } finally {
       setLoading(false);
@@ -136,29 +183,21 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
   const handleSignUp = async () => {
     setLoading(true);
     try {
-      // 1. Registro inicial en Supabase Auth (Cliente)
-      // Esto enviará el correo de confirmación
-      const { data, error: signUpError } = await supabase.auth.signUp({
+      const { error: signUpError } = await supabase.auth.signUp({
         email: email.trim().toLowerCase(),
         password,
         options: {
-          data: {
-            full_name: fullName.trim(),
-            organization_name: orgName.trim()
-          },
-          emailRedirectTo: window.location.origin
-        }
+          data: { full_name: fullName.trim(), organization_name: orgName.trim() },
+          emailRedirectTo: window.location.origin,
+        },
       });
-
       if (signUpError) throw signUpError;
 
-      // 2. Notificar al backend para crear la infraestructura (Org, Perfil)
-      // El backend lo creará como "pendiente" o "inactivo"
       await register({
         email: email.trim().toLowerCase(),
         password,
         fullName: fullName.trim(),
-        orgName: orgName.trim()
+        orgName: orgName.trim(),
       });
 
       toast.success('Registro procesado. Verifica tu email.');
@@ -177,8 +216,8 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
     setLoading(true);
     try {
       await useAuthStore.getState().activateAccount(email.trim().toLowerCase(), code);
-      toast.success('¡Cuenta verificada y activada! Ya puedes entrar.');
-      setShowSuccessScreen(true);
+      toast.success('¡Cuenta verificada y activada!');
+      setShowSuccess(true);
     } catch (err: any) {
       setError(err.response?.data?.error || err.message || 'Código inválido o expirado.');
       toast.error('Error de verificación');
@@ -187,243 +226,281 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
     }
   };
 
-  const prevStep = () => {
-     setError(null);
-     setStep(s => Math.max(1, s - 1));
+  const prevStep   = () => { setError(null); setStep(s => Math.max(1, s - 1)); };
+  const switchMode = (m: FlowMode) => {
+    setMode(m); setStep(1); setError(null);
+    setEmail(''); setPassword(''); setOtpValues(Array(6).fill(''));
+    setShowSuccess(false);
   };
 
-  const switchMode = (newMode: FlowMode) => {
-     setMode(newMode);
-     setStep(1);
-     setError(null);
-     setPassword('');
-     setOtpValues(Array(6).fill(''));
-     setShowSuccessScreen(false);
+  const slide = {
+    initial: { opacity: 0, y: 14, filter: 'blur(6px)' },
+    animate: { opacity: 1, y: 0,  filter: 'blur(0px)',  transition: { duration: 0.28 } },
+    exit:    { opacity: 0, y: -14, filter: 'blur(6px)', transition: { duration: 0.18 } },
   };
 
-  const variants = {
-    initial: { opacity: 0, y: 15, filter: 'blur(5px)' },
-    animate: { opacity: 1, y: 0, filter: 'blur(0px)' },
-    exit:    { opacity: 0, y: -15, filter: 'blur(5px)' }
-  };
-
-  if (showSuccessScreen) {
+  // ── Pantalla de éxito ────────────────────────────────────────────────────
+  if (showSuccess) {
     return (
-      <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-6">
-        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="w-full max-w-md bg-white dark:bg-black/20 backdrop-blur-3xl border border-zinc-200 dark:border-white/10 rounded-[2rem] p-10 text-center shadow-2xl">
-           <div className="h-20 w-20 bg-emerald-500/10 rounded-3xl flex items-center justify-center text-emerald-500 mx-auto mb-6">
-              <CheckCircle2 size={40} />
-           </div>
-           <h2 className="text-3xl font-black text-slate-900 dark:text-white uppercase font-outfit tracking-tighter">¡Operación Exitosa!</h2>
-           <p className="text-slate-600 dark:text-zinc-400 mt-4 font-medium">Tu identidad ha sido verificada y tu organización está lista para el despliegue.</p>
-           <Button onClick={() => switchMode('login')} className="w-full h-14 mt-10 rounded-2xl bg-brand-500 text-white font-black uppercase tracking-widest shadow-xl shadow-brand-500/20">
-              INICIAR SESIÓN AHORA
-           </Button>
+      <div className="min-h-screen w-full bg-[#0a0a0f] flex items-center justify-center p-6">
+        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+          className="w-full max-w-md bg-white/[0.04] backdrop-blur-3xl border border-white/10 rounded-[2rem] p-10 text-center shadow-2xl">
+          <div className="h-20 w-20 bg-emerald-500/10 rounded-3xl flex items-center justify-center text-emerald-400 mx-auto mb-6">
+            <CheckCircle2 size={40} />
+          </div>
+          <h2 className="text-3xl font-black text-white uppercase tracking-tighter">¡Operación Exitosa!</h2>
+          <p className="text-zinc-400 mt-4 text-sm leading-relaxed">
+            Tu identidad ha sido verificada y tu organización está lista para el despliegue.
+          </p>
+          <button onClick={() => switchMode('login')}
+            className="w-full py-4 mt-10 rounded-2xl bg-white text-black font-black uppercase tracking-widest hover:bg-zinc-100 transition-all shadow-xl">
+            → INICIAR SESIÓN AHORA
+          </button>
         </motion.div>
       </div>
     );
   }
 
+  // ── Render principal ─────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-950 flex flex-col font-sans text-slate-900 dark:text-zinc-100 relative overflow-hidden transition-colors duration-500">
-      
-      {/* HEADER FIJO */}
-      <header className="absolute top-0 left-0 w-full px-6 py-6 flex justify-between items-center z-50">
-         <div className="flex items-center gap-3">
-           <div className="h-10 w-10 bg-gradient-to-tr from-brand-600 to-blue-500 rounded-2xl flex items-center justify-center shadow-lg shadow-brand-500/30">
-             <Package className="text-white h-5 w-5" />
-           </div>
-           <span className="text-lg font-black tracking-tighter font-outfit uppercase text-slate-900 dark:text-white">GKAD <span className="text-brand-500">STOCK</span></span>
-         </div>
-         
-         <div className="flex items-center gap-6">
-            <button 
-              onClick={() => switchMode(mode === 'login' ? 'register' : 'login')} 
-              className="text-[11px] font-bold text-zinc-400 hover:text-brand-500 uppercase tracking-widest transition-colors"
-            >
-               {mode === 'login' ? '¿No tienes cuenta? Regístrate' : '¿Ya tienes cuenta? Inicia Sesión'}
-            </button>
-            <div className="w-[1px] h-6 bg-black/5 dark:bg-white/10 hidden sm:block" />
-            <button 
-              onClick={toggleDarkMode}
-              className="h-10 w-10 hidden sm:flex items-center justify-center bg-black/5 dark:bg-white/5 backdrop-blur-xl border border-black/10 dark:border-white/10 rounded-xl text-zinc-500 dark:text-zinc-400 hover:text-brand-500 transition-all shadow-xl"
-            >
-              {darkMode ? <Sun size={18} /> : <Moon size={18} />}
-            </button>
-         </div>
-      </header>
+    <div className="min-h-screen w-full bg-[#0a0a0f] flex flex-col font-sans text-white relative overflow-hidden">
 
-      {/* AMBIENT GLOWS */}
+      {/* Ambient glows */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-[50%] h-[50%] bg-brand-500/10 blur-[150px] rounded-full mix-blend-screen" />
-        <div className="absolute bottom-1/4 right-1/4 w-[60%] h-[60%] bg-blue-600/10 blur-[180px] rounded-full mix-blend-screen" />
+        <div className="absolute top-[-20%] left-[10%] w-[70%] h-[70%] bg-brand-600/10 blur-[160px] rounded-full" />
+        <div className="absolute bottom-[-10%] right-[5%]  w-[60%] h-[60%] bg-blue-800/10 blur-[180px] rounded-full" />
       </div>
 
-      {/* CENTRO INMERSIVO */}
-      <main className="flex-1 w-full flex items-center justify-center relative z-10 px-4">
-         <div className="w-full max-w-2xl flex flex-col items-center">
-            
-            <div className="text-center mb-16 px-4">
-               <h1 className="text-3xl md:text-5xl font-black text-slate-900 dark:text-white leading-tight tracking-tighter font-outfit uppercase">
-                  {mode === 'login' ? 'Bienvenido a la ' : 'Crea tu '}
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-500 to-blue-500">
-                     {mode === 'login' ? 'Nueva Era POS' : 'Imperio Comercial'}
-                  </span>
-               </h1>
-               <p className="text-slate-600 dark:text-zinc-400 font-medium text-xs md:text-sm mt-4 max-w-md mx-auto tracking-wide">
-                  {mode === 'login' 
-                     ? 'Acceso blindado mediante credenciales maestras corporativas.' 
-                     : 'Inicia tu despliegue operativo con verificación inmediata.'}
-               </p>
+      {/* Header */}
+      <header className="absolute top-0 left-0 w-full px-6 py-6 flex justify-between items-center z-50">
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 bg-gradient-to-tr from-brand-600 to-blue-500 rounded-2xl flex items-center justify-center shadow-lg shadow-brand-500/30">
+            <Package className="text-white h-5 w-5" />
+          </div>
+          <span className="text-lg font-black tracking-tighter uppercase text-white">
+            GKAD <span className="text-brand-400">STOCK</span>
+          </span>
+        </div>
+        <div className="flex items-center gap-5">
+          <button onClick={() => switchMode(mode === 'login' ? 'register' : 'login')}
+            className="text-[11px] font-bold text-zinc-500 hover:text-brand-400 uppercase tracking-widest transition-colors">
+            {mode === 'login' ? '¿Sin cuenta? → Regístrate' : '¿Ya tienes cuenta? → Entra'}
+          </button>
+          <div className="w-px h-6 bg-white/10 hidden sm:block" />
+          <button onClick={toggleDarkMode}
+            className="h-10 w-10 hidden sm:flex items-center justify-center bg-white/5 border border-white/10 rounded-xl text-zinc-400 hover:text-brand-400 transition-all">
+            {darkMode ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
+        </div>
+      </header>
+
+      {/* Cuerpo */}
+      <main className="flex-1 w-full flex items-center justify-center relative z-10 px-4 pt-24 pb-12">
+        <div className="w-full max-w-md flex flex-col items-center gap-10">
+
+          {/* Headline */}
+          <div className="text-center px-4">
+            <h1 className="text-4xl md:text-5xl font-black text-white leading-tight tracking-tighter uppercase">
+              {mode === 'login' ? 'Acceso ' : 'Crea tu '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-blue-400">
+                {mode === 'login' ? 'Corporativo' : 'Imperio'}
+              </span>
+            </h1>
+            <p className="text-zinc-500 text-xs mt-3 tracking-wide">
+              {mode === 'login'
+                ? 'Acceso blindado mediante credenciales maestras corporativas.'
+                : 'Inicia tu despliegue operativo con verificación inmediata.'}
+            </p>
+          </div>
+
+          {/* Tarjeta glassmorphism */}
+          <div className="w-full bg-white/[0.04] backdrop-blur-3xl border border-white/10 rounded-[2rem] p-8 md:p-10 shadow-2xl relative">
+
+            {/* Botón atrás */}
+            {step > 1 && (
+              <button onClick={prevStep}
+                className="absolute top-10 -left-5 md:-left-10 bg-white/5 border border-white/10 p-2 rounded-full text-zinc-400 hover:text-brand-400 shadow-md transition-all z-50">
+                <ArrowLeft size={16} />
+              </button>
+            )}
+
+            {/* Barra de progreso */}
+            <div className="flex gap-1.5 mb-8">
+              {Array.from({ length: totalSteps }).map((_, i) => (
+                <div key={i}
+                  className={`h-1 flex-1 rounded-full transition-all duration-500 ${i < step ? 'bg-brand-500' : 'bg-white/10'}`} />
+              ))}
             </div>
 
-            <div className="w-full max-w-md bg-white dark:bg-black/20 backdrop-blur-3xl border border-zinc-200 dark:border-white/10 rounded-[2rem] p-8 md:p-10 shadow-2xl relative">
-               
-               {/* STEP INDICATOR */}
-               {step > 1 && !showSuccessScreen && (
-                  <button onClick={prevStep} className="absolute top-10 -left-6 md:-left-10 bg-white dark:bg-zinc-800 p-2 rounded-full border border-zinc-200 dark:border-white/10 text-zinc-500 hover:text-brand-500 shadow-md transition-all z-50">
-                     <ArrowLeft size={16} />
-                  </button>
-               )}
+            <form onSubmit={handleNext} className="space-y-6">
 
-               <form onSubmit={handleNext} className="space-y-6">
-                  
-                  <AnimatePresence>
-                    {error && (
-                      <motion.div initial={{ opacity:0, height:0 }} animate={{ opacity:1, height:'auto' }} className="bg-red-500/10 text-red-400 px-4 py-3 rounded-xl border border-red-500/20 text-[10px] font-black uppercase tracking-widest text-center">
-                         {error}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+              {/* Banner de error */}
+              <AnimatePresence>
+                {error && (
+                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+                    className="bg-red-500/10 text-red-400 px-4 py-3 rounded-xl border border-red-500/20 text-[10px] font-black uppercase tracking-widest text-center">
+                    {error}
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
-                  <AnimatePresence mode="wait">
-                     {/* PASO 1: Email */}
-                     {step === 1 && (
-                        <motion.div key="s1" variants={variants} initial="initial" animate="animate" exit="exit" className="space-y-6">
-                           <Input 
-                              label="Correo Electrónico" 
-                              type="email" 
-                              placeholder="ceo@negocio.com" 
-                              icon={Mail} 
-                              value={email} 
-                              onChange={e => setEmail(e.target.value)} 
-                              autoFocus 
-                              required 
-                           />
-                        </motion.div>
-                     )}
+              <AnimatePresence mode="wait">
 
-                     {/* PASO 2: Password (Login) */}
-                     {step === 2 && mode === 'login' && (
-                        <motion.div key="s2" variants={variants} initial="initial" animate="animate" exit="exit" className="space-y-6">
-                           <Input 
-                              label="Contraseña" 
-                              type="password" 
-                              placeholder="••••••••" 
-                              icon={Lock} 
-                              value={password} 
-                              onChange={e => setPassword(e.target.value)} 
-                              autoFocus 
-                              required 
-                           />
-                        </motion.div>
-                     )}
+                {/* ── LOGIN paso 1: Email ── */}
+                {step === 1 && mode === 'login' && (
+                  <motion.div key="l1" variants={slide} initial="initial" animate="animate" exit="exit" className="space-y-5">
+                    <DarkInput label="Correo Electrónico" type="email" placeholder="TU CORREO ELECTRÓNICO"
+                      icon={Mail} value={email} onChange={e => setEmail(e.target.value)} autoFocus required />
+                  </motion.div>
+                )}
 
-                     {/* REGISTRO: PASO 2 (Nombre) */}
-                     {step === 2 && mode === 'register' && (
-                        <motion.div key="r2" variants={variants} initial="initial" animate="animate" exit="exit" className="space-y-6">
-                           <Input label="Tu Nombre Completo" type="text" placeholder="Ej. Juan Pérez" icon={Sparkles} value={fullName} onChange={e => setFullName(e.target.value)} autoFocus />
-                        </motion.div>
-                     )}
+                {/* ── LOGIN paso 2: Confirmación de email + Llave de acceso ── */}
+                {step === 2 && mode === 'login' && (
+                  <motion.div key="l2" variants={slide} initial="initial" animate="animate" exit="exit" className="space-y-5">
 
-                     {/* REGISTRO: PASO 3 (Org) */}
-                     {step === 3 && mode === 'register' && (
-                        <motion.div key="r3" variants={variants} initial="initial" animate="animate" exit="exit" className="space-y-6">
-                           <Input label="Nombre de tu Organización" type="text" placeholder="Mi Empresa SAS" icon={Package} value={orgName} onChange={e => setOrgName(e.target.value)} autoFocus />
-                        </motion.div>
-                     )}
+                    {/* Card de confirmación de correo */}
+                    <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-2xl px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <Mail size={15} className="text-brand-400 flex-shrink-0" />
+                        <span className="text-sm text-white font-semibold truncate max-w-[180px]">{email}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={prevStep}
+                        className="text-[10px] font-black text-zinc-400 hover:text-brand-400 uppercase tracking-widest transition-colors flex-shrink-0 ml-2"
+                      >
+                        CAMBIAR
+                      </button>
+                    </div>
 
-                     {/* REGISTRO: PASO 4 (Password) */}
-                     {step === 4 && mode === 'register' && (
-                        <motion.div key="r4" variants={variants} initial="initial" animate="animate" exit="exit" className="space-y-6">
-                           <Input label="Crea tu Contraseña" type="password" placeholder="Mínimo 8 caracteres" icon={Lock} value={password} onChange={e => setPassword(e.target.value)} autoFocus required />
-                           
-                           <div className="bg-white/5 dark:bg-black/20 p-4 rounded-2xl border border-zinc-200 dark:border-white/5 space-y-2">
-                              <p className="text-xs font-bold text-slate-800 dark:text-zinc-300 uppercase tracking-widest mb-3">Políticas de Seguridad</p>
-                              {passwordValidations.map(validation => {
-                                 const isValid = validation.check(password);
-                                 return (
-                                    <div key={validation.id} className="flex items-center gap-3 transition-colors duration-300">
-                                       {isValid ? (
-                                          <CheckCircle2 size={16} className="text-emerald-500" />
-                                       ) : (
-                                          <Circle size={16} className="text-zinc-400 dark:text-zinc-600" />
-                                       )}
-                                       <span className={`text-xs font-medium transition-colors duration-300 ${isValid ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-500 dark:text-zinc-500'}`}>
-                                          {validation.text}
-                                       </span>
-                                    </div>
-                                 );
-                              })}
-                           </div>
-                        </motion.div>
-                     )}
+                    <DarkInput label="Llave de Acceso" type="password" placeholder="••••••••"
+                      icon={Lock} value={password} onChange={e => setPassword(e.target.value)} autoFocus required />
+                  </motion.div>
+                )}
 
-                     {/* REGISTRO: PASO 5 (Verification) */}
-                     {step === 5 && mode === 'register' && (
-                        <motion.div key="r5" variants={variants} initial="initial" animate="animate" exit="exit" className="space-y-6">
-                           <div className="text-center p-6 bg-brand-500/5 border border-brand-500/10 rounded-2xl mb-6">
-                              <ShieldCheck className="mx-auto text-brand-500 mb-3" size={32} />
-                              <p className="text-[11px] font-black text-brand-500 uppercase tracking-widest">Verifica tu cuenta</p>
-                              <p className="text-[10px] text-zinc-500 mt-2 uppercase tracking-wide leading-relaxed">
-                                Hemos enviado un código de 6 dígitos a <span className="text-slate-900 dark:text-white font-bold">{email}</span>.
-                                Por favor ingrésalo abajo para activar tu acceso.
-                              </p>
-                           </div>
-                           
-                           <div className="flex justify-between gap-2 sm:gap-3">
-                              {otpValues.map((value, index) => (
-                                 <input
-                                    key={`otp-${index}`}
-                                    ref={el => otpRefs.current[index] = el}
-                                    type="text"
-                                    inputMode="numeric"
-                                    maxLength={1}
-                                    value={value}
-                                    onChange={(e) => handleOtpChange(index, e.target.value)}
-                                    onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                                    className="w-10 h-12 sm:w-12 sm:h-14 text-center text-xl sm:text-2xl font-black rounded-xl bg-white dark:bg-black/40 border border-zinc-200 dark:border-white/10 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all shadow-sm"
-                                    autoFocus={index === 0}
-                                    required
-                                 />
-                              ))}
-                           </div>
-                        </motion.div>
-                     )}
-                  </AnimatePresence>
+                {/* ── REGISTRO paso 1: Email ── */}
+                {step === 1 && mode === 'register' && (
+                  <motion.div key="r1" variants={slide} initial="initial" animate="animate" exit="exit" className="space-y-5">
+                    <DarkInput label="Correo Electrónico" type="email" placeholder="TU CORREO ELECTRÓNICO"
+                      icon={Mail} value={email} onChange={e => setEmail(e.target.value)} autoFocus required />
+                  </motion.div>
+                )}
 
-                  <Button 
-                     type="submit" 
-                     loading={loading}
-                     disabled={mode === 'register' && step === 4 && !isPasswordValid}
-                     className={`w-full h-14 rounded-2xl font-black uppercase tracking-[0.2em] shadow-xl transition-all ${
-                        mode === 'register' && step === 4 && !isPasswordValid
-                           ? 'bg-zinc-300 dark:bg-zinc-700 text-zinc-500 dark:text-zinc-400 cursor-not-allowed opacity-60'
-                           : 'bg-zinc-900 dark:bg-white text-white dark:text-black hover:scale-[1.02] active:scale-95'
-                     }`}
-                     icon={step === (mode === 'login' ? 2 : 5) ? LogIn : ArrowRight}
-                  >
-                     {step === (mode === 'login' ? 2 : 5) ? (mode === 'login' ? 'INICIAR SESIÓN' : 'ACTIVAR CUENTA') : 'CONTINUAR'}
-                  </Button>
+                {/* ── REGISTRO paso 2: Nombre ── */}
+                {step === 2 && mode === 'register' && (
+                  <motion.div key="r2" variants={slide} initial="initial" animate="animate" exit="exit" className="space-y-5">
+                    <DarkInput label="Tu Nombre Completo" type="text" placeholder="EJ. JUAN PÉREZ"
+                      icon={Sparkles} value={fullName} onChange={e => setFullName(e.target.value)} autoFocus />
+                  </motion.div>
+                )}
 
-                  <div className="pt-4 text-center">
-                     <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">
-                        {step === 5 ? '¿No recibiste el código? Revisa Spam o espera 60s' : 'Infraestructura de Seguridad GKAD STOCK v5'}
-                     </p>
-                  </div>
-               </form>
-            </div>
-         </div>
+                {/* ── REGISTRO paso 3: Organización ── */}
+                {step === 3 && mode === 'register' && (
+                  <motion.div key="r3" variants={slide} initial="initial" animate="animate" exit="exit" className="space-y-5">
+                    <DarkInput label="Nombre de tu Organización" type="text" placeholder="MI EMPRESA SAS"
+                      icon={Package} value={orgName} onChange={e => setOrgName(e.target.value)} autoFocus />
+                  </motion.div>
+                )}
+
+                {/* ── REGISTRO paso 4: Contraseña + validador ── */}
+                {step === 4 && mode === 'register' && (
+                  <motion.div key="r4" variants={slide} initial="initial" animate="animate" exit="exit" className="space-y-5">
+                    <DarkInput label="Llave de Acceso" type="password" placeholder="MÍNIMO 8 CARACTERES"
+                      icon={Lock} value={password} onChange={e => setPassword(e.target.value)} autoFocus required />
+
+                    <div className="bg-white/[0.03] border border-white/8 p-4 rounded-2xl space-y-2.5">
+                      <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
+                        Políticas de Seguridad
+                      </p>
+                      {passwordRules.map(rule => {
+                        const ok = rule.check(password);
+                        return (
+                          <div key={rule.id} className="flex items-center gap-3">
+                            {ok
+                              ? <CheckCircle2 size={15} className="text-emerald-400 flex-shrink-0" />
+                              : <Circle      size={15} className="text-zinc-600 flex-shrink-0" />}
+                            <span className={`text-xs font-medium transition-colors duration-300 ${ok ? 'text-emerald-400' : 'text-zinc-500'}`}>
+                              {rule.text}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* ── REGISTRO paso 5: OTP ── */}
+                {step === 5 && mode === 'register' && (
+                  <motion.div key="r5" variants={slide} initial="initial" animate="animate" exit="exit" className="space-y-6">
+                    <div className="text-center p-5 bg-brand-500/5 border border-brand-500/15 rounded-2xl">
+                      <ShieldCheck className="mx-auto text-brand-400 mb-3" size={30} />
+                      <p className="text-[11px] font-black text-brand-400 uppercase tracking-widest">Verifica tu Cuenta</p>
+                      <p className="text-[10px] text-zinc-500 mt-2 uppercase tracking-wide leading-relaxed">
+                        Enviamos un código de 6 dígitos a{' '}
+                        <span className="text-white font-bold">{email}</span>.
+                        Ingrésalo para activar tu acceso.
+                      </p>
+                    </div>
+
+                    <div className="flex justify-between gap-2 sm:gap-3">
+                      {otpValues.map((val, i) => (
+                        <input key={`otp-${i}`} ref={el => otpRefs.current[i] = el}
+                          type="text" inputMode="numeric" maxLength={1}
+                          value={val}
+                          onChange={e => handleOtpChange(i, e.target.value)}
+                          onKeyDown={e => handleOtpKeyDown(i, e)}
+                          autoFocus={i === 0} required
+                          className="w-10 h-12 sm:w-12 sm:h-14 text-center text-xl sm:text-2xl font-black rounded-xl bg-slate-900/60 border border-slate-700/50 text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition-all duration-300 backdrop-blur-md shadow-inner" />
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+
+              </AnimatePresence>
+
+              {/* ── CTAs por paso ── */}
+              {/* Login paso 1 y Registro paso 1,2,3 → blanco */}
+              {step === 1 && (
+                <PrimaryBtn type="submit" loading={loading}>
+                  <ArrowRight size={16} /> → SIGUIENTE PASO
+                </PrimaryBtn>
+              )}
+
+              {/* Login paso 2 → "Sincronizar y Entrar" */}
+              {step === 2 && mode === 'login' && (
+                <PrimaryBtn type="submit" loading={loading}>
+                  <LogIn size={16} /> → SINCRONIZAR Y ENTRAR
+                </PrimaryBtn>
+              )}
+
+              {/* Registro pasos intermedios (2,3) */}
+              {(step === 2 || step === 3) && mode === 'register' && (
+                <PrimaryBtn type="submit" loading={loading}>
+                  <ArrowRight size={16} /> → SIGUIENTE PASO
+                </PrimaryBtn>
+              )}
+
+              {/* Registro paso 4 — deshabilitado hasta contraseña válida */}
+              {step === 4 && mode === 'register' && (
+                <PrimaryBtn type="submit" loading={loading} disabled={!isPasswordValid}>
+                  <ArrowRight size={16} /> → CONTINUAR
+                </PrimaryBtn>
+              )}
+
+              {/* Registro paso 5 — OTP */}
+              {step === 5 && mode === 'register' && (
+                <button type="submit" disabled={loading}
+                  className="w-full py-4 rounded-2xl bg-brand-500 text-white font-black uppercase tracking-[0.18em] text-sm
+                    hover:bg-brand-600 active:scale-[0.98] transition-all shadow-xl shadow-brand-500/20
+                    disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                  <ShieldCheck size={16} />
+                  {loading ? 'VERIFICANDO...' : '→ ACTIVAR CUENTA'}
+                </button>
+              )}
+
+            </form>
+          </div>
+        </div>
       </main>
     </div>
   );

@@ -167,7 +167,10 @@ export const Dashboard = () => {
 
   return (
     <PlanGuard restrictedPlans={['Esencial']} moduleName="Dashboard de Analítica">
-      <div className="bg-transparent space-y-10 animate-slide-up">
+      <div className="relative space-y-10 animate-slide-up">
+        {/* Fondo Degradado Verde-Azul */}
+        <div className="fixed inset-0 z-0 bg-gradient-to-br from-emerald-500/10 via-blue-500/10 to-blue-600/10 dark:from-emerald-900/20 dark:via-blue-900/20 dark:to-blue-950/20 pointer-events-none" />
+        <div className="relative z-10">
         
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-1">
@@ -292,6 +295,7 @@ export const Dashboard = () => {
           </Card>
         </div>
 
+        </div>
       </div>
     </PlanGuard>
   );

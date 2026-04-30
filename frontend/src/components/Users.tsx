@@ -68,7 +68,18 @@ export const Users = () => {
         fullName: newEmployee.name,
         role: newEmployee.role
       });
-      toast.success('Usuario creado correctamente');
+      toast.success('✅ Usuario creado exitosamente', {
+        description: `El nuevo colaborador está listo para acceder al sistema`,
+        duration: 5000
+      });
+      // Efecto visual de cambio de paso
+      const bgElement = document.querySelector('body');
+      if (bgElement) {
+        bgElement.style.background = 'linear-gradient(135deg, #10b981 0%, #3b82f6 100%)';
+        setTimeout(() => {
+          bgElement.style.background = '';
+        }, 2000);
+      }
       fetchData();
       setIsModalOpen(false);
       setNewEmployee({ name: '', email: '', password: '', role: 'vendedor', status: 'active' });
