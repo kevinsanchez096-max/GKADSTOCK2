@@ -112,7 +112,7 @@ export const Input = ({ label, error, helperText, icon: Icon, className, onChang
 // CARD PREMIUM V5
 export const Card = ({ children, className }: { children: ReactNode; className?: string }) => {
   return (
-    <div className={cn('bg-white dark:bg-zinc-900/50 border border-slate-200/60 dark:border-white/5 rounded-3xl shadow-md dark:shadow-2xl backdrop-blur-xl overflow-hidden transition-all duration-500', className)}>
+    <div className={cn('bg-white dark:bg-[#0a0f1a]/80 backdrop-blur-xl border border-slate-200 dark:border-slate-800/80 rounded-2xl shadow-sm transition-all duration-300', className)}>
       {children}
     </div>
   );

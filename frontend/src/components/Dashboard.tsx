@@ -167,31 +167,34 @@ export const Dashboard = () => {
 
   return (
     <PlanGuard restrictedPlans={['Esencial']} moduleName="Dashboard de Analítica">
-      <div className="relative space-y-12 animate-slide-up pb-10">
-        {/* Fondo Degradado Verde-Azul */}
-        <div className="fixed inset-0 z-0 bg-gradient-to-br from-emerald-500/10 via-blue-500/10 to-blue-600/10 dark:from-emerald-900/20 dark:via-blue-900/20 dark:to-blue-950/20 pointer-events-none" />
+      <div className="relative space-y-10 md:space-y-12 animate-slide-up pb-10 min-h-screen -m-6 p-6 bg-slate-50/50 dark:bg-transparent">
         <div className="relative z-10">
         
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-gray-200 dark:border-white/5 pb-6">
-          <div className="space-y-2">
-            <h1 className="text-3xl md:text-4xl font-extrabold dark:text-white tracking-tight uppercase font-outfit">ANALYTICS ENGINE</h1>
-            <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-brand-500 animate-pulse shadow-lg shadow-brand-500/50" />
-              <p className="text-[11px] font-bold text-zinc-500 uppercase tracking-[0.3em]">GKAD STOCK - MONITORIZACIÓN EN TIEMPO REAL</p>
+        {/* HEADER DE LA SECCIÓN */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-4 md:pb-8">
+          <div className="space-y-1">
+            <h1 className="text-4xl md:text-[3.5rem] leading-none font-black text-[#0f172a] dark:text-white tracking-tighter uppercase font-outfit drop-shadow-sm">
+              ANALYTICS ENGINE
+            </h1>
+            <div className="flex items-center gap-2 mt-2">
+              <div className="h-2.5 w-2.5 rounded-full bg-brand-400 animate-pulse shadow-[0_0_8px_rgba(var(--brand-primary),0.8)] glow-brand" />
+              <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-[0.25em]">
+                GKAD STOCK - MONITORIZACIÓN EN TIEMPO REAL
+              </p>
             </div>
           </div>
 
-          <div className="flex items-center space-x-1 p-1 rounded-full transition-colors duration-300
-                          bg-gray-100 border border-gray-200
-                          dark:bg-gray-800 dark:border-gray-700">
+          {/* BOTONES DE FILTRO (PÍLDORA GRIS) */}
+          <div className="flex items-center p-1.5 rounded-[2rem] transition-colors duration-300
+                          bg-slate-200/80 dark:bg-slate-800/80 shadow-inner">
             {(['day', 'week', 'month', 'year'] as FilterRange[]).map((range) => (
               <button
                 key={range}
                 onClick={() => setTimeFilter(range)}
-                className={`px-4 py-1.5 text-xs font-extrabold uppercase tracking-wider transition-all rounded-full shadow-sm ${
+                className={`px-5 py-2 text-xs font-bold uppercase tracking-wider transition-all duration-300 rounded-[1.5rem] ${
                   timeFilter === range 
-                    ? 'bg-brand-500 text-white shadow-md shadow-brand-500/30'
-                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                    ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/30 dark:shadow-brand-500/20'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-300/50 dark:hover:bg-slate-700/50'
                 }`}
               >
                 {range === 'day' ? 'Hoy' : range === 'week' ? 'Semana' : range === 'month' ? 'Mes' : 'Año'}
@@ -200,63 +203,64 @@ export const Dashboard = () => {
           </div>
         </div>
 
+        {/* GRILLA SUPERIOR (3 COLUMNAS GRANDES) */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-          <KPICard title="Ingresos Brutos" value={`$${analytics.totalSales.toLocaleString()}`} icon={TrendingUp} trend="+12.5%" trendUp={true} description={`Ventas en el periodo: ${timeFilter}`} accentColor={accentColor} />
-          <KPICard title="Egresos Operativos" value={`$${analytics.totalExpenses.toLocaleString()}`} icon={ArrowDownRight} trendUp={false} trend="Fijo" description="Gastos detectados" alert={analytics.totalExpenses > analytics.totalSales} accentColor={accentColor} />
-          <KPICard title="Utilidad Real" value={`$${analytics.netUtility.toLocaleString()}`} icon={DollarSign} trendUp={analytics.netUtility > 0} trend="Neto" description="Margen del periodo" success={analytics.netUtility > 0} accentColor={accentColor} />
+          <KPICard title="Ingresos Brutos" value={`$${analytics.totalSales.toLocaleString()}`} icon={TrendingUp} trend="+12.5%" trendUp={true} description={`Ventas en el periodo: ${timeFilter}`} />
+          <KPICard title="Egresos Operativos" value={`$${analytics.totalExpenses.toLocaleString()}`} icon={ArrowDownRight} trendUp={false} trend="Fijo" description="Gastos detectados" alert={analytics.totalExpenses > analytics.totalSales} />
+          <KPICard title="Utilidad Real" value={`$${analytics.netUtility.toLocaleString()}`} icon={DollarSign} trendUp={analytics.netUtility > 0} trend="Neto" description="Margen del periodo" success={analytics.netUtility > 0} />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-          <KPICard title="Transacciones Totales" value={analytics.transactionCount} icon={Package} trend="+3" trendUp={true} description="Facturas emitidas" variant="mini" accentColor={accentColor} />
-          <KPICard title="Ticket Promedio" value={`$${analytics.averageTicket.toLocaleString()}`} icon={Layers} trend="Asset" trendUp={true} description="Gasto promedio por venta" variant="mini" accentColor={accentColor} />
-          <KPICard title="Divisiones" value={baseStats.activeCategories} icon={ArrowUpRight} trend="Activas" description="Categorías de stock" variant="mini" accentColor={accentColor} />
-          <KPICard title="Riesgos" value={baseStats.lowStockCount} icon={AlertTriangle} trendUp={false} trend={baseStats.lowStockCount > 0 ? "ALERTA" : "OK"} alert={baseStats.lowStockCount > 0} description="Stock crítico detectado" variant="mini" accentColor={accentColor} />
+        {/* GRILLA INFERIOR (4 COLUMNAS PEQUEÑAS) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 mt-6">
+          <KPICard title="Transacciones Totales" value={analytics.transactionCount} icon={Package} trend="+3" trendUp={true} description="Facturas emitidas" variant="mini" />
+          <KPICard title="Ticket Promedio" value={`$${analytics.averageTicket.toLocaleString()}`} icon={Layers} trend="Asset" trendUp={true} description="Gasto promedio por venta" variant="mini" />
+          <KPICard title="Divisiones" value={baseStats.activeCategories} icon={ArrowUpRight} trend="Activas" description="Categorías de stock" variant="mini" />
+          <KPICard title="Riesgos" value={baseStats.lowStockCount} icon={AlertTriangle} trendUp={false} trend={baseStats.lowStockCount > 0 ? "ALERTA" : "OK"} alert={baseStats.lowStockCount > 0} description="Stock crítico detectado" variant="mini" />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* GRÁFICA Y TOP VENTAS */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
           
-          <Card className="lg:col-span-2 p-8 h-[450px] flex flex-col bg-white/80 dark:bg-slate-900/40 backdrop-blur-md border border-gray-200/50 dark:border-slate-700/50 rounded-3xl relative overflow-hidden group">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-brand-500 to-transparent opacity-30" />
+          <Card className="lg:col-span-2 p-8 h-[450px] flex flex-col bg-white dark:bg-[#151b2b] rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none border border-transparent dark:border-slate-800/60 relative overflow-hidden group">
             <div className="flex items-center justify-between mb-8">
               <div>
-                <h3 className="font-black text-xl dark:text-white flex items-center gap-3 font-outfit uppercase tracking-tight">
-                  <div className="p-2 bg-brand-500/10 rounded-lg border border-brand-500/20 text-brand-500"><TrendingUp size={20} /></div>
+                <h3 className="font-black text-2xl text-slate-900 dark:text-white flex items-center gap-3 font-outfit uppercase tracking-tight">
+                  <div className="p-2.5 bg-brand-50 dark:bg-brand-500/10 rounded-full text-brand-500"><TrendingUp size={24} /></div>
                   FLUJO TRANSACCIONAL
                 </h3>
-                <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest mt-1">Histórico de rendimiento por periodo</p>
+                <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest mt-2 ml-1">Histórico de rendimiento por periodo</p>
               </div>
               <div className="flex items-center gap-2 text-[10px] font-black text-brand-500 bg-brand-500/5 px-3 py-1 rounded-full border border-brand-500/10">
                  <span className="h-1.5 w-1.5 rounded-full bg-brand-500 animate-pulse" /> LIVE STREAM
               </div>
             </div>
             
-            <div className="w-full min-h-[300px] flex-1 mt-4">
-              <ResponsiveContainer width="100%" height={300}>
-                <AreaChart data={analytics.chartData}>
+            <div className="flex-1 min-h-0 relative">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={analytics.chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="var(--brand-primary)" stopOpacity={0.3}/>
                       <stop offset="95%" stopColor="var(--brand-primary)" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#1f2937" opacity={0.5} />
-                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#6b7280', fontWeight: 'bold' }} dy={10} />
-                  <YAxis hide domain={['auto', 'auto']} />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" opacity={0.2} />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: 600 }} dy={10} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: 600 }} tickFormatter={(value) => `$${value/1000}k`} />
                   <Tooltip 
-                    contentStyle={{ backgroundColor: '#09090b', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }} 
-                    itemStyle={{ color: 'var(--brand-primary)', fontWeight: 'bold', fontSize: '12px' }}
-                    labelStyle={{ color: '#6b7280', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' }}
+                    contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)' }}
+                    itemStyle={{ color: '#e2e8f0', fontWeight: 'bold' }}
+                    labelStyle={{ color: '#94a3b8', marginBottom: '4px', fontSize: '12px', fontWeight: 'bold' }}
                   />
-                  <Area type="monotone" dataKey="ventas" stroke="var(--brand-primary)" strokeWidth={4} fillOpacity={1} fill="url(#colorSales)" animationDuration={2000} />
+                  <Area type="monotone" dataKey="sales" stroke="var(--brand-primary)" strokeWidth={4} fillOpacity={1} fill="url(#colorSales)" activeDot={{ r: 8, fill: 'var(--brand-primary)', stroke: '#fff', strokeWidth: 3 }} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
           </Card>
 
-          <Card className="p-8 flex flex-col bg-white/80 dark:bg-slate-900/40 backdrop-blur-md border border-gray-200/50 dark:border-slate-700/50 rounded-3xl relative overflow-hidden">
-            <div className="absolute top-[-10%] right-[-10%] w-40 h-40 bg-brand-500/10 blur-[60px] rounded-full" />
-            <h3 className="font-black text-xl dark:text-white mb-8 font-outfit uppercase tracking-tight flex items-center gap-3">
-               <div className="p-2 bg-slate-800/50 rounded-lg border border-slate-700/50 text-slate-400"><ShoppingCart size={20} /></div>
+          <Card className="p-8 flex flex-col bg-white dark:bg-[#151b2b] rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none border border-transparent dark:border-slate-800/60 relative overflow-hidden">
+            <h3 className="font-black text-2xl text-slate-900 dark:text-white mb-8 font-outfit uppercase tracking-tight flex items-center gap-3">
+               <div className="p-2.5 bg-brand-50 dark:bg-brand-500/10 rounded-full text-brand-500"><ShoppingCart size={24} /></div>
                TOP VENTAS
             </h3>
             <div className="flex-1 space-y-8 py-2">
@@ -272,15 +276,15 @@ export const Dashboard = () => {
                     <div key={idx} className="space-y-3 group">
                       <div className="flex justify-between items-end">
                         <div className="space-y-1 min-w-0">
-                           <p className="text-[9px] font-black text-brand-500 uppercase tracking-widest opacity-60">Puesto #0{idx+1}</p>
-                           <h4 className="font-black dark:text-zinc-100 truncate text-sm uppercase tracking-tight group-hover:text-white transition-colors">{p.name}</h4>
+                           <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Puesto #0{idx+1}</p>
+                           <h4 className="font-black text-slate-900 dark:text-white truncate text-base uppercase tracking-tight group-hover:text-brand-500 transition-colors">{p.name}</h4>
                         </div>
-                        <span className="font-black text-xs text-white bg-white/5 px-2.5 py-1 rounded-lg border border-white/5 shadow-inner">{p.quantity} U</span>
+                        <span className="font-black text-sm text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-xl">{p.quantity} U</span>
                       </div>
-                      <div className="h-2 w-full bg-black/40 rounded-full overflow-hidden border border-white/5 shadow-inner">
-                        <div className={`h-full bg-gradient-to-r from-brand-600 to-brand-400 rounded-full transition-all duration-1000 shadow-md shadow-brand-500/30`} style={{ width: `${percentage}%` }} />
+                      <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                        <div className={`h-full bg-brand-400 rounded-full transition-all duration-1000`} style={{ width: `${percentage}%` }} />
                       </div>
-                      <div className="text-[9px] text-zinc-500 font-black uppercase tracking-widest flex justify-between">
+                      <div className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest flex justify-between">
                         <span>Rendimiento del Mercado</span>
                         <span className="text-zinc-400">{percentage}%</span>
                       </div>
@@ -301,50 +305,53 @@ export const Dashboard = () => {
   );
 };
 
-const KPICard = ({ title, value, icon: Icon, trend, trendUp, description, alert, success, variant = 'large', accentColor = 'emerald' }: any) => {
-  // Mapa de clases para tendencias positivas basado en el color de acento
-  const trendClassesMap: Record<string, string> = {
-    violet: 'text-violet-600 bg-violet-50/20 dark:text-violet-400 dark:bg-violet-500/10',
-    blue: 'text-blue-600 bg-blue-50/20 dark:text-blue-400 dark:bg-blue-500/10',
-    teal: 'text-teal-600 bg-teal-50/20 dark:text-teal-400 dark:bg-teal-500/10',
-    emerald: 'text-emerald-600 bg-emerald-50/20 dark:text-emerald-400 dark:bg-emerald-500/10'
-  };
-
-  const activeTrendClass = trendClassesMap[accentColor] || trendClassesMap['emerald'];
-
+const KPICard = ({ title, value, icon: Icon, trend, trendUp, description, alert, success, variant = 'large' }: any) => {
   return (
-  <Card className={`${variant === 'large' ? 'p-8' : 'p-6'} flex flex-col rounded-3xl transition-all duration-300
-                bg-white/80 border border-gray-200/50 shadow-sm backdrop-blur-md
-                dark:bg-slate-900/40 dark:border-slate-700/50 dark:shadow-none
-                hover:shadow-lg hover:-translate-y-1 dark:hover:bg-slate-800/50 group overflow-hidden relative`}>
-    <div className="relative z-10">
-      <div className="flex justify-between items-start mb-4">
-        <div className={`p-3 rounded-2xl transition-all duration-500 ${
-          alert ? 'bg-red-50 text-red-500 dark:bg-red-500/10 dark:text-red-400' : 
-          success ? 'bg-green-50 text-green-500 dark:bg-green-500/10 dark:text-green-400' : 
-          'bg-brand-500/10 text-brand-500 dark:bg-brand-500/10 dark:text-brand-400 group-hover:bg-brand-500 group-hover:text-white'
-        }`}>
-          <Icon size={variant === 'large' ? 24 : 18} strokeWidth={2.5} />
-        </div>
-        {trend && (
-          <div className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest transition-all duration-500 ${
-            trendUp === true ? activeTrendClass : 
-            trendUp === false ? 'bg-red-50 text-red-600 dark:bg-red-500/20 dark:text-red-400' : 
-            'bg-gray-50 text-gray-600 dark:bg-gray-500/20 dark:text-gray-400'
+    <Card className={`group relative overflow-hidden transition-all duration-300 flex flex-col justify-between
+                     bg-white dark:bg-[#151b2b] 
+                     shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none
+                     border border-transparent dark:border-slate-800/60
+                     hover:-translate-y-1 hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] dark:hover:border-slate-700
+                     rounded-[2.5rem]
+                     ${variant === 'large' ? 'p-8 h-[220px]' : 'p-7 h-[200px]'}`}>
+      
+      {/* Cabecera de la Tarjeta (Icono + Tendencia) */}
+      <div className="flex justify-between items-start relative w-full">
+        <div className={`p-3.5 rounded-full flex items-center justify-center
+          ${alert ? 'bg-red-50 text-red-500 dark:bg-red-500/10 dark:text-red-400' : 
+            success ? 'bg-emerald-50 text-emerald-500 dark:bg-emerald-500/10 dark:text-emerald-400' : 
+            'bg-brand-50 text-brand-500 dark:bg-brand-500/10 dark:text-brand-400'
           }`}>
-            {trendUp === true && <ArrowUpRight size={10} />}
-            {trendUp === false && <ArrowDownRight size={10} />}
+          <Icon size={24} strokeWidth={2.5} />
+        </div>
+
+        {trend && (
+          <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-black uppercase tracking-widest
+            ${trendUp === true ? 'bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-400' : 
+              trendUp === false ? 'bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400' : 
+              'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
+            }`}>
+            {trendUp === true && <ArrowUpRight size={14} strokeWidth={3} />}
+            {trendUp === false && <ArrowDownRight size={14} strokeWidth={3} />}
             {trend}
           </div>
         )}
       </div>
-      <div className="flex flex-col space-y-2 mt-2">
-        <p className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">{title}</p>
-        <h2 className={`${variant === 'large' ? 'text-3xl md:text-4xl' : 'text-2xl'} font-extrabold text-gray-900 dark:text-white tracking-tight font-outfit uppercase`}>{value}</h2>
-        <p className="text-[11px] font-medium text-gray-400 dark:text-gray-500 mt-1">{description}</p>
+
+      {/* Cuerpo de la Tarjeta (Valores) */}
+      <div className="mt-auto relative w-full flex flex-col gap-1.5">
+        <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+          {title}
+        </p>
+        <div className="flex items-baseline gap-2">
+          <h2 className={`${variant === 'large' ? 'text-5xl' : 'text-4xl'} font-black text-[#0f172a] dark:text-white tracking-tighter font-outfit`}>
+            {value}
+          </h2>
+        </div>
+        <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">
+          {description}
+        </p>
       </div>
-    </div>
-    <div className="absolute bottom-0 left-0 h-1 w-0 bg-brand-500 group-hover:w-full transition-all duration-700 shadow-[0_0_15px_rgba(59,130,246,0.5)]" />
-  </Card>
-);
+    </Card>
+  );
 };
