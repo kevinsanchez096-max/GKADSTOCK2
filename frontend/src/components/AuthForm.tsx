@@ -193,41 +193,36 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
 
   const handleSignUp = async () => {
     setLoading(true);
-    let signUpFailed = false;
     try {
+      // PASO 1: Solo creamos el usuario en Supabase Auth (sin verificar).
+      // La organización y el perfil se crean SOLO después de que el usuario
+      // verifique su correo con el código OTP. Esto evita usuarios fantasma en la BD.
       const { error: signUpError } = await supabase.auth.signUp({
         email: email.trim().toLowerCase(),
         password,
         options: {
-          data: { full_name: fullName.trim(), organization_name: orgName.trim() },
+          // Guardamos los datos en metadata para usarlos después en activateAccount
+          data: {
+            full_name: fullName.trim(),
+            organization_name: orgName.trim(),
+          },
         },
       });
 
       if (signUpError) {
         const msg = signUpError.message?.toLowerCase() ?? '';
-        // Único error definitivamente bloqueante: correo ya registrado
         if (msg.includes('already registered') || msg.includes('user already registered')) {
           throw new Error('Este correo ya está registrado. Por favor inicia sesión.');
         }
-        // Cualquier otro error (500, SMTP, etc.) → lo logueamos pero continuamos
-        // El backend es resiliente y crea el usuario si no existe
-        console.warn('[SignUp] Error no crítico de Supabase (procediendo al backend):', signUpError.message);
-        signUpFailed = true;
-      }
-
-      // El backend crea usuario (si no existe), organización y perfil
-      await register({
-        email: email.trim().toLowerCase(),
-        password,
-        fullName: fullName.trim(),
-        orgName: orgName.trim(),
-      });
-
-      if (signUpFailed) {
-        toast.warning('Cuenta creada. Revisa tu bandeja de entrada o carpeta Spam.');
+        // Cualquier otro error (500, SMTP) lo logueamos pero seguimos al paso OTP
+        // El correo puede llegar con retraso
+        console.warn('[SignUp] Advertencia Supabase (no crítico):', signUpError.message);
+        toast.warning('Revisa tu bandeja de entrada. El correo puede tardar unos minutos.');
       } else {
-        toast.success('✅ Código enviado — revisa tu correo.');
+        toast.success('✅ Código OTP enviado — revisa tu correo.');
       }
+
+      // Avanzar al paso de verificación independientemente del resultado del email
       setStep(5);
     } catch (err: any) {
       setError(err.message || 'Error en registro.');

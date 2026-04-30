@@ -635,7 +635,9 @@ const authController = {
         }
     },
     
-    // 10. Activar Organización y Cuenta (Post-Verificación OTP)
+    // 10. Activar Cuenta (OTP → Crear Infraestructura en BD)
+    // FLUJO SEGURO: La organización y el perfil se crean SOLO si el código OTP
+    // es válido. Esto garantiza que no existan usuarios sin verificar en la BD.
     activateAccount: async (req, res) => {
         try {
             const { email, code } = req.body;
@@ -644,7 +646,7 @@ const authController = {
                 return res.status(400).json({ error: 'Email y código son requeridos.' });
             }
 
-            // A. Verificar el código OTP con Supabase (Stateless Client)
+            // ── A. Verificar el código OTP con Supabase ──────────────────────
             const { createClient } = require('@supabase/supabase-js');
             const tempClient = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY, {
                 auth: { persistSession: false, autoRefreshToken: false }
@@ -657,34 +659,85 @@ const authController = {
             });
 
             if (verifyError || !verifyData.user) {
-                return res.status(400).json({ error: 'Código inválido o expirado.', details: verifyError?.message });
+                return res.status(400).json({ 
+                    error: 'Código inválido o expirado.',
+                    details: verifyError?.message 
+                });
             }
 
-            const userId = verifyData.user.id;
+            const userId  = verifyData.user.id;
+            const meta    = verifyData.user.user_metadata || {};
+            const fullName = meta.full_name || email.split('@')[0];
+            const orgName  = meta.organization_name || `Org_${userId.slice(0, 8)}`;
 
-            // B. Buscar perfil y organización
-            const { data: profile, error: pErr } = await supabaseAdmin
+            console.log(`✅ OTP verificado para: ${email}. Creando infraestructura...`);
+
+            // ── B. Verificar si ya existe el perfil (re-intento idempotente) ──
+            const { data: existingProfile } = await supabaseAdmin
                 .from('profiles')
                 .select('organization_id')
                 .eq('id', userId)
-                .single();
-            
-            if (pErr || !profile) {
-                console.error("Perfil no encontrado tras verificación OTP:", pErr);
-                // Si no hay perfil aún, podemos dejar que el login se encargue (Auto-curación)
-            } else {
-                // C. Activar la organización
-                const { error: oErr } = await supabaseAdmin
+                .maybeSingle();
+
+            if (existingProfile) {
+                // Si ya existe perfil (reintento), solo activar la org
+                console.log('ℹ️ Perfil existente, activando organización...');
+                await supabaseAdmin
                     .from('organizations')
                     .update({ is_active: true, billing_status: 'activo' })
-                    .eq('id', profile.organization_id);
+                    .eq('id', existingProfile.organization_id);
+            } else {
+                // ── C. Crear Organización (activa desde el inicio) ────────────
+                const { data: orgData, error: orgError } = await supabaseAdmin
+                    .from('organizations')
+                    .insert([{ name: orgName, is_active: true, billing_status: 'activo' }])
+                    .select()
+                    .single();
 
-                if (oErr) console.error("Error al activar organización:", oErr);
+                if (orgError) {
+                    // Si la org ya existe (raro pero posible), recuperar su ID
+                    if (orgError.code === '23505') {
+                        console.warn('⚠️ Organización duplicada, recuperando...');
+                        const { data: existingOrg } = await supabaseAdmin
+                            .from('organizations')
+                            .select('id')
+                            .eq('name', orgName)
+                            .maybeSingle();
+                        if (existingOrg) {
+                            await supabaseAdmin
+                                .from('profiles')
+                                .insert([{
+                                    id: userId,
+                                    full_name: fullName,
+                                    organization_id: existingOrg.id,
+                                    role: 'admin'
+                                }]);
+                        }
+                    } else {
+                        throw orgError;
+                    }
+                } else {
+                    // ── D. Crear Perfil de usuario ────────────────────────────
+                    const { error: profileError } = await supabaseAdmin
+                        .from('profiles')
+                        .insert([{
+                            id: userId,
+                            full_name: fullName,
+                            organization_id: orgData.id,
+                            role: 'admin'
+                        }]);
+
+                    if (profileError && profileError.code !== '23505') {
+                        throw profileError;
+                    }
+                }
             }
 
-            // Retornamos la sesión para que el frontend inicie sesión automáticamente
+            console.log(`🎉 Cuenta activada y organización creada para: ${email}`);
+
+            // Retornamos la sesión para auto-login
             res.status(200).json({ 
-                message: 'Cuenta activada con éxito.',
+                message: 'Cuenta activada con éxito. Bienvenido a GKAD STOCK.',
                 session: verifyData.session,
                 user: verifyData.user
             });

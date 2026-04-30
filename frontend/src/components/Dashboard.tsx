@@ -167,17 +167,17 @@ export const Dashboard = () => {
 
   return (
     <PlanGuard restrictedPlans={['Esencial']} moduleName="Dashboard de Analítica">
-      <div className="relative space-y-10 animate-slide-up">
+      <div className="relative space-y-12 animate-slide-up pb-10">
         {/* Fondo Degradado Verde-Azul */}
         <div className="fixed inset-0 z-0 bg-gradient-to-br from-emerald-500/10 via-blue-500/10 to-blue-600/10 dark:from-emerald-900/20 dark:via-blue-900/20 dark:to-blue-950/20 pointer-events-none" />
         <div className="relative z-10">
         
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-1">
-            <h1 className="text-3xl md:text-4xl font-black dark:text-white tracking-tighter uppercase font-outfit">ANALYTICS ENGINE</h1>
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-gray-200 dark:border-white/5 pb-6">
+          <div className="space-y-2">
+            <h1 className="text-3xl md:text-4xl font-extrabold dark:text-white tracking-tight uppercase font-outfit">ANALYTICS ENGINE</h1>
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-brand-500 animate-pulse shadow-lg shadow-brand-500/50" />
-              <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.4em]">GKAD STOCK - MONITORIZACIÓN EN TIEMPO REAL</p>
+              <p className="text-[11px] font-bold text-zinc-500 uppercase tracking-[0.3em]">GKAD STOCK - MONITORIZACIÓN EN TIEMPO REAL</p>
             </div>
           </div>
 
@@ -200,13 +200,13 @@ export const Dashboard = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           <KPICard title="Ingresos Brutos" value={`$${analytics.totalSales.toLocaleString()}`} icon={TrendingUp} trend="+12.5%" trendUp={true} description={`Ventas en el periodo: ${timeFilter}`} accentColor={accentColor} />
           <KPICard title="Egresos Operativos" value={`$${analytics.totalExpenses.toLocaleString()}`} icon={ArrowDownRight} trendUp={false} trend="Fijo" description="Gastos detectados" alert={analytics.totalExpenses > analytics.totalSales} accentColor={accentColor} />
           <KPICard title="Utilidad Real" value={`$${analytics.netUtility.toLocaleString()}`} icon={DollarSign} trendUp={analytics.netUtility > 0} trend="Neto" description="Margen del periodo" success={analytics.netUtility > 0} accentColor={accentColor} />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
           <KPICard title="Transacciones Totales" value={analytics.transactionCount} icon={Package} trend="+3" trendUp={true} description="Facturas emitidas" variant="mini" accentColor={accentColor} />
           <KPICard title="Ticket Promedio" value={`$${analytics.averageTicket.toLocaleString()}`} icon={Layers} trend="Asset" trendUp={true} description="Gasto promedio por venta" variant="mini" accentColor={accentColor} />
           <KPICard title="Divisiones" value={baseStats.activeCategories} icon={ArrowUpRight} trend="Activas" description="Categorías de stock" variant="mini" accentColor={accentColor} />
@@ -313,10 +313,10 @@ const KPICard = ({ title, value, icon: Icon, trend, trendUp, description, alert,
   const activeTrendClass = trendClassesMap[accentColor] || trendClassesMap['emerald'];
 
   return (
-  <Card className={`${variant === 'large' ? 'p-6' : 'p-6'} flex flex-col rounded-3xl transition-all duration-300
-                bg-white border border-gray-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)]
-                dark:bg-gray-800 dark:border-gray-700 dark:shadow-none
-                hover:shadow-lg dark:hover:bg-gray-750 group overflow-hidden relative`}>
+  <Card className={`${variant === 'large' ? 'p-8' : 'p-6'} flex flex-col rounded-[2rem] transition-all duration-300
+                bg-white border border-gray-100 shadow-sm
+                dark:bg-gray-900 dark:border-white/5 dark:shadow-none
+                hover:shadow-lg hover:-translate-y-1 dark:hover:bg-gray-800 group overflow-hidden relative`}>
     <div className="relative z-10">
       <div className="flex justify-between items-start mb-4">
         <div className={`p-3 rounded-2xl transition-all duration-500 ${
@@ -338,10 +338,10 @@ const KPICard = ({ title, value, icon: Icon, trend, trendUp, description, alert,
           </div>
         )}
       </div>
-      <div className="flex flex-col space-y-1">
-        <p className="text-xs font-extrabold text-gray-500 dark:text-gray-400 uppercase tracking-widest">{title}</p>
-        <h2 className={`${variant === 'large' ? 'text-3xl md:text-4xl' : 'text-xl md:text-2xl'} font-black text-gray-900 dark:text-white tracking-tight font-outfit uppercase`}>{value}</h2>
-        <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 mt-2 uppercase">{description}</p>
+      <div className="flex flex-col space-y-2 mt-2">
+        <p className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">{title}</p>
+        <h2 className={`${variant === 'large' ? 'text-3xl md:text-4xl' : 'text-2xl'} font-extrabold text-gray-900 dark:text-white tracking-tight font-outfit uppercase`}>{value}</h2>
+        <p className="text-[11px] font-medium text-gray-400 dark:text-gray-500 mt-1">{description}</p>
       </div>
     </div>
     <div className="absolute bottom-0 left-0 h-1 w-0 bg-brand-500 group-hover:w-full transition-all duration-700 shadow-[0_0_15px_rgba(59,130,246,0.5)]" />
