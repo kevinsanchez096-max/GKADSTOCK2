@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Unified GKAD STOCK V5.0 Project for Vercel",
   "scripts": {
-    "build": "npm install --prefix frontend && npm run build --prefix frontend && cp -r frontend/dist/. .",
+    "build": "npm install --prefix frontend && npm run build --prefix frontend && cp -r frontend/dist dist",
     "start": "node backend/server.js"
   },
   "dependencies": {
