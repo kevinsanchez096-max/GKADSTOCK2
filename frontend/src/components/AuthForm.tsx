@@ -31,9 +31,9 @@ const DarkInput = ({
     <label className={`text-[10px] font-bold uppercase tracking-widest pl-1 ${
       isLight ? 'text-slate-500' : 'text-zinc-400'
     }`}>{label}</label>
-    <div className="relative">
-      {Icon && <Icon size={15} className={`absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none ${
-        isLight ? 'text-slate-400' : 'text-zinc-500'
+    <div className="relative group">
+      {Icon && <Icon size={15} className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors duration-300 pointer-events-none ${
+        isLight ? 'text-slate-400 group-focus-within:text-brand-500' : 'text-zinc-500 group-focus-within:text-brand-400'
       }`} />}
       <input
         type={type}
@@ -42,10 +42,10 @@ const DarkInput = ({
         onChange={onChange}
         autoFocus={autoFocus}
         required={required}
-        className={`w-full rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 transition-all duration-300 backdrop-blur-md shadow-inner ${accentClass}${Icon ? ' pl-11' : ''} ${
+        className={`w-full rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 transition-all duration-300 backdrop-blur-md ${accentClass}${Icon ? ' pl-11' : ''} ${
           isLight
-            ? 'bg-white/80 border border-slate-200 text-slate-800 placeholder:text-slate-400'
-            : 'bg-slate-900/60 border border-slate-700/50 text-white placeholder:text-slate-500'
+            ? 'bg-white/70 border border-slate-200/80 text-slate-800 placeholder:text-slate-400 shadow-sm focus:bg-white'
+            : 'bg-slate-900/40 border border-slate-700/30 text-white placeholder:text-slate-500 shadow-inner focus:bg-slate-900/60'
         }`}
       />
     </div>
@@ -64,12 +64,17 @@ const PrimaryBtn = ({
     onClick={onClick}
     disabled={disabled || loading}
     className={`w-full py-4 rounded-2xl font-black uppercase tracking-[0.18em] text-sm
-      transition-all shadow-xl flex items-center justify-center gap-2
+      transition-all shadow-xl flex items-center justify-center gap-2 active:scale-[0.98]
       ${disabled || loading
-        ? 'bg-white/10 text-zinc-600 cursor-not-allowed'
-        : 'bg-white text-black hover:bg-zinc-100 active:scale-[0.98]'}`}
+        ? 'bg-zinc-200/50 text-zinc-400 cursor-not-allowed dark:bg-white/10 dark:text-zinc-600'
+        : 'bg-brand-600 text-white hover:bg-brand-700 hover:shadow-brand-500/25 dark:bg-white dark:text-black dark:hover:bg-zinc-100'}`}
   >
-    {loading ? <span className="animate-pulse">PROCESANDO...</span> : children}
+    {loading ? (
+      <div className="flex items-center gap-2">
+        <Circle className="w-4 h-4 animate-spin" />
+        <span>PROCESANDO...</span>
+      </div>
+    ) : children}
   </button>
 );
 
@@ -313,25 +318,26 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
 
   // ── Render principal ─────────────────────────────────────────────────────
   return (
-    <div className={`min-h-screen w-full flex flex-col font-sans relative overflow-hidden transition-colors duration-700 ${
-      darkMode ? 'bg-[#0a0a0f] text-white' : 'bg-slate-100 text-slate-900'
+    <div className={`min-h-screen w-full flex flex-col font-sans relative overflow-hidden transition-all duration-1000 ${
+      darkMode ? 'bg-[#050508] text-white' : 'bg-slate-50 text-slate-900'
     }`}>
 
-      {/* Ambient glows — modo login = azul, modo registro = verde/teal */}
+      {/* Ambient glows — Intensificados para marcar la diferencia entre Modos */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className={`absolute top-[-30%] left-[-10%] w-[90%] h-[90%] blur-[200px] rounded-full transition-all duration-[1500ms] ${
+        <div className={`absolute top-[-30%] left-[-10%] w-[100%] h-[100%] blur-[160px] rounded-full transition-all duration-[1200ms] ${
           !darkMode
-            ? (mode === 'login' ? 'bg-blue-400/30' : 'bg-emerald-400/25')
-            : (mode === 'login' ? 'bg-blue-600/25' : 'bg-emerald-500/25')
+            ? (mode === 'login' ? 'bg-blue-400/20' : 'bg-emerald-400/20')
+            : (mode === 'login' ? 'bg-brand-600/30' : 'bg-emerald-600/30')
         }`} />
-        <div className={`absolute bottom-[-20%] right-[-5%] w-[80%] h-[80%] blur-[220px] rounded-full transition-all duration-[1500ms] ${
+        <div className={`absolute bottom-[-20%] right-[-5%] w-[90%] h-[90%] blur-[180px] rounded-full transition-all duration-[1200ms] ${
           !darkMode
-            ? (mode === 'login' ? 'bg-indigo-300/25' : 'bg-teal-300/25')
-            : (mode === 'login' ? 'bg-blue-900/20' : 'bg-teal-400/20')
+            ? (mode === 'login' ? 'bg-blue-300/15' : 'bg-teal-300/15')
+            : (mode === 'login' ? 'bg-blue-900/50' : 'bg-teal-900/50')
         }`} />
-        <div className={`absolute top-[20%] left-[20%] w-[60%] h-[60%] blur-[250px] rounded-full transition-all duration-[1500ms] ${
-          mode === 'register' ? 'opacity-100' : 'opacity-0'
-        } ${!darkMode ? 'bg-green-300/20' : 'bg-green-500/15'}`} />
+        {/* Glow adicional para el modo registro (Emerald) */}
+        <div className={`absolute top-[10%] right-[10%] w-[60%] h-[60%] blur-[200px] rounded-full transition-all duration-[1500ms] ${
+          mode === 'register' ? 'opacity-100 scale-110' : 'opacity-0 scale-90'
+        } ${!darkMode ? 'bg-green-400/15' : 'bg-green-600/20'}`} />
       </div>
 
       {/* Header */}
@@ -340,8 +346,10 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
           <div className="h-10 w-10 bg-gradient-to-tr from-brand-600 to-blue-500 rounded-2xl flex items-center justify-center shadow-lg shadow-brand-500/30">
             <Package className="text-white h-5 w-5" />
           </div>
-          <span className="text-lg font-black tracking-tighter uppercase text-white">
-            GKAD <span className="text-brand-400">STOCK</span>
+          <span className={`text-lg font-black tracking-tighter uppercase transition-colors duration-300 ${
+            darkMode ? 'text-white' : 'text-slate-900'
+          }`}>
+            GKAD <span className="text-brand-500">STOCK</span>
           </span>
         </div>
         <div className="flex items-center gap-5">
@@ -369,12 +377,14 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
             transition={{ duration: 0.4 }}
             className="text-center px-4"
           >
-            <h1 className="text-4xl md:text-5xl font-black text-white leading-tight tracking-tighter uppercase">
+            <h1 className={`text-4xl md:text-5xl font-black leading-tight tracking-tighter uppercase transition-colors duration-300 ${
+              darkMode ? 'text-white' : 'text-slate-900'
+            }`}>
               {mode === 'login' ? 'Acceso ' : 'Crea tu '}
               <span className={`text-transparent bg-clip-text bg-gradient-to-r ${
                 mode === 'login'
-                  ? 'from-blue-400 to-brand-400'
-                  : 'from-emerald-400 to-teal-300'
+                  ? 'from-brand-500 to-blue-400'
+                  : 'from-emerald-500 to-teal-400'
               }`}>
                 {mode === 'login' ? 'Corporativo' : 'Imperio'}
               </span>
@@ -387,10 +397,10 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
           </motion.div>
 
           {/* Tarjeta glassmorphism */}
-          <div className={`w-full backdrop-blur-3xl rounded-[2rem] p-8 md:p-10 shadow-2xl relative border transition-all duration-[1200ms] ${
-            mode === 'login'
-              ? 'bg-white/[0.04] border-white/10'
-              : 'bg-white/[0.05] border-emerald-500/20'
+          <div className={`w-full backdrop-blur-3xl rounded-[3rem] p-8 md:p-10 shadow-2xl relative border transition-all duration-[800ms] ${
+            darkMode 
+              ? (mode === 'login' ? 'bg-white/[0.03] border-white/10 shadow-blue-500/5' : 'bg-white/[0.04] border-emerald-500/20 shadow-emerald-500/10')
+              : (mode === 'login' ? 'bg-white/85 border-white/60 shadow-brand-500/10' : 'bg-white/85 border-emerald-500/30 shadow-emerald-500/10')
           }`}>
 
             {/* Botón atrás */}
