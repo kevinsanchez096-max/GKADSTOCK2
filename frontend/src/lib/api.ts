@@ -1,4 +1,4 @@
-const BASE_URL = 'https://gkad-backend.onrender.com/api';
+const BASE_URL = '/api';
 
 /**
  * API CONFIGURATION (Fetch Wrapper)
