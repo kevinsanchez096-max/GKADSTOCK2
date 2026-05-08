@@ -282,7 +282,7 @@ export const SaaSOrgRow = ({ org, isExpanded, onToggle, isMenuOpen, onToggleMenu
 
  return (
  <>
- <tr className={`group/row transition-colors hover:bg-card ${!org.is_active || org.billing_status === 'suspendido' ? 'opacity-50 grayscale' : ''}`}>
+ <tr className={`group/row transition-colors hover:bg-muted/30 border-b border-border/40 ${!org.is_active || org.billing_status === 'suspendido' ? 'opacity-50 grayscale' : ''}`}>
  {/* ID Nodo */}
  <td className="px-8 py-5 text-[10px] font-mono text-muted-foreground uppercase tracking-tighter">
  {org.id.split('-')[0]}
@@ -346,7 +346,7 @@ export const SaaSOrgRow = ({ org, isExpanded, onToggle, isMenuOpen, onToggleMenu
  <MoreVertical size={16} />
  </button>
  {isMenuOpen && (
- <div className="absolute right-0 top-10 w-52 bg-[#0a0a0a] border border-border rounded-2xl shadow-2xl z-[100] p-2 animate-in fade-in zoom-in-95 backdrop-blur-xl">
+ <div className="absolute right-0 top-10 w-52 bg-card border border-border rounded-2xl shadow-2xl z-[100] p-2 animate-in fade-in zoom-in-95 backdrop-blur-xl">
  <button onClick={(e) => { e.stopPropagation(); handleToggleStatus(); }} className={`w-full flex items-center gap-4 px-4 py-3 text-[10px] font-black rounded-xl transition-all uppercase tracking-widest ${org.is_active ? 'text-amber-500 hover:bg-amber-500/10' : 'text-emerald-500 hover:bg-emerald-500/10'}`}>
  <AlertCircle size={16} /> {org.is_active ? 'Suspender Operación' : 'Activar Operación'}
  </button>
@@ -481,7 +481,7 @@ export const SaaSOrgRow = ({ org, isExpanded, onToggle, isMenuOpen, onToggleMenu
  <th className="px-6 py-4 text-right text-[9px] font-black text-muted-foreground uppercase tracking-widest">Poderes</th>
  </tr>
  </thead>
- <tbody className="divide-y divide-slate-200">
+ <tbody className="divide-y divide-border/50">
  {loadingUsers ? (
  <tr><td colSpan={5} className="py-20 text-center animate-pulse text-[10px] font-black text-muted-foreground">Sincronizando Auth...</td></tr>
  ) : users.length === 0 ? (

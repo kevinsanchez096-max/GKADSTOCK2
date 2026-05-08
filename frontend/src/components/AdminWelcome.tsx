@@ -61,8 +61,8 @@ export const AdminWelcome = ({ setActiveTab }: { setActiveTab: (tab: string) => 
           <div className="flex items-center gap-2 text-brand-500 font-black text-[10px] uppercase tracking-[0.4em]">
             <Sparkles size={14} /> Global Control Hub
           </div>
-          <h1 className="text-3xl font-light text-foreground font-heading tracking-tight italic">
-            Hola, <span className="font-medium text-brand-500 not-italic">{profile?.full_name?.split(' ')[0] || 'Ariosto'}</span>
+          <h1 className="text-5xl font-black text-foreground font-heading tracking-tighter">
+            Hola, <span className="text-brand-500">{profile?.full_name?.split(' ')[0] || 'Ariosto'}</span>
           </h1>
           <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest flex items-center gap-2">
             <Calendar size={12} /> {getFormattedDate()}

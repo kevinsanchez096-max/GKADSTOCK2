@@ -6,9 +6,9 @@
 @variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-sans: "Plus Jakarta Sans", "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-outfit: "Plus Jakarta Sans", sans-serif;
-  --font-heading: "Inter Tight", sans-serif;
+  --font-sans: "Inter", "Inter Tight", ui-sans-serif, system-ui, sans-serif;
+  --font-outfit: "Outfit", sans-serif;
+  --font-heading: "Outfit", sans-serif;
   --font-jakarta: "Plus Jakarta Sans", sans-serif;
   
   /* Sistema de Marca Dinámico */
@@ -55,31 +55,31 @@
 
 @layer base {
   :root {
-    /* LIGHT MODE (Fallback Seguro) */
-    --bg-primary: #f8fafc;     /* slate-50 */
-    --bg-secondary: #f1f5f9;   /* slate-100 */
-    --text-primary: #0f172a;   /* slate-900 */
-    --text-secondary: #64748b; /* slate-500 */
+    /* LIGHT MODE - High Precision Enterprise Slate */
+    --bg-primary: #f8fafc;
+    --bg-secondary: #f1f5f9;
+    --text-primary: #020617;   /* Ultra dark for max readability */
+    --text-secondary: #475569; /* slate-600 */
     
-    --border-primary: #e2e8f0; /* slate-200 */
-    --card-bg: #ffffff;        /* white */
+    --border-primary: #e2e8f0;
+    --card-bg: #ffffff;
     
     --glass-bg: rgba(255, 255, 255, 0.85);
     --glass-border: rgba(226, 232, 240, 0.8);
   }
 
   .dark {
-    /* DARK MODE */
-    --bg-primary: #09090b;     /* zinc-950 */
-    --bg-secondary: #18181b;   /* zinc-900 */
-    --text-primary: #f4f4f5;   /* zinc-100 */
-    --text-secondary: #a1a1aa; /* zinc-400 */
+    /* DARK MODE - Pure Deep Black */
+    --bg-primary: #000000;
+    --bg-secondary: #09090b;
+    --text-primary: #ffffff;
+    --text-secondary: #94a3b8; /* slate-400 */
     
-    --border-primary: #27272a; /* zinc-800 */
-    --card-bg: #18181b;        /* zinc-900 */
+    --border-primary: #1e293b; /* slate-800 */
+    --card-bg: #09090b;
     
-    --glass-bg: rgba(24, 24, 27, 0.65);
-    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-bg: rgba(0, 0, 0, 0.75);
+    --glass-border: rgba(255, 255, 255, 0.1);
   }
 
   * {
@@ -88,6 +88,7 @@
   
   body {
     @apply bg-background text-foreground font-sans antialiased selection:bg-brand-500/30 transition-colors duration-500 overflow-x-hidden;
+    letter-spacing: -0.01em;
   }
 
   /* Glassmorphism V5 Premium - Adaptativo */

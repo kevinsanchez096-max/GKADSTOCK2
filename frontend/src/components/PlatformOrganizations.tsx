@@ -112,9 +112,9 @@ export const PlatformOrganizations = () => {
  </div>
  </div>
 
- <div className="bg-white border border-border rounded-[2.5rem] overflow-hidden shadow-2xl">
- <table className="w-full border-collapse">
- <thead>
+  <div className="bg-card border border-border rounded-[2.5rem] overflow-hidden shadow-2xl transition-colors duration-500">
+  <table className="w-full border-collapse">
+  <thead>
  <tr className="bg-card border-b border-border">
  <th className="px-8 py-6 text-left text-[9px] font-black text-muted-foreground uppercase tracking-[0.3em]">ID Nodo</th>
  <th className="px-8 py-6 text-left text-[9px] font-black text-muted-foreground uppercase tracking-[0.3em]">Organización / Empresa</th>
