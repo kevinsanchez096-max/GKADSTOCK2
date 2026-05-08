@@ -37,17 +37,26 @@ const suppliersRoutes = require('./src/routes/suppliers');
 app.get('/api/health', (req, res) => {
     res.status(200).json({ status: 'UP', message: 'Servidor GKAD STOCK operativo' });
 });
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'UP', message: 'Servidor GKAD STOCK operativo (root)' });
+});
 
-// Inyección de Módulos (MVC)
-app.use('/api/inventory', inventoryRoutes);
-app.use('/api/auth', authRoutes);
-app.use('/api/sales', salesRoutes);
-app.use('/api/dashboard', dashboardRoutes);
-app.use('/api/saas', saasRoutes);
-app.use('/api/expenses', expenseRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/customers', customersRoutes);
-app.use('/api/suppliers', suppliersRoutes);
+// Router Principal para unificar rutas
+const mainRouter = express.Router();
+
+mainRouter.use('/inventory', inventoryRoutes);
+mainRouter.use('/auth', authRoutes);
+mainRouter.use('/sales', salesRoutes);
+mainRouter.use('/dashboard', dashboardRoutes);
+mainRouter.use('/saas', saasRoutes);
+mainRouter.use('/expenses', expenseRoutes);
+mainRouter.use('/users', userRoutes);
+mainRouter.use('/customers', customersRoutes);
+mainRouter.use('/suppliers', suppliersRoutes);
+
+// Montaje Dual (Local vs Vercel)
+app.use('/api', mainRouter);
+app.use('/', mainRouter);
 
 // Manejador de errores global
 app.use((err, req, res, next) => {
