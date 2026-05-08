@@ -164,6 +164,34 @@ const authController = {
         }
     },
 
+    // 3a. Obtener Organización Propia (protegida por JWT — Multi-Tenant seguro)
+    getMyOrganization: async (req, res) => {
+        try {
+            const organizationId = req.user.organization_id;
+
+            if (!organizationId) {
+                return res.status(404).json({ 
+                    success: false, 
+                    message: 'Este usuario no pertenece a ninguna organización.' 
+                });
+            }
+
+            const { data: org, error } = await supabaseAdmin
+                .from('organizations')
+                .select('*')
+                .eq('id', organizationId)
+                .single();
+
+            if (error) throw error;
+            if (!org) return res.status(404).json({ success: false, message: 'Organización no encontrada.' });
+
+            res.status(200).json({ success: true, data: org });
+        } catch (error) {
+            console.error('[ORG] Error en getMyOrganization:', error.message);
+            res.status(500).json({ success: false, message: translateError(error) });
+        }
+    },
+
     // 3. Obtener Sesión Actual (Me)
     getMe: async (req, res) => {
         try {
@@ -415,81 +443,113 @@ const authController = {
         try {
             const updates = req.body;
             const userId = req.user.id;
+            const organizationIdFromToken = req.user.organization_id;
 
-            // ── Clasificación de campos ───────────────────────────────────────────────
-            // Los campos de theming van a AMBAS tablas (profiles y organizations)
-            // para que el JOIN del login los devuelva sin importar desde dónde se lean.
+            if (!organizationIdFromToken) {
+                return res.status(403).json({ 
+                    success: false, 
+                    message: 'Operación denegada: Usuario sin organización vinculada.' 
+                });
+            }
+
+            // 1. Clasificación y Normalización de Campos (Arquitectura Enterprise)
             const profileOnlyFields  = ['full_name'];
-            const orgOnlyFields      = ['organization_name', 'address', 'phone', 'email',
-                                        'tax_percentage', 'currency', 'billing_resolution',
-                                        'footer_message', 'logo_url', 'legal_representative', 'nit'];
-            const sharedThemeFields  = ['theme_color', 'theme_secondary_color', 'theme_style'];
+            const orgMapping = {
+                'organization_name': 'company_name',
+                'company_name': 'company_name',
+                'email': 'corporate_email',
+                'corporate_email': 'corporate_email',
+                'address': 'primary_address',
+                'primary_address': 'primary_address',
+                'phone': 'phone_number',
+                'phone_number': 'phone_number',
+                'nit': 'tax_id',
+                'tax_id': 'tax_id',
+                'legal_representative': 'legal_representative',
+                'tax_percentage': 'tax_percentage',
+                'currency': 'currency',
+                'billing_resolution': 'billing_resolution',
+                'footer_message': 'footer_message',
+                'logo_url': 'logo_url',
+                'theme_color': 'theme_color',
+                'theme_secondary_color': 'theme_secondary_color',
+                'theme_style': 'theme_style'
+            };
 
             const profileUpdates = {};
-            const orgUpdates     = {};
+            const orgUpdates     = { 
+                updated_at: new Date().toISOString(),
+                updated_by: userId 
+            };
 
             Object.keys(updates).forEach(key => {
                 const val = updates[key];
+                
+                // Sanitización básica: trim y nullify strings vacíos
+                const sanitizedVal = (typeof val === 'string' && val.trim() === '') ? null : val;
 
-                // Campos exclusivos de la tabla profiles
                 if (profileOnlyFields.includes(key)) {
-                    profileUpdates[key] = val;
+                    profileUpdates[key] = sanitizedVal;
                 }
 
-                // Campos exclusivos de la tabla organizations
-                if (orgOnlyFields.includes(key)) {
-                    if (key === 'organization_name') orgUpdates['name'] = val;
-                    else orgUpdates[key] = val;
-                }
-
-                // Campos compartidos: se escriben en AMBAS tablas
-                if (sharedThemeFields.includes(key)) {
-                    profileUpdates[key] = val;
-                    orgUpdates[key]     = val;
+                if (orgMapping[key]) {
+                    orgUpdates[orgMapping[key]] = sanitizedVal;
                 }
             });
 
-            console.log(`[updateProfile] User: ${userId}`);
-            console.log(`[updateProfile] profileUpdates:`, profileUpdates);
-            console.log(`[updateProfile] orgUpdates:`, orgUpdates);
+            console.log(`[ENTERPRISE SYNC] Iniciando actualización para Org: ${organizationIdFromToken}`);
 
-            // A. Obtener el perfil actual para saber la organization_id y el role
-            const { data: currentProfile, error: fetchErr } = await supabaseAdmin
-                .from('profiles')
-                .select('*')
-                .eq('id', userId)
-                .single();
+            // 2. Transacción Lógica de Actualización
+            const results = { profile: null, organization: null };
 
-            if (fetchErr) throw fetchErr;
-
-            // B. Actualizar Perfil si hay cambios (Admin client para bypass RLS)
+            // A. Actualizar Perfil (Si aplica)
             if (Object.keys(profileUpdates).length > 0) {
-                const { error: pErr } = await supabaseAdmin
+                const { data: pData, error: pErr } = await supabaseAdmin
                     .from('profiles')
                     .update(profileUpdates)
-                    .eq('id', userId);
-                if (pErr) {
-                    console.error('[updateProfile] ❌ Error al actualizar profiles:', pErr.message);
-                    throw pErr;
-                }
-                console.log('[updateProfile] ✅ profiles actualizado:', profileUpdates);
+                    .eq('id', userId)
+                    .select()
+                    .single();
+                if (pErr) throw pErr;
+                results.profile = pData;
             }
 
-            // C. Actualizar Organización si hay cambios (Solo Admin/SuperAdmin)
-            if (Object.keys(orgUpdates).length > 0 && ['admin', 'super_admin'].includes(currentProfile.role)) {
-                const { error: oErr } = await supabaseAdmin
+            // B. Actualizar Organización (Solo si es Admin/SuperAdmin y hay cambios)
+            if (Object.keys(orgUpdates).length > 2 && ['admin', 'super_admin'].includes(req.user.role)) {
+                // Validación adicional de NIT único si se intenta cambiar
+                if (orgUpdates.tax_id) {
+                    const { data: existingOrg } = await supabaseAdmin
+                        .from('organizations')
+                        .select('id')
+                        .eq('tax_id', orgUpdates.tax_id)
+                        .neq('id', organizationIdFromToken)
+                        .maybeSingle();
+                    
+                    if (existingOrg) {
+                        return res.status(400).json({ 
+                            success: false, 
+                            message: 'El NIT/TAX ID ingresado ya está registrado por otra organización.' 
+                        });
+                    }
+                }
+
+                const { data: oData, error: oErr } = await supabaseAdmin
                     .from('organizations')
                     .update(orgUpdates)
-                    .eq('id', currentProfile.organization_id);
+                    .eq('id', organizationIdFromToken)
+                    .select()
+                    .single();
+                
                 if (oErr) {
-                    console.error('[updateProfile] ⚠️ Error al actualizar organizations:', oErr.message, '| Campos:', orgUpdates);
-                } else {
-                    console.log('[updateProfile] ✅ organizations actualizado:', orgUpdates);
+                    console.error('[ENTERPRISE SYNC] ❌ Error en organizations:', oErr.message);
+                    throw oErr;
                 }
+                results.organization = oData;
+                console.log('[ENTERPRISE SYNC] ✅ Organización sincronizada.');
             }
 
-            // D. Retornar perfil refrescado con organización
-            const { data: updatedProfile, error: refreshErr } = await supabaseAdmin
+            // 3. Respuesta Estandarizada V5.0
+            const { data: finalProfile, error: refreshErr } = await supabaseAdmin
                 .from('profiles')
                 .select('*, organizations(*)')
                 .eq('id', userId)
@@ -497,15 +557,24 @@ const authController = {
 
             if (refreshErr) throw refreshErr;
 
-            const organization = Array.isArray(updatedProfile.organizations) 
-                ? updatedProfile.organizations[0] 
-                : updatedProfile.organizations;
+            // Normalización del objeto organization para el frontend
+            const organization = Array.isArray(finalProfile.organizations) 
+                ? finalProfile.organizations[0] 
+                : finalProfile.organizations;
 
-            res.status(200).json({ ...updatedProfile, organizations: organization });
+            res.status(200).json({
+                success: true,
+                message: 'Perfil y datos corporativos actualizados correctamente.',
+                data: { ...finalProfile, organizations: organization }
+            });
 
         } catch (error) {
-            console.error('Error en updateProfile:', error);
-            res.status(500).json({ error: 'Fallo al sincronizar cambios de perfil y organización.' });
+            console.error('🔥 [ENTERPRISE SYNC CRITICAL]:', error);
+            res.status(500).json({ 
+                success: false, 
+                message: 'Error sistémico al sincronizar datos corporativos.',
+                details: error.message 
+            });
         }
     },
 

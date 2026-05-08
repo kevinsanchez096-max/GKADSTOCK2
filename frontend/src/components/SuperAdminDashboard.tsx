@@ -8,10 +8,29 @@ import {
   Zap,
   Globe,
   Server,
-  CalendarDays
+  PieChart as PieChartIcon,
+  ArrowUpRight,
+  ChevronRight,
+  Filter
 } from 'lucide-react';
 import { api } from '../lib/api';
 import { toast } from 'sonner';
+import { Card, Button } from './ui-components';
+import { 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  LineChart,
+  Line,
+  Legend
+} from 'recharts';
 
 interface Stats {
   totalOrganizations: number;
@@ -19,64 +38,29 @@ interface Stats {
   activeUsersToday: number;
   totalGlobalSales: number;
   totalMRR: number;
-  averageSalesPerOrg: number;
 }
 
-type TimeFilter = 'Hoy' | 'Semana' | 'Mes' | 'Año';
-
-const MetricCard = ({ icon: Icon, label, value, detail, trend, isSolid }: { icon: any, label: string, value: string | number, detail: string, trend?: string, isSolid?: boolean }) => (
-  <div className={`
-    ${isSolid 
-      ? 'bg-zinc-900 border-zinc-800 shadow-xl' 
-      : 'bg-white/[0.02] border-white/5 backdrop-blur-xl'
-    } border p-8 rounded-[2rem] relative overflow-hidden group transition-all duration-500 hover:bg-white/[0.04]
-  `}>
-    <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-125 transition-transform duration-700">
-      <Icon size={80} />
-    </div>
-    <div className="relative z-10">
-      <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-4">{label}</p>
-      <div className="flex items-baseline gap-2">
-        <h3 className="text-4xl font-light text-white font-outfit tracking-tighter">{value}</h3>
-        {trend && <span className="text-[10px] font-bold text-emerald-500">{trend}</span>}
-      </div>
-      <p className="text-[10px] text-white/20 font-bold uppercase tracking-widest mt-2">{detail}</p>
-    </div>
-  </div>
-);
+const COLORS = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b'];
 
 export const SuperAdminDashboard = () => {
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [refreshKey, setRefreshKey] = useState(0);
-  const [timeFilter, setTimeFilter] = useState<TimeFilter>('Mes');
+  const [timeFilter, setTimeFilter] = useState('Mes');
 
-  // Estilo de interfaz (Local Storage)
-  const isSolid = localStorage.getItem('admin_ui_style') === 'solid';
+  const distributionData = [
+    { name: 'Esencial', value: 400 },
+    { name: 'Avanzado', value: 300 },
+    { name: 'Emprendedor', value: 300 },
+    { name: 'Premium', value: 200 },
+  ];
 
-  // Simulación de datos de MRR dinámicos según el filtro
-  const getMRRData = () => {
-    const baseData = [
-      { month: 'Ene', value: 350000 },
-      { month: 'Feb', value: 480000 },
-      { month: 'Mar', value: 520000 },
-      { month: 'Abr', value: 650000 },
-      { month: 'May', value: 720000 },
-      { month: 'Jun', value: 800000 },
-    ];
-
-    switch(timeFilter) {
-      case 'Hoy': return baseData.slice(-1).map(d => ({ ...d, value: d.value / 30 }));
-      case 'Semana': return baseData.slice(-1).map(d => ({ ...d, value: d.value / 4 }));
-      case 'Año': return [
-        { month: '2023', value: 4500000 },
-        { month: '2024', value: 7800000 }
-      ];
-      default: return baseData;
-    }
-  };
-
-  const mrrData = getMRRData();
+  const growthData = [
+    { name: 'Ene', mrr: 4000, churn: 400 },
+    { name: 'Feb', mrr: 5000, churn: 300 },
+    { name: 'Mar', mrr: 4800, churn: 500 },
+    { name: 'Abr', mrr: 6000, churn: 200 },
+    { name: 'May', mrr: 7500, churn: 100 },
+  ];
 
   const fetchStats = async () => {
     setLoading(true);
@@ -84,7 +68,7 @@ export const SuperAdminDashboard = () => {
       const statsData = await api.get('/saas/stats');
       setStats(statsData);
     } catch (error: any) {
-      toast.error('Error al cargar estadísticas globales');
+      toast.error('Error al cargar analíticas profundas');
     } finally {
       setLoading(false);
     }
@@ -92,172 +76,167 @@ export const SuperAdminDashboard = () => {
 
   useEffect(() => {
     fetchStats();
-  }, [refreshKey]);
+  }, []);
 
   if (loading && !stats) {
     return (
-      <div className="flex flex-col items-center justify-center h-full space-y-4 pt-40">
-        <RefreshCcw className="h-10 w-10 text-brand-500 animate-spin" />
-        <p className="text-white/20 font-black uppercase tracking-widest text-[9px]">Calculando Proyecciones SaaS...</p>
+      <div className="flex flex-col items-center justify-center h-[60vh] space-y-4">
+        <RefreshCcw className="h-10 w-10 text-brand-500 animate-spin"/>
+        <p className="text-muted-foreground font-black uppercase tracking-widest text-[9px]">Sincronizando Nodo Central...</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
+    <div className="space-y-10 animate-in fade-in duration-700 pb-20">
       
-      {/* HEADER TÁCTICO */}
+      {/* 1. TECHNICAL HEADER */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div className="space-y-1">
-          <h1 className="text-3xl font-light text-white font-outfit tracking-tight uppercase">Analíticas <span className="font-black text-brand-500">Globales</span></h1>
-          <p className="text-white/20 font-bold text-[10px] uppercase tracking-[0.3em]">Monitoreo de Salud Financiera y Operativa</p>
+          <h1 className="text-3xl font-light text-foreground font-heading tracking-tight uppercase italic">Data <span className="font-black text-brand-500 not-italic">Intelligence</span></h1>
+          <p className="text-muted-foreground font-bold text-[10px] uppercase tracking-[0.4em]">Auditando el Ecosistema Global SaaS</p>
         </div>
 
-        <div className="flex items-center gap-4 bg-white/[0.03] p-1 rounded-2xl border border-white/5 backdrop-blur-md">
-           {(['Hoy', 'Semana', 'Mes', 'Año'] as TimeFilter[]).map((filter) => (
-             <button
-               key={filter}
-               onClick={() => setTimeFilter(filter)}
-               className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${
-                 timeFilter === filter 
-                 ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' 
-                 : 'text-white/30 hover:text-white hover:bg-white/5'
-               }`}
-             >
-               {filter}
-             </button>
-           ))}
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-1 bg-muted p-1 rounded-2xl border border-border">
+            {['Hoy', 'Semana', 'Mes', 'Año'].map((f) => (
+              <button
+                key={f}
+                onClick={() => setTimeFilter(f)}
+                className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                  timeFilter === f ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' : 'text-muted-foreground hover:bg-card'
+                }`}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
+          <Button variant="outline" size="sm" icon={Filter} className="h-10 rounded-xl border-border">Filtros Avanzados</Button>
         </div>
       </div>
 
-      {/* MÉTRICAS DE ALTO NIVEL */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <MetricCard 
-          icon={Building2} 
-          label="Inquilinos" 
-          value={stats?.totalOrganizations || 8} 
-          detail="Organizaciones Activas"
-          trend="+12%"
-          isSolid={isSolid}
-        />
-        <MetricCard 
-          icon={Activity} 
-          label="Uso de Plataforma" 
-          value={stats?.activeUsersToday || 14} 
-          detail="Usuarios Hoy"
-          trend="+5.2%"
-          isSolid={isSolid}
-        />
-        <MetricCard 
-          icon={TrendingUp} 
-          label="MRR Proyectado" 
-          value={`$${((stats?.totalOrganizations || 8) * 100000).toLocaleString()}`} 
-          detail="Facturación Mensual"
-          trend="+24%"
-          isSolid={isSolid}
-        />
-        <MetricCard 
-          icon={Zap} 
-          label="Eficiencia" 
-          value="98.4%" 
-          detail="Conversión de Prueba"
-          isSolid={isSolid}
-        />
-      </div>
-
+      {/* 2. DEEP ANALYTICS GRID */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* GRÁFICA DE MRR DINÁMICA */}
-        <div className={`
-          lg:col-span-2 border rounded-[2.5rem] p-10 space-y-10
-          ${isSolid ? 'bg-zinc-900 border-zinc-800' : 'bg-white/[0.02] border-white/5 backdrop-blur-xl'}
-        `}>
-           <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <h3 className="text-sm font-black uppercase tracking-[0.3em] text-white/60">Crecimiento de Ingresos (MRR)</h3>
-                <p className="text-[10px] text-white/20 font-medium">Basado en licencias activas y planes promedio</p>
-              </div>
-              <div className="flex items-center gap-4">
-                 <div className="flex items-center gap-2">
-                    <div className="h-2 w-2 rounded-full bg-brand-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
-                    <span className="text-[9px] font-black text-white/40 uppercase">Real</span>
-                 </div>
-              </div>
-           </div>
+        
+        {/* MRR & Churn Multi-Series */}
+        <Card className="lg:col-span-2 p-10 space-y-10 border-border">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <h3 className="text-xs font-black uppercase tracking-[0.3em] text-foreground">Retención & Crecimiento</h3>
+              <p className="text-[10px] text-muted-foreground font-medium">Relación entre ingresos nuevos vs cancelaciones</p>
+            </div>
+            <div className="flex gap-4">
+              <div className="flex items-center gap-2"><div className="h-2 w-2 rounded-full bg-brand-500"/><span className="text-[8px] font-black uppercase text-muted-foreground">MRR</span></div>
+              <div className="flex items-center gap-2"><div className="h-2 w-2 rounded-full bg-red-500"/><span className="text-[8px] font-black uppercase text-muted-foreground">Churn</span></div>
+            </div>
+          </div>
+          <div className="h-72 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={growthData}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#888', fontSize: 10, fontWeight: 'bold'}} />
+                <YAxis axisLine={false} tickLine={false} tick={{fill: '#888', fontSize: 10, fontWeight: 'bold'}} />
+                <Tooltip contentStyle={{backgroundColor: '#111', border: 'none', borderRadius: '12px'}} />
+                <Line type="monotone" dataKey="mrr" stroke="#3b82f6" strokeWidth={4} dot={{ r: 6, fill: '#3b82f6', strokeWidth: 3, stroke: '#fff' }} />
+                <Line type="monotone" dataKey="churn" stroke="#ef4444" strokeWidth={2} strokeDasharray="5 5" />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
 
-           <div className="h-64 flex items-end justify-between gap-4 px-4 relative">
-              <div className="absolute inset-0 flex flex-col justify-between opacity-5">
-                 {[1,2,3,4].map(l => <div key={l} className="h-px bg-white w-full" />)}
-              </div>
-
-              {mrrData.map((d, i) => (
-                <div key={i} className="flex-1 flex flex-col items-center gap-4 group relative z-10">
-                   <div className="absolute -top-10 opacity-0 group-hover:opacity-100 transition-opacity bg-brand-600 text-white text-[9px] font-black px-2 py-1 rounded shadow-xl">
-                      ${Math.round(d.value).toLocaleString()}
-                   </div>
-                   <div 
-                     className="w-full bg-gradient-to-t from-brand-600/20 to-brand-500 rounded-t-xl transition-all duration-700 hover:scale-x-105 hover:brightness-125" 
-                     style={{ height: `${(d.value / Math.max(...mrrData.map(x => x.value)) * 100) || 5}%` }}
-                   />
-                   <span className="text-[9px] font-black text-white/20 uppercase tracking-widest">{d.month}</span>
+        {/* Plan Distribution */}
+        <Card className="p-10 border-border flex flex-col justify-between">
+          <h3 className="text-xs font-black uppercase tracking-[0.3em] text-foreground mb-8">Mezcla de Planes</h3>
+          <div className="h-48 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={distributionData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={80}
+                  paddingAngle={8}
+                  dataKey="value"
+                >
+                  {distributionData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="space-y-3 mt-8">
+            {distributionData.map((d, i) => (
+              <div key={i} className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="h-2 w-2 rounded-full" style={{backgroundColor: COLORS[i]}}/>
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase">{d.name}</span>
                 </div>
-              ))}
-           </div>
-        </div>
-
-        {/* SAAS HEALTH MONITOR */}
-        <div className={`
-          border rounded-[2.5rem] p-10 flex flex-col justify-between
-          ${isSolid ? 'bg-zinc-900 border-zinc-800' : 'bg-white/[0.02] border-white/5 backdrop-blur-xl'}
-        `}>
-           <div className="space-y-8">
-              <h3 className="text-sm font-black uppercase tracking-[0.3em] text-white/60">Health Monitor</h3>
-              
-              <div className="space-y-6">
-                 <div className="flex items-center justify-between p-4 bg-white/[0.03] rounded-2xl border border-white/5">
-                    <div className="flex items-center gap-4">
-                       <Server className="text-emerald-500" size={18} />
-                       <div>
-                          <p className="text-[10px] font-black text-white uppercase tracking-widest">Uptime</p>
-                          <p className="text-[9px] text-white/30 font-bold">Infraestructura Global</p>
-                       </div>
-                    </div>
-                    <span className="text-xs font-black text-emerald-500">99.9%</span>
-                 </div>
-
-                 <div className="flex items-center justify-between p-4 bg-white/[0.03] rounded-2xl border border-white/5">
-                    <div className="flex items-center gap-4">
-                       <Globe className="text-blue-500" size={18} />
-                       <div>
-                          <p className="text-[10px] font-black text-white uppercase tracking-widest">Nodos</p>
-                          <p className="text-[9px] text-white/30 font-bold">AWS East Region</p>
-                       </div>
-                    </div>
-                    <span className="text-xs font-black text-blue-500">12</span>
-                 </div>
-
-                 <div className="flex items-center justify-between p-4 bg-white/[0.03] rounded-2xl border border-white/5">
-                    <div className="flex items-center gap-4">
-                       <ShieldCheck className="text-brand-500" size={18} />
-                       <div>
-                          <p className="text-[10px] font-black text-white uppercase tracking-widest">Seguridad</p>
-                          <p className="text-[9px] text-white/30 font-bold">Zero-Trust Active</p>
-                       </div>
-                    </div>
-                    <span className="text-[8px] px-2 py-0.5 bg-brand-500/20 text-brand-400 rounded-full font-black uppercase">Stable</span>
-                 </div>
+                <span className="text-[10px] font-black text-foreground">{Math.round((d.value/1200)*100)}%</span>
               </div>
-           </div>
-
-           <div className="pt-8">
-              <div className="p-6 bg-brand-600 rounded-3xl shadow-xl shadow-brand-900/20 group cursor-pointer transition-all hover:scale-105 active:scale-95">
-                 <p className="text-[8px] font-black text-white/60 uppercase tracking-[0.3em] mb-1">Alertas Críticas</p>
-                 <h4 className="text-lg font-black text-white flex items-center gap-2">
-                    0 Incidentes <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-                 </h4>
-              </div>
-           </div>
-        </div>
+            ))}
+          </div>
+        </Card>
       </div>
+
+      {/* 3. PERFORMANCE TABLE */}
+      <Card className="p-0 overflow-hidden border-border">
+        <div className="p-8 border-b border-border bg-muted/30 flex items-center justify-between">
+          <div className="space-y-1">
+            <h3 className="text-xs font-black uppercase tracking-[0.3em] text-foreground">Top Organizations por Facturación</h3>
+            <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest">Ranking de rendimiento mensual</p>
+          </div>
+          <Button variant="ghost" size="sm" className="text-[9px] font-black uppercase tracking-[0.2em] text-brand-500">Exportar Dataset</Button>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left">
+            <thead className="bg-muted/10">
+              <tr>
+                {['Organización', 'Plan', 'Usuarios', 'MRR', 'Status', ''].map((h) => (
+                  <th key={h} className="px-8 py-4 text-[9px] font-black text-muted-foreground uppercase tracking-widest">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border/50">
+              {[
+                { name: 'Frubana SAS', plan: 'Premium', users: 24, mrr: 145000, status: 'Active' },
+                { name: 'Tienda La 80', plan: 'Emprendedor', users: 12, mrr: 95000, status: 'Active' },
+                { name: 'Gkad Demo', plan: 'Avanzado', users: 5, mrr: 65000, status: 'Trialing' },
+                { name: 'Distribuidora Norte', plan: 'Esencial', users: 2, mrr: 39000, status: 'Active' },
+              ].map((org, i) => (
+                <tr key={i} className="hover:bg-muted/20 transition-colors group">
+                  <td className="px-8 py-6">
+                    <div className="flex items-center gap-3">
+                      <div className="h-8 w-8 rounded-lg bg-brand-500/10 flex items-center justify-center text-brand-500 font-black text-[10px]">
+                        {org.name[0]}
+                      </div>
+                      <span className="text-[11px] font-black text-foreground uppercase tracking-tight">{org.name}</span>
+                    </div>
+                  </td>
+                  <td className="px-8 py-6">
+                    <span className="px-3 py-1 rounded-full bg-purple-500/10 text-purple-500 text-[8px] font-black uppercase">{org.plan}</span>
+                  </td>
+                  <td className="px-8 py-6 text-[11px] font-bold text-muted-foreground">{org.users} <span className="text-[8px]">ACTIVE</span></td>
+                  <td className="px-8 py-6 text-[11px] font-black text-foreground">${org.mrr.toLocaleString()}</td>
+                  <td className="px-8 py-6">
+                    <div className="flex items-center gap-2">
+                      <div className={`h-1.5 w-1.5 rounded-full ${org.status === 'Active' ? 'bg-emerald-500' : 'bg-amber-500'}`}/>
+                      <span className="text-[9px] font-black text-muted-foreground uppercase">{org.status}</span>
+                    </div>
+                  </td>
+                  <td className="px-8 py-6 text-right">
+                    <button className="p-2 rounded-lg hover:bg-brand-500/10 text-muted-foreground hover:text-brand-500 transition-all">
+                      <ChevronRight size={16} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Card>
     </div>
   );
 };

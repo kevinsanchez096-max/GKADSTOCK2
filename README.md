@@ -16,7 +16,7 @@ Sistema de Punto de Venta (POS), Gestión de Inventarios y Administración SaaS 
 │                     SalesHistory                         │
 │                     Dashboard                            │
 └────────────────────────┬────────────────────────────────┘
-                         │  HTTP / REST API
+                         │  HTTP / REST API (Proxy: Port 4000)
 ┌────────────────────────┴────────────────────────────────┐
 │                    BACKEND (Node.js)                     │
 │  app.js ─── Routes ─── Controllers ─── Middleware       │
@@ -34,8 +34,8 @@ Sistema de Punto de Venta (POS), Gestión de Inventarios y Administración SaaS 
 | :---------------- | :--------------------------- | :------------------------------------------------------ |
 | **Frontend**      | React 19, TypeScript, Vite 8 | Interfaz reactiva de alto rendimiento                   |
 | **Estado**        | Zustand 5                    | Gestión de estado global (Sesión, Carrito, Catálogo)    |
-| **Estilos**       | TailwindCSS 4, Framer Motion | Diseño premium "Luxury Dark" con Glassmorphism          |
-| **Backend**       | Node.js, Express 4           | API RESTful con arquitectura MVC                        |
+| **Estilos**       | TailwindCSS 4, Framer Motion | Diseño "Luxury Adaptative" (Claro/Oscuro) con Glassmorphism |
+| **Backend**       | Node.js, Express 4           | API RESTful con arquitectura MVC (Puerto 4000)           |
 | **Seguridad**     | Helmet, JWT, RLS, OTP        | Verificación en 2 pasos, tokens y aislamiento de datos  |
 | **Base de Datos** | Supabase (PostgreSQL)        | Persistencia, Auth, Storage y Realtime (WebSockets)     |
 | **Gráficos**      | Recharts 3                   | Visualización de KPIs y métricas financieras            |
@@ -77,7 +77,7 @@ PRUEBA INVENTARIO/
 │   │       ├── suppliers.js             # /api/suppliers/*
 │   │       ├── expenses.js              # /api/expenses/*
 │   │       └── dashboard.js             # /api/dashboard/*
-│   └── .env                             # Secretos (SUPABASE_URL, SERVICE_ROLE_KEY)
+│   └── .env                             # Secretos (PORT=4000, SUPABASE_URL, etc.)
 │
 ├── frontend/
 │   ├── src/
@@ -87,7 +87,7 @@ PRUEBA INVENTARIO/
 │   │   │   ├── useAuthStore.ts          # Sesión, Verificación OTP, isInitialized
 │   │   │   └── useShopStore.ts          # Carrito Global, Catálogo, Historial
 │   │   ├── lib/
-│   │   │   ├── api.ts                   # Cliente HTTP con interceptor de token
+│   │   │   ├── api.ts                   # Cliente HTTP con interceptor de token y blindaje 502
 │   │   │   └── supabase.ts              # Cliente Supabase para Realtime
 │   │   └── components/
 │   │       ├── AuthForm.tsx             # Autenticación OTP (Registro) / Password (Login)
@@ -116,7 +116,7 @@ PRUEBA INVENTARIO/
 │   │       ├── ui-components.tsx        # Librería de Componentes Premium (Glassmorphism)
 │   │       └── common/
 │   │           └── PlanGuard.tsx         # Guardia de Límites por Plan
-│   └── vite.config.ts
+│   └── vite.config.ts                   # Configuración del Proxy (Port 4000)
 │
 └── AUDITORIA_TECNICA_DEFINITIVA.md      # Documentación técnica para sustentación
 ```
@@ -176,22 +176,14 @@ PRUEBA INVENTARIO/
 - Purga total de inquilinos (cascada: datos → perfiles → Auth).
 - Inyección directa de usuarios en cualquier organización.
 
-### 🔐 Seguridad y Resiliencia (V5.0)
+### 🔐 Seguridad y Resiliencia (V5.0 Enterprise)
 
-- **Registro Verificado por OTP**: El registro de nuevos inquilinos requiere verificación mediante un código de 6 dígitos enviado por correo para evitar cuentas fantasma. La organización permanece inactiva hasta su activación manual por el usuario validado.
+- **Registro Verificado por OTP**: El registro de nuevos inquilinos requiere verificación mediante un código de 6 dígitos enviado por correo para evitar cuentas fantasma.
 - **Aislamiento Multi-Tenant**: Filtrado mandatorio por `organization_id` en cada consulta.
 - **Row Level Security (RLS)**: Políticas de PostgreSQL que impiden acceso cross-tenant a nivel de BD.
 - **Auto-Curación de Perfiles**: Si un usuario autenticado no tiene perfil, el middleware lo crea al vuelo.
-- **Rollback Manual de Transacciones**: Las ventas implementan limpieza automática si fallan parcialmente.
-- **Centinelas Anti-Colapso**: `uncaughtException` y `unhandledRejection` en `app.js`.
-- **Protección JWT**: Validación criptográfica de tokens en cada petición.
-- **Motor de Temas "Luxury Dark"**: Diseño premium basado en el diseño Apple (Glassmorphism), adaptativo y dinámico respetando el color principal (`--brand-primary`) de cada organización.
-
-### ⚡ Sincronización en Tiempo Real
-
-- Canales de Supabase Realtime filtrados por `organization_id`.
-- Actualización instantánea de stock entre terminales sin polling.
-- Suscripciones activas en: Inventario, Historial de Ventas y POS.
+- **Motor de Temas "Luxury Adaptative"**: Diseño premium adaptativo que alterna fluidamente entre modos claro y oscuro. Utiliza una paleta sofisticada (`bg-slate-50` para claro, `bg-zinc-950` para oscuro) con transiciones suaves y respeto dinámico a la identidad de marca (`--brand-primary`).
+- **Blindaje de API**: Cliente HTTP configurado para detectar fallos de proxy (502 Bad Gateway) y respuestas HTML inesperadas, proporcionando mensajes claros de recuperación.
 
 ---
 
@@ -212,10 +204,10 @@ npm install
 Crea el archivo `.env`:
 
 ```env
+PORT=4000
 SUPABASE_URL=https://tu-proyecto.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=tu_service_role_key
 SUPABASE_ANON_KEY=tu_anon_key
-PORT=4000
 ```
 
 Inicia el servidor:
@@ -236,7 +228,7 @@ Crea el archivo `.env`:
 ```env
 VITE_SUPABASE_URL=https://tu-proyecto.supabase.co
 VITE_SUPABASE_ANON_KEY=tu_anon_key
-VITE_API_URL=http://localhost:4000/api
+VITE_API_URL=/api
 ```
 
 Inicia la aplicación:
@@ -244,49 +236,6 @@ Inicia la aplicación:
 ```bash
 npm run dev
 ```
-
----
-
-## 🗄️ Base de Datos (Supabase/PostgreSQL)
-
-### Tablas Principales
-
-| Tabla                 | Función                              |
-| :-------------------- | :----------------------------------- |
-| `organizations`       | Registro de empresas/inquilinos      |
-| `profiles`            | Usuarios vinculados a organizaciones |
-| `products`            | Catálogo de productos con stock      |
-| `categories`          | Taxonomía de productos               |
-| `sales`               | Encabezados de facturación           |
-| `sale_items`          | Detalle de cada venta                |
-| `inventory_movements` | Kardex inmutable (entradas/salidas)  |
-| `expenses`            | Registro de egresos operacionales    |
-| `customers`           | Base de datos de clientes            |
-| `suppliers`           | Base de datos de proveedores         |
-| `system_logs`         | Registro de actividad del sistema    |
-
-### Políticas de Seguridad (RLS)
-
-Todas las tablas de negocio tienen Row Level Security activado, filtrando por `organization_id` para garantizar el aislamiento total entre inquilinos.
-
----
-
-## 📖 API REST — Endpoints Principales
-
-| Método | Ruta                                         | Descripción                         |
-| :----- | :------------------------------------------- | :---------------------------------- |
-| `POST` | `/api/auth/login`                            | Autenticación de usuario            |
-| `POST` | `/api/auth/register`                         | Registro atómico (Org + Perfil)     |
-| `POST` | `/api/auth/activate`                         | Activación de Org post-OTP          |
-| `GET`  | `/api/inventory/products`                    | Listar productos (filtrado por org) |
-| `POST` | `/api/inventory/products`                    | Crear producto + Kardex inicial     |
-| `POST` | `/api/sales/process`                         | Procesar venta atómica              |
-| `GET`  | `/api/sales/history`                         | Historial de ventas                 |
-| `GET`  | `/api/dashboard/stats`                       | KPIs del dashboard                  |
-| `GET`  | `/api/saas/organizations`                    | Listar inquilinos (Super Admin)     |
-| `POST` | `/api/saas/organizations`                    | Provisión de nuevo inquilino        |
-| `POST` | `/api/saas/organizations/:orgId/inject-user` | Inyectar usuario                    |
-| `GET`  | `/api/health`                                | Estado del servidor                 |
 
 ---
 

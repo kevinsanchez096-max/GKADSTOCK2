@@ -39,7 +39,21 @@ const superAdminController = {
                 
                 return {
                     id: org.id,
-                    name: org.name,
+                    name: org.company_name || org.name, // Fallback por migración
+                    company_name: org.company_name || org.name,
+                    tax_id: org.tax_id,
+                    corporate_email: org.corporate_email,
+                    legal_representative: org.legal_representative,
+                    phone_number: org.phone_number,
+                    primary_address: org.primary_address,
+                    logo_url: org.logo_url,
+                    tax_percentage: org.tax_percentage || 0,
+                    currency: org.currency || 'COP',
+                    billing_resolution: org.billing_resolution,
+                    footer_message: org.footer_message,
+                    theme_color: org.theme_color,
+                    theme_secondary_color: org.theme_secondary_color,
+                    theme_style: org.theme_style || 'solid',
                     is_active: org.is_active,
                     created_at: org.created_at,
                     plan: org.plan || 'Starter',
@@ -59,7 +73,11 @@ const superAdminController = {
                 };
             });
 
-            res.status(200).json(formattedOrgs);
+            res.status(200).json({
+                success: true,
+                message: 'Organizaciones recuperadas correctamente.',
+                data: formattedOrgs
+            });
         } catch (error) {
             console.error('❌ [FATAL] Error en getAllOrganizations (Plan B):', error);
             res.status(500).json({ error: 'Error al listar las organizaciones (Fallo en Fusión).' });

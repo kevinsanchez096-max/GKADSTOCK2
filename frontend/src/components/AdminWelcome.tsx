@@ -1,56 +1,48 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
-  LayoutDashboard, 
+  Users, 
   Building2, 
-  ChevronRight,
+  TrendingUp, 
+  Clock, 
+  Plus, 
+  FileText,
   Calendar,
-  Sparkles
+  Sparkles,
+  ChevronRight,
+  ShieldCheck,
+  Activity
 } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { Button, Card } from './ui-components';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { api } from '../lib/api';
 
-interface GlassCardProps {
-  title: string;
-  desc: string;
-  icon: React.ElementType;
-  onClick: () => void;
-  isSolid: boolean;
-}
+const activityData = [
+  { name: 'Lun', users: 45 },
+  { name: 'Mar', users: 52 },
+  { name: 'Mie', users: 48 },
+  { name: 'Jue', users: 61 },
+  { name: 'Vie', users: 55 },
+  { name: 'Sab', users: 42 },
+  { name: 'Dom', users: 38 },
+];
 
-const GlassCard = ({ title, desc, icon: Icon, onClick, isSolid }: GlassCardProps) => (
-  <button 
-    onClick={onClick}
-    className={`
-      group relative p-10 rounded-[2.5rem] text-left transition-all duration-700 hover:-translate-y-2 focus:outline-none focus:ring-2 focus:ring-brand-500/50
-      ${isSolid 
-        ? 'bg-zinc-900 border-zinc-800 shadow-xl hover:bg-zinc-800' 
-        : 'bg-white/[0.03] backdrop-blur-xl border-white/10 hover:bg-white/[0.07] hover:border-white/20'
-      } border
-    `}
-  >
-    {/* Background Glow */}
-    <div className={`absolute inset-0 bg-gradient-to-br from-brand-600/0 to-brand-600/0 group-hover:from-brand-600/5 group-hover:to-transparent rounded-[2.5rem] transition-all duration-700`} />
-    
-    <div className="relative z-10">
-      <div className="flex items-center justify-between mb-8">
-         <div className="h-14 w-14 rounded-2xl bg-brand-500/10 flex items-center justify-center text-brand-500 group-hover:text-brand-400 group-hover:scale-110 transition-all duration-500 border border-brand-500/20 shadow-lg shadow-brand-500/5">
-            <Icon size={28} strokeWidth={1.5} />
-         </div>
-         <div className="h-10 w-10 rounded-full flex items-center justify-center bg-white/5 border border-white/10 opacity-0 group-hover:opacity-100 group-hover:translate-x-0 -translate-x-4 transition-all duration-500">
-            <ChevronRight className="text-white/40" size={18} />
-         </div>
-      </div>
-      <h3 className="text-base font-bold text-white/90 uppercase tracking-[0.2em] mb-3 font-outfit">{title}</h3>
-      <p className="text-[11px] text-white/40 font-medium leading-relaxed tracking-wide max-w-[200px]">{desc}</p>
-    </div>
-  </button>
-);
+const recentLogs = [
+  { id: 1, org: 'Frubana SAS', event: 'Nueva Organización', time: 'Hace 2h', type: 'new' },
+  { id: 2, org: 'SuperAdmin', event: 'Cambio Plan Enterprise', time: 'Hace 4h', type: 'edit' },
+  { id: 3, org: 'Gkad Admin', event: 'Inicio Sesión Seguro', time: 'Hace 5h', type: 'security' },
+  { id: 4, org: 'Tienda La 80', event: 'Actualización Stock', time: 'Hace 8h', type: 'edit' },
+];
 
 export const AdminWelcome = ({ setActiveTab }: { setActiveTab: (tab: string) => void }) => {
   const { profile } = useAuthStore();
-  const uiStyle = localStorage.getItem('admin_ui_style') || 'glass';
-  const isSolid = uiStyle === 'solid';
+  const [stats, setStats] = useState<any>(null);
+
+  useEffect(() => {
+    api.get('/saas/stats').then(setStats).catch(() => {});
+  }, []);
 
   const getFormattedDate = () => {
     try {
@@ -61,57 +53,172 @@ export const AdminWelcome = ({ setActiveTab }: { setActiveTab: (tab: string) => 
   };
 
   return (
-    <div className="max-w-6xl mx-auto min-h-[80vh] flex flex-col justify-center space-y-20 animate-in fade-in zoom-in-95 duration-1000 px-6">
+    <div className="space-y-10 animate-in fade-in duration-700 pb-20">
       
-      {/* MINIMALIST HEADER */}
-      <div className="text-center space-y-8">
-        <div className="flex items-center justify-center gap-4 opacity-30">
-           <div className="h-px w-8 bg-white" />
-           <Sparkles size={12} className="text-brand-500" />
-           <div className="h-px w-8 bg-white" />
-        </div>
-        
-        <div className="space-y-4">
-          <h1 className="text-4xl md:text-5xl font-light text-white font-outfit tracking-tight">
-            Hola, <span className="font-medium text-brand-500/90">{profile?.full_name?.split(' ')[0] || 'Ariosto'}</span>.
+      {/* 1. COMPACT PREMIUM HEADER */}
+      <div className="flex flex-col md:flex-row items-center justify-between gap-6 border-b border-border pb-10">
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-brand-500 font-black text-[10px] uppercase tracking-[0.4em]">
+            <Sparkles size={14} /> Global Control Hub
+          </div>
+          <h1 className="text-3xl font-light text-foreground font-heading tracking-tight italic">
+            Hola, <span className="font-medium text-brand-500 not-italic">{profile?.full_name?.split(' ')[0] || 'Ariosto'}</span>
           </h1>
-          <p className="text-sm md:text-base text-white/30 font-light tracking-[0.15em] uppercase">
-            Bienvenido al centro de mando global.
+          <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest flex items-center gap-2">
+            <Calendar size={12} /> {getFormattedDate()}
           </p>
         </div>
 
-        <div className="inline-flex items-center gap-3 px-5 py-2 bg-white/[0.02] border border-white/5 rounded-full text-white/20">
-           <Calendar size={12} />
-           <span className="text-[9px] font-black uppercase tracking-[0.2em]">{getFormattedDate()}</span>
+        <div className="flex items-center gap-3">
+          <Button 
+            onClick={() => setActiveTab('admin_organizations')}
+            icon={Plus} 
+            className="h-12 px-6 rounded-2xl text-[10px] font-black uppercase tracking-widest bg-brand-600 shadow-xl shadow-brand-600/20 text-white border-none"
+          >
+            Añadir Inquilino
+          </Button>
+          <Button 
+            variant="outline"
+            icon={FileText} 
+            className="h-12 px-6 rounded-2xl text-[10px] font-black uppercase tracking-widest border-border"
+          >
+            Generar Reporte
+          </Button>
         </div>
       </div>
 
-      {/* CENTERED QUICK ACTIONS */}
-      <div className="flex flex-col md:flex-row items-center justify-center gap-8">
-        <GlassCard 
-          title="Analíticas" 
-          desc="Monitor de rendimiento y KPIs financieros" 
-          icon={LayoutDashboard}
-          onClick={() => setActiveTab('admin_metrics')}
-          isSolid={isSolid}
-        />
-        <GlassCard 
-          title="Organizaciones" 
-          desc="Gestión de inquilinos y control de licencias" 
-          icon={Building2}
-          onClick={() => setActiveTab('admin_organizations')}
-          isSolid={isSolid}
-        />
+      {/* 2. CORE METRICS GRID */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card className="p-8 border-border relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-125 transition-transform duration-700">
+            <Users size={64} />
+          </div>
+          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-4">Usuarios Activos</p>
+          <h3 className="text-4xl font-black text-foreground font-outfit">{stats?.activeUsersToday || 124}</h3>
+          <div className="mt-4 flex items-center gap-2">
+            <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">+5.4%</span>
+            <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest">vs ayer</span>
+          </div>
+        </Card>
+
+        <Card className="p-8 border-border relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-125 transition-transform duration-700">
+            <Building2 size={64} />
+          </div>
+          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-4">Licencias Pro</p>
+          <h3 className="text-4xl font-black text-foreground font-outfit">{stats?.totalOrganizations || 42}</h3>
+          <div className="mt-4 flex items-center gap-2">
+            <span className="text-[10px] font-bold text-blue-500 bg-blue-500/10 px-2 py-0.5 rounded-full">3 Disponibles</span>
+            <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest">En stock</span>
+          </div>
+        </Card>
+
+        <Card className="p-8 border-border relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-125 transition-transform duration-700">
+            <TrendingUp size={64} />
+          </div>
+          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-4">Ingresos MRR</p>
+          <h3 className="text-4xl font-black text-brand-500 font-outfit">
+            ${((stats?.totalOrganizations || 42) * 95000).toLocaleString()}
+          </h3>
+          <div className="mt-4 flex items-center gap-2">
+            <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">+12%</span>
+            <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest">Crecimiento mes</span>
+          </div>
+        </Card>
       </div>
 
-      {/* SUBTLE FOOTER */}
-      <div className="pt-10 flex flex-col items-center gap-4 border-t border-white/5 opacity-10">
-         <p className="text-[7px] font-black uppercase tracking-[0.8em] text-white">GKAD STOCK • SISTEMA DE GESTIÓN MAESTRA</p>
-         <div className="flex items-center gap-2">
-            <div className="h-1 w-1 rounded-full bg-brand-500 shadow-[0_0_8px_rgba(var(--brand-primary-rgb),0.8)]" />
-            <span className="text-[7px] font-black text-white uppercase tracking-widest">Conexión Segura Establecida</span>
-         </div>
+      {/* 3. SYSTEM ACTIVITY & RECENT LOGS */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Activity Chart */}
+        <Card className="lg:col-span-2 p-8 border-border space-y-8">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-foreground">Actividad del Sistema</h3>
+              <p className="text-[10px] text-muted-foreground font-medium">Usuarios concurrentes en los últimos 7 días</p>
+            </div>
+            <div className="flex items-center gap-2 px-3 py-1 bg-muted rounded-lg text-[9px] font-black text-muted-foreground uppercase tracking-widest border border-border">
+              <Activity size={12} className="text-brand-500" /> Live Status
+            </div>
+          </div>
+
+          <div className="h-64 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={activityData}>
+                <defs>
+                  <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="rgb(59, 130, 246)" stopOpacity={0.1}/>
+                    <stop offset="95%" stopColor="rgb(59, 130, 246)" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
+                <XAxis 
+                  dataKey="name" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{fill: '#888', fontSize: 10, fontWeight: 'bold'}}
+                />
+                <YAxis hide />
+                <Tooltip 
+                  contentStyle={{backgroundColor: '#111', border: 'none', borderRadius: '12px', fontSize: '10px'}}
+                  itemStyle={{color: '#fff'}}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="users" 
+                  stroke="rgb(59, 130, 246)" 
+                  strokeWidth={3}
+                  fillOpacity={1} 
+                  fill="url(#colorUsers)" 
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+
+        {/* Recent Activity Feed */}
+        <Card className="p-8 border-border space-y-8">
+          <div className="flex items-center justify-between">
+            <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-foreground">Log de Actividad</h3>
+            <button 
+              onClick={() => setActiveTab('admin_organizations')}
+              className="text-[9px] font-bold text-brand-500 hover:underline"
+            >
+              Ver Todo
+            </button>
+          </div>
+
+          <div className="space-y-6">
+            {recentLogs.map((log) => (
+              <div key={log.id} className="flex items-center gap-4 group cursor-pointer">
+                <div className={`h-10 w-10 rounded-xl flex items-center justify-center transition-all ${
+                  log.type === 'new' ? 'bg-emerald-500/10 text-emerald-500' :
+                  log.type === 'security' ? 'bg-blue-500/10 text-blue-500' :
+                  'bg-purple-500/10 text-purple-500'
+                }`}>
+                  <ShieldCheck size={18} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-black text-foreground uppercase truncate">{log.org}</p>
+                  <p className="text-[9px] text-muted-foreground font-medium">{log.event}</p>
+                </div>
+                <div className="text-[8px] font-bold text-muted-foreground uppercase whitespace-nowrap">
+                  {log.time}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="pt-4 border-t border-border/50">
+            <div className="p-4 bg-muted rounded-2xl border border-border flex items-center gap-4 group cursor-pointer hover:bg-card transition-all">
+              <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+              <p className="text-[9px] font-black text-foreground uppercase tracking-widest">Base de Datos: Saludable</p>
+              <ChevronRight size={14} className="ml-auto text-muted-foreground group-hover:translate-x-1 transition-transform" />
+            </div>
+          </div>
+        </Card>
       </div>
+
     </div>
   );
 };

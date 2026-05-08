@@ -23,6 +23,9 @@ router.post('/force-change-password', authController.forceChangePassword);
 //     El frontend llama esta URL con el JWT para restaurar la sesión.
 router.get('/profile', authMiddleware, authController.getMe);
 
+// 4c. Obtener Organización Propia (GET /api/auth/organization) - PROTEGIDA
+router.get('/organization', authMiddleware, authController.getMyOrganization);
+
 // 4b. Obtener Perfil por ID Externo (GET /api/auth/profile/:userId) - Legado
 router.get('/profile/:userId', authController.getProfile);
 
