@@ -509,14 +509,14 @@ export const Settings = () => {
  <button
  key={c.color}
   onClick={() => setFormData({ ...formData, theme_color: c.color })}
- className={`h-10 w-10 rounded-2xl border-4 transition-all hover:scale-110 active:scale-95 shadow-lg ${profile?.theme_color === c.color ? 'border-border dark:border-white' : 'border-transparent'}`}
+ className={`h-10 w-10 rounded-2xl border-4 transition-all hover:scale-110 active:scale-95 shadow-lg ${formData.theme_color === c.color ? 'border-border dark:border-white' : 'border-transparent'}`}
  style={{ backgroundColor: c.color }}
  title={c.name}
  />
  ))}
  <input 
  type="color"
- value={organization?.theme_color || '#3b82f6'}
+ value={formData.theme_color || '#3b82f6'}
   onChange={(e) => setFormData({ ...formData, theme_color: e.target.value })}
  className="h-10 w-10 rounded-2xl cursor-pointer bg-transparent border-none appearance-none"
  aria-label="Selector de color primario personalizado"
@@ -524,7 +524,7 @@ export const Settings = () => {
  </div>
 
  {/* SEGUNDO COLOR (Solo si es gradiente) */}
- {organization?.theme_style === 'gradient' && (
+ {formData.theme_style === 'gradient' && (
  <div className="space-y-6 pt-4 animate-slide-up">
  <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-1">Color de Contraste (Cierre)</label>
  <div className="flex flex-wrap gap-4">
@@ -537,14 +537,14 @@ export const Settings = () => {
  <button
  key={c.color}
   onClick={() => setFormData({ ...formData, theme_secondary_color: c.color })}
- className={`h-10 w-10 rounded-2xl border-4 transition-all hover:scale-110 active:scale-95 shadow-lg ${organization?.theme_secondary_color === c.color ? 'border-border dark:border-white' : 'border-transparent'}`}
+ className={`h-10 w-10 rounded-2xl border-4 transition-all hover:scale-110 active:scale-95 shadow-lg ${formData.theme_secondary_color === c.color ? 'border-border dark:border-white' : 'border-transparent'}`}
  style={{ backgroundColor: c.color }}
  title={c.name}
  />
  ))}
  <input 
  type="color"
- value={organization?.theme_secondary_color || '#2563eb'}
+ value={formData.theme_secondary_color || '#2563eb'}
   onChange={(e) => setFormData({ ...formData, theme_secondary_color: e.target.value })}
  className="h-10 w-10 rounded-2xl cursor-pointer bg-transparent border-none appearance-none"
  aria-label="Selector de color secundario personalizado"
@@ -584,19 +584,19 @@ export const Settings = () => {
  <div className="grid grid-cols-2 gap-3 p-1.5 bg-muted rounded-2xl border border-border">
  <button 
   onClick={() => setFormData({ ...formData, theme_style: 'solid' })}
- className={`py-3 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${organization?.theme_style !== 'gradient' ? 'bg-card text-brand-500 shadow-xl' : 'text-muted-foreground hover:text-foreground '}`}
+ className={`py-3 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${formData.theme_style !== 'gradient' ? 'bg-card text-brand-500 shadow-xl' : 'text-muted-foreground hover:text-foreground '}`}
  >
  Color Sólido
  </button>
  <button 
   onClick={() => setFormData({ ...formData, theme_style: 'gradient' })}
- className={`py-3 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${organization?.theme_style === 'gradient' ? 'bg-brand-500 text-white shadow-xl shadow-brand-500/20' : 'text-muted-foreground hover:text-foreground '}`}
+ className={`py-3 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${formData.theme_style === 'gradient' ? 'bg-brand-500 text-white shadow-xl shadow-brand-500/20' : 'text-muted-foreground hover:text-foreground '}`}
  >
  Difuminado (V5)
  </button>
  </div>
  <p className="text-[9px] text-muted-foreground italic leading-relaxed px-1">
- {organization?.theme_style === 'gradient' 
+ {formData.theme_style === 'gradient' 
  ?"Modo Premium activado. Los controles utilizan una transición visual entre tus dos colores favoritos."
  :"Modo Minimalista activo. Colores planos para mayor claridad y foco."}
  </p>
