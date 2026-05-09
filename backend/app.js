@@ -60,8 +60,23 @@ app.use('/', mainRouter);
 
 // Manejador de errores global
 app.use((err, req, res, next) => {
-    console.error('Error Global de Ruta:', err.message || err);
-    res.status(500).json({ error: 'Error interno del servidor, pero el sistema sigue en línea.' });
-});
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    console.error('❌ Error Global de Ruta:', {
+        message: err.message || err,
+        code: err.code,
+        status: err.status || 500,
+        stack: isDevelopment ? err.stack : undefined
+    });
+    
+    const statusCode = err.status || 500;
+    const errorResponse = {
+        error: isDevelopment 
+            ? (err.message || 'Error interno del servidor')
+            : 'Error interno del servidor, pero el sistema sigue en línea.',
+        ...(isDevelopment && { details: err.message, code: err.code })
+    };
+    
+    res.status(statusCode).json(errorResponse);
+};
 
 module.exports = app;

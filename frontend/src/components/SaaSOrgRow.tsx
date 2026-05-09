@@ -388,11 +388,17 @@ export const SaaSOrgRow = ({ org, isExpanded, onToggle, isMenuOpen, onToggleMenu
  <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">NIT / Identificación</p>
  <p className="text-[12px] font-bold text-foreground uppercase">{org.tax_id || 'Sin NIT registrado'}</p>
  </div>
- <div className="space-y-1 min-w-0">
+ <div className="space-y-1 min-w-0 overflow-hidden">
  <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Contacto Directo</p>
- <div className="flex flex-col gap-1 overflow-hidden">
- <span className="text-[11px] font-medium text-muted-foreground flex items-center gap-2 truncate"><Phone size={10} className="flex-shrink-0" /> {org.phone_number || 'Sin teléfono'}</span>
- <span className="text-[11px] font-medium text-muted-foreground flex items-center gap-2 truncate break-all" title={org.corporate_email}><Mail size={10} className="flex-shrink-0" /> {org.corporate_email || 'No configurado'}</span>
+ <div className="space-y-1.5 w-full">
+ <div className="flex items-center gap-2 text-muted-foreground min-w-0">
+ <Phone size={10} className="flex-shrink-0" /> 
+ <span className="text-[11px] font-medium truncate uppercase">{org.phone_number || 'Sin teléfono'}</span>
+ </div>
+ <div className="flex items-center gap-2 text-muted-foreground min-w-0" title={org.corporate_email}>
+ <Mail size={10} className="flex-shrink-0" /> 
+ <span className="text-[11px] font-medium truncate lowercase w-full">{org.corporate_email || 'No configurado'}</span>
+ </div>
  </div>
  </div>
 
