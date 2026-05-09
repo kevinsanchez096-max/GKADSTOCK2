@@ -55,33 +55,43 @@ function App() {
     }
   }, [darkMode]);
 
-  // Sincronización Global de Identidad Visual (Persistencia Maestro)
+  // 2. APLICACIÓN DE TEMA CORPORATIVO (Desde Base de Datos)
+  const { organization } = useOrganizationStore();
+
   useEffect(() => {
-    const applyTheme = () => {
-      const accentColor = localStorage.getItem('admin_accent_color') || '#3b82f6';
-      const colorMode = localStorage.getItem('admin_color_mode') || 'solid';
-      const secondaryColor = localStorage.getItem('admin_secondary_color') || '#8b5cf6';
+    const applyCorporateTheme = () => {
+      // Prioridad de Identidad Visual: 
+      // 1. Base de Datos (Personalización de la Empresa)
+      // 2. LocalStorage (Preferencia guardada en el navegador)
+      // 3. Default (Azul corporativo GKAD)
+      const accentColor = organization?.theme_color || localStorage.getItem('admin_accent_color') || '#3b82f6';
+      const colorMode = organization?.theme_style || localStorage.getItem('admin_color_mode') || 'solid';
+      const secondaryColor = organization?.theme_secondary_color || localStorage.getItem('admin_secondary_color') || '#8b5cf6';
       const borderRadius = localStorage.getItem('admin_border_radius') || '1.5rem';
       const activeFont = localStorage.getItem('admin_font') || 'Plus Jakarta Sans';
       
-      document.documentElement.style.setProperty('--brand-primary', accentColor);
-      document.documentElement.style.setProperty('--font-sans', `"${activeFont}", sans-serif`);
-      document.documentElement.style.setProperty('--radius-2xl', borderRadius);
+      const root = document.documentElement;
+      root.style.setProperty('--brand-primary', accentColor);
+      root.style.setProperty('--font-sans', `"${activeFont}", sans-serif`);
+      root.style.setProperty('--radius-2xl', borderRadius);
       
       if (colorMode === 'gradient') {
-        document.documentElement.style.setProperty('--brand-secondary', secondaryColor);
+        root.style.setProperty('--brand-secondary', secondaryColor || `color-mix(in srgb, ${accentColor}, black 15%)`);
         document.body.classList.add('theme-gradient');
       } else {
-        document.documentElement.style.setProperty('--brand-secondary', `color-mix(in srgb, ${accentColor}, black 15%)`);
+        root.style.setProperty('--brand-secondary', `color-mix(in srgb, ${accentColor}, black 15%)`);
         document.body.classList.remove('theme-gradient');
       }
+
+      // Sincronizar LocalStorage para que la carga inicial sea instantánea en la próxima visita
+      if (organization?.theme_color) localStorage.setItem('admin_accent_color', organization.theme_color);
+      if (organization?.theme_style) localStorage.setItem('admin_color_mode', organization.theme_style);
     };
 
-    applyTheme();
-    // Escuchar cambios desde otras pestañas o desde el propio componente de apariencia
-    window.addEventListener('storage', applyTheme);
-    return () => window.removeEventListener('storage', applyTheme);
-  }, []);
+    applyCorporateTheme();
+    window.addEventListener('storage', applyCorporateTheme);
+    return () => window.removeEventListener('storage', applyCorporateTheme);
+  }, [organization]);
 
   const toggleDarkMode = () => setDarkMode(!darkMode);
 

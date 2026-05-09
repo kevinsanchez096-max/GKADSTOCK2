@@ -1,4 +1,5 @@
 const { supabaseAdmin: supabase } = require('../config/supabase');
+const nodemailer = require('nodemailer');
 
 const PLAN_PRICES = {
     'Esencial': 39000,
@@ -7,8 +8,19 @@ const PLAN_PRICES = {
     'Premium': 145000
 };
 
-const superAdminController = {
-    // 1. Obtener todas las Organizaciones
+// Configuración de Mailer (Se recomienda usar variables de entorno)
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.SMTP_USER || 'tu-correo@gmail.com',
+        pass: process.env.SMTP_PASS || 'tu-password-de-app'
+    }
+});
+
+const superAdminController = {    // --- FUNCIONES DE COMUNICACIÓN REMOVIDAS ---
+    // El módulo de comunicaciones ha sido desmantelado completamente.
+
+    // 1. Obtener todas las Organizacioneser todas las Organizaciones
     getAllOrganizations: async (req, res) => {
         try {
             console.log('🚀 [FALLBACK] Iniciando Fusión en Memoria (Plan B)...');

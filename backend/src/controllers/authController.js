@@ -385,6 +385,14 @@ const authController = {
                 console.warn('⚠️ Excepción OTP no crítica:', resendEx.message);
             }
 
+            // D. REGISTRO DE ACTIVIDAD (PARA EL SUPER ADMIN)
+            await supabaseAdmin.from('system_logs').insert([{
+                module: 'AUTH',
+                message: `🚀 NUEVO REGISTRO: Se ha unido una nueva organización: ${orgName} (${email})`,
+                level: 'info',
+                organization_id: orgId
+            }]);
+
             res.status(201).json({ 
                 message: 'Registro exitoso. Bienvenido a GKAD STOCK.', 
                 user: authData.user, 
@@ -803,6 +811,14 @@ const authController = {
             }
 
             console.log(`🎉 Cuenta activada y organización creada para: ${email}`);
+
+            // E. REGISTRO DE ACTIVIDAD (PARA EL SUPER ADMIN)
+            await supabaseAdmin.from('system_logs').insert([{
+                action: 'CUENTA_ACTIVADA',
+                details: `El usuario ${email} ha verificado su cuenta y activado su organización.`,
+                severity: 'success',
+                user_id: userId
+            }]);
 
             // Retornamos la sesión para auto-login
             res.status(200).json({ 
