@@ -464,7 +464,7 @@ export const SaaSOrgRow = ({ org, isExpanded, onToggle, isMenuOpen, onToggleMenu
  </div>
  <button 
  onClick={() => setIsAddUserModalOpen(true)}
- className="flex items-center gap-2 px-4 py-2 bg-background text-foreground dark:text-black rounded-xl text-[9px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-lg active:scale-95"
+ className="flex items-center gap-2 px-4 py-2 bg-card border border-border text-foreground rounded-xl text-[9px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-lg hover:bg-muted active:scale-95"
  >
  <UserPlus size={14} /> Inyectar Usuario
  </button>

@@ -261,7 +261,7 @@ export const Dashboard = () => {
  itemStyle={{ color: darkMode ? '#e2e8f0' : '#0f172a', fontWeight: 'bold' }}
  labelStyle={{ color: darkMode ? '#94a3b8' : '#64748b', marginBottom: '4px', fontSize: '12px', fontWeight: 'bold' }}
  />
- <Area type="monotone"dataKey="sales"stroke="var(--brand-primary)"strokeWidth={4} fillOpacity={1} fill="url(#colorSales)"activeDot={{ r: 8, fill: 'var(--brand-primary)', stroke: '#fff', strokeWidth: 3 }} />
+  <Area type="monotone" dataKey="ventas" stroke="var(--brand-primary)" strokeWidth={4} fillOpacity={1} fill="url(#colorSales)" activeDot={{ r: 8, fill: 'var(--brand-primary)', stroke: '#fff', strokeWidth: 3 }} />
  </AreaChart>
  </ResponsiveContainer>
  </div>

@@ -140,9 +140,9 @@ export const DashboardLayout = ({
  setSidebarOpen(false);
  }}
  className={`
- w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group relative border
+ w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group relative border sidebar-nav-item
  ${isActive 
- ? 'bg-brand-50/80 text-brand-600 border-brand-100 shadow-sm dark:bg-brand-500/10 dark:text-brand-400 dark:border-brand-500/20' 
+ ? 'bg-brand-50/80 text-brand-600 border-brand-100 shadow-sm active dark:bg-brand-500/10 dark:text-brand-400 dark:border-brand-500/20' 
  : 'text-muted-foreground border-transparent hover:bg-muted hover:border-border hover:text-foreground'}
  ${isCollapsed ? 'justify-center px-0' : ''}
  `}

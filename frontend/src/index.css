@@ -56,16 +56,16 @@
 @layer base {
   :root {
     /* LIGHT MODE - High Precision Enterprise Slate */
-    --bg-primary: #f8fafc;
-    --bg-secondary: #f1f5f9;
-    --text-primary: #020617;   /* Ultra dark for max readability */
-    --text-secondary: #475569; /* slate-600 */
+    --bg-primary: #f1f5f9;     /* Un tono más oscuro para resaltar tarjetas blancas */
+    --bg-secondary: #e2e8f0;   /* Más contraste para elementos secundarios */
+    --text-primary: #0f172a;   /* Slate-900 para máxima legibilidad */
+    --text-secondary: #334155; /* Slate-700 */
     
-    --border-primary: #e2e8f0;
+    --border-primary: #cbd5e1; /* Slate-300 para bordes más visibles */
     --card-bg: #ffffff;
     
-    --glass-bg: rgba(255, 255, 255, 0.85);
-    --glass-border: rgba(226, 232, 240, 0.8);
+    --glass-bg: rgba(255, 255, 255, 0.9);
+    --glass-border: rgba(203, 213, 225, 0.8);
   }
 
   .dark {
@@ -97,7 +97,7 @@
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--glass-border);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   }
 
   .glass-dark {
@@ -322,3 +322,119 @@ input[type=number] {
   pointer-events: none !important;
 }
 
+/* THEME GRADIENT (DIFUMINADO) */
+.theme-gradient .bg-brand-500, 
+.theme-gradient .bg-brand-600,
+.theme-gradient .bg-brand-700 {
+  background-image: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary)) !important;
+  background-color: transparent !important;
+}
+
+/* Soporte para fondos con opacidad (como el hover del sidebar) */
+.theme-gradient .bg-brand-500\/10,
+.theme-gradient .bg-brand-600\/10 {
+  background-image: linear-gradient(135deg, 
+    color-mix(in srgb, var(--brand-primary), transparent 90%), 
+    color-mix(in srgb, var(--brand-secondary), transparent 90%)
+  ) !important;
+  background-color: transparent !important;
+}
+
+.theme-gradient .text-brand-400,
+.theme-gradient .text-brand-500,
+.theme-gradient .text-brand-600 {
+  background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent !important;
+}
+
+/* ASEGURAR QUE LOS ICONOS (SVG) NO SE VUELVAN TRANSPARENTES */
+.theme-gradient .text-brand-400 svg,
+.theme-gradient .text-brand-500 svg,
+.theme-gradient .text-brand-600 svg,
+.theme-gradient svg.text-brand-400,
+.theme-gradient svg.text-brand-500,
+.theme-gradient svg.text-brand-600 {
+  color: var(--brand-primary) !important;
+  -webkit-text-fill-color: var(--brand-primary) !important;
+  background: none !important;
+  -webkit-background-clip: initial !important;
+}
+
+.theme-gradient .border-brand-500,
+.theme-gradient .border-brand-600 {
+  border-color: var(--brand-primary) !important;
+}
+
+/* ==========================================================================
+   ENHANCED LIGHT MODE CONTRAST (ACCESIBILIDAD)
+   ========================================================================== */
+:root:not(.dark) {
+  --border-primary: #cbd5e1; /* Slate-300 */
+  --muted: #f1f5f9;
+}
+
+:root:not(.dark) .bg-card {
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04) !important;
+}
+
+:root:not(.dark) .bg-muted\/20 {
+  background-color: #f1f5f9 !important; /* Slate-100 para mejor separación */
+}
+
+:root:not(.dark) button.bg-card,
+:root:not(.dark) button.border {
+  border-color: #cbd5e1 !important;
+}
+
+:root:not(.dark) .shadow-sm {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04) !important;
+}
+
+:root:not(.dark) .shadow-xl {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Punto de Venta - Tarjetas de productos más definidas */
+:root:not(.dark) [id="pos-main-container"] .bg-card {
+  border-width: 1.5px !important;
+  border-color: #cbd5e1 !important;
+}
+
+/* Sidebar - Estética limpia en modo claro */
+:root:not(.dark) .sidebar-nav-item {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+:root:not(.dark) .sidebar-nav-item.active {
+  background-color: color-mix(in srgb, var(--brand-primary), transparent 92%) !important;
+  color: var(--brand-primary) !important;
+}
+
+/* Asegurar que el texto sea sólido y visible, no un gradiente transparente */
+:root:not(.dark) .sidebar-nav-item.active span,
+:root:not(.dark) .sidebar-nav-item.active {
+  -webkit-text-fill-color: var(--brand-primary) !important;
+  background-clip: initial !important;
+  background-image: none !important;
+}
+
+:root:not(.dark) .sidebar-nav-item:hover:not(.active) {
+  background-color: rgba(0, 0, 0, 0.03) !important;
+}
+
+/* Bordes de tablas y formularios - Mantener contrastado pero elegante */
+:root:not(.dark) .border-border {
+  border-color: #e2e8f0 !important; /* Volver a Slate-200 para sutileza */
+}
+
+:root:not(.dark) input, 
+:root:not(.dark) select, 
+:root:not(.dark) textarea {
+  border-color: #cbd5e1 !important;
+}

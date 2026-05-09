@@ -21,6 +21,7 @@ import { useAuthStore } from '../store/useAuthStore';
 import { useShopStore } from '../store/useShopStore';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { AdminWelcome } from './AdminWelcome';
 
 interface QuickActionProps {
  icon: React.ElementType;
@@ -51,10 +52,14 @@ const QuickAction = ({ icon: Icon, title, desc, onClick, color, delay }: QuickAc
 );
 
 export const Home = ({ setActiveTab }: { setActiveTab: (tab: string) => void }) => {
- const { profile } = useAuthStore();
- const { sales, fetchSalesHistory, products, fetchProducts } = useShopStore();
+  const { profile } = useAuthStore();
+  const { sales, fetchSalesHistory, products, fetchProducts } = useShopStore();
 
- React.useEffect(() => {
+  if (profile?.role === 'super_admin') {
+    return <AdminWelcome setActiveTab={setActiveTab} />;
+  }
+
+  React.useEffect(() => {
  if (profile?.organization_id) {
  fetchSalesHistory(profile.organization_id);
  fetchProducts(profile.organization_id);

@@ -548,9 +548,9 @@ export const POSTerminal = () => {
  ${p.price.toLocaleString()}
  </p>
  </div>
- <div className={`${viewMode === 'grid' ? 'h-9 w-9' : 'h-7 w-7'} bg-background text-white dark:text-black rounded-xl flex items-center justify-center transition-all duration-300 shadow-lg group-hover:bg-brand-500 group-hover:text-white group-hover:scale-110`}>
- <Plus size={viewMode === 'grid' ? 18 : 14} strokeWidth={3} />
- </div>
+  <div className={`${viewMode === 'grid' ? 'h-9 w-9' : 'h-7 w-7'} bg-brand-500/10 text-brand-600 dark:text-brand-400 rounded-xl flex items-center justify-center transition-all duration-300 shadow-sm group-hover:bg-brand-500 group-hover:text-white group-hover:scale-110 group-hover:shadow-lg`}>
+  <Plus size={viewMode === 'grid' ? 18 : 14} strokeWidth={3} />
+  </div>
  </div>
 
  {/* Glow Effect (Hover) */}

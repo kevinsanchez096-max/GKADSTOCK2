@@ -3,12 +3,15 @@ import {
  Building2, 
  RefreshCcw, 
  ShieldAlert,
- Search
+ Search,
+ Plus
 } from 'lucide-react';
 import { api } from '../lib/api';
 import { useAuthStore } from '../store/useAuthStore';
 import { toast } from 'sonner';
 import { SaaSOrgRow } from './SaaSOrgRow';
+import { CreateOrganizationModal } from './CreateOrganizationModal';
+import { Button } from './ui-components';
 
 interface Org {
  id: string;
@@ -32,6 +35,7 @@ export const PlatformOrganizations = () => {
  const [expandedOrgId, setExpandedOrgId] = useState<string | null>(null);
  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
  const [localSearchTerm, setLocalSearchTerm] = useState('');
+ const [isModalOpen, setIsModalOpen] = useState(false);
 
  const isSuperAdmin = profile?.role === 'super_admin';
 
@@ -89,6 +93,13 @@ export const PlatformOrganizations = () => {
 
  return (
  <div className="space-y-8 animate-in fade-in duration-700">
+   
+ <CreateOrganizationModal 
+  isOpen={isModalOpen}
+  onClose={() => setIsModalOpen(false)}
+  onSuccess={fetchOrganizations}
+ />
+
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-4">
  <button 
@@ -97,18 +108,30 @@ export const PlatformOrganizations = () => {
  >
  <RefreshCcw className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
  </button>
- <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em]">Directorio Maestro de Inquilinos</p>
+ <div className="flex flex-col">
+  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em]">Directorio Maestro de Inquilinos</p>
+  <p className="text-[8px] text-brand-500 font-bold uppercase tracking-widest">Sincronizado con Nodo Central</p>
+ </div>
  </div>
 
- <div className="w-96 relative group">
- <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-blue-500 transition-colors"/>
- <input 
- type="text"
- placeholder="Filtrar por nombre o ID..."
- className="w-full h-11 pl-12 pr-4 bg-card border border-border rounded-xl text-[11px] font-bold text-foreground outline-none focus:ring-2 focus:ring-blue-500/30 transition-all placeholder:text-muted-foreground"
- value={localSearchTerm}
- onChange={(e) => setLocalSearchTerm(e.target.value)}
- />
+ <div className="flex items-center gap-4">
+  <div className="w-96 relative group">
+  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-blue-500 transition-colors"/>
+  <input 
+  type="text"
+  placeholder="Filtrar por nombre o ID..."
+  className="w-full h-11 pl-12 pr-4 bg-card border border-border rounded-xl text-[11px] font-bold text-foreground outline-none focus:ring-2 focus:ring-blue-500/30 transition-all placeholder:text-muted-foreground"
+  value={localSearchTerm}
+  onChange={(e) => setLocalSearchTerm(e.target.value)}
+  />
+  </div>
+  <Button 
+    onClick={() => setIsModalOpen(true)}
+    icon={Plus}
+    className="h-11 rounded-xl bg-brand-500 text-white shadow-lg shadow-brand-500/20"
+  >
+    Añadir Inquilino
+  </Button>
  </div>
  </div>
 
@@ -165,4 +188,3 @@ export const PlatformOrganizations = () => {
  </div>
  );
 };
-

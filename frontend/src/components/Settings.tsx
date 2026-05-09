@@ -28,8 +28,8 @@ export const Settings = () => {
  const { organization, updateOrganization, isLoading: isOrgLoading } = useOrganizationStore();
  const fileInputRef = useRef<HTMLInputElement>(null);
  
- const [activeTab, setActiveTab] = useState<'business' | 'billing' | 'ticket' | 'account' | 'platform'>('business');
- const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [activeTab, setActiveTab] = useState<'business' | 'billing' | 'ticket' | 'account'>('business');
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
  const [showLogsModal, setShowLogsModal] = useState(false);
  const [isUploading, setIsUploading] = useState(false);
  const [isSaving, setIsSaving] = useState(false);
@@ -48,9 +48,27 @@ export const Settings = () => {
  logo_url: '',
  legal_representative: '',
  tax_id: '',
+ theme_color: '',
+ theme_secondary_color: '',
+ theme_style: 'solid'
  });
 
  const isSuperAdmin = profile?.role === 'super_admin';
+  
+  // 1.5 LIVE PREVIEW: Aplicar cambios de formData al DOM localmente antes de guardar
+  useEffect(() => {
+    if (formData.theme_color) {
+      document.documentElement.style.setProperty('--brand-primary', formData.theme_color);
+    }
+    if (formData.theme_secondary_color) {
+      document.documentElement.style.setProperty('--brand-secondary', formData.theme_secondary_color);
+    }
+    if (formData.theme_style === 'gradient') {
+      document.body.classList.add('theme-gradient');
+    } else {
+      document.body.classList.remove('theme-gradient');
+    }
+  }, [formData.theme_color, formData.theme_secondary_color, formData.theme_style]);
 
  // Sincronizar localmente cuando la organización cambie (Realtime o Fetch)
  useEffect(() => {
@@ -67,6 +85,9 @@ export const Settings = () => {
  logo_url: organization.logo_url || '',
  legal_representative: organization.legal_representative || '',
  tax_id: organization.tax_id || '',
+ theme_color: organization.theme_color || '#3b82f6',
+ theme_secondary_color: organization.theme_secondary_color || '#2563eb',
+ theme_style: organization.theme_style || 'solid',
  });
  }
  }, [organization]);
@@ -175,10 +196,10 @@ export const Settings = () => {
  <body>
  <div class="center">
  ${logoHtml}
- <h1 style="font-size: 18px; margin: 0;">${formData.organization_name || 'GKAD STOCK'}</h1>
- <p style="margin: 2mm 0;">${formData.address || 'Calle 123 #45-67, Bogotá'}</p>
- <p>Nit: 900.567.890-1</p>
- <p>Tel: ${formData.phone || '300 000 0000'}</p>
+ <h1 style="font-size: 18px; margin: 0;">${formData.company_name || 'GKAD STOCK'}</h1>
+ <p style="margin: 2mm 0;">${formData.primary_address || 'Calle 123 #45-67, Bogotá'}</p>
+ <p>Nit: ${formData.tax_id || '900.567.890-1'}</p>
+ <p>Tel: ${formData.phone_number || '300 000 0000'}</p>
  </div>
  
  <div class="divider"></div>
@@ -229,31 +250,7 @@ export const Settings = () => {
  printWindow.document.close();
  };
 
- // Renderizado de Plataforma para Super Admin
- if (isSuperAdmin && activeTab !== 'account') {
- return (
- <div className="max-w-7xl mx-auto space-y-6 animate-slide-up">
- <div className="flex items-center justify-between bg-card border border-border p-10 rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
- <div className="absolute top-0 right-0 p-12 opacity-[0.03] dark:opacity-[0.05] translate-x-1/4 -translate-y-1/4 group-hover:scale-110 transition-transform duration-700 pointer-events-none">
- <Building2 size={300} className="text-muted-foreground text-foreground"/>
- </div>
- <div className="relative z-10">
- <h2 className="text-4xl font-black text-foreground uppercase tracking-tighter font-outfit">Configuración Maestro</h2>
- <p className="text-muted-foreground mt-2 font-bold tracking-widest uppercase text-xs opacity-70">Infraestructura Global & Seguridad Enterprise</p>
- </div>
- <div className="flex items-center gap-3 relative z-10">
- <button 
- onClick={() => setActiveTab('account')}
- className="px-6 py-3 bg-muted hover:bg-brand-500/10 rounded-2xl text-[10px] font-black text-muted-foreground hover:text-brand-500 transition-all border border-border hover:border-brand-500/20 tracking-widest uppercase"
- >
- MI CUENTA MAESTRA
- </button>
- </div>
- </div>
- <GlobalPlatformSettings />
- </div>
- );
- }
+
 
  return (
  <div className="max-w-6xl mx-auto space-y-10 animate-slide-up">
@@ -277,19 +274,22 @@ export const Settings = () => {
 
  <div className="flex flex-col lg:flex-row gap-10">
  
- {/* TABS NAVIGATION */}
- <aside className="w-full lg:w-72 space-y-2">
- <TabButton active={activeTab === 'business'} onClick={() => setActiveTab('business')} icon={Building2} label="Empresa"/>
- <TabButton active={activeTab === 'billing'} onClick={() => setActiveTab('billing')} icon={Receipt} label="Facturación"/>
- <TabButton active={activeTab === 'ticket'} onClick={() => setActiveTab('ticket')} icon={FileText} label="Diseño Ticket"/>
- <TabButton active={activeTab === 'account'} onClick={() => setActiveTab('account')} icon={User} label="Mi Perfil"/>
- </aside>
+  {/* TABS NAVIGATION */}
+  <aside className="w-full lg:w-72 space-y-2">
+  {isSuperAdmin && <TabButton active={activeTab === 'platform'} onClick={() => setActiveTab('platform')} icon={Layers} label="Plataforma"/>}
+  <TabButton active={activeTab === 'business'} onClick={() => setActiveTab('business')} icon={Building2} label="Empresa"/>
+  <TabButton active={activeTab === 'billing'} onClick={() => setActiveTab('billing')} icon={Receipt} label="Facturación"/>
+  <TabButton active={activeTab === 'ticket'} onClick={() => setActiveTab('ticket')} icon={FileText} label="Diseño Ticket"/>
+  <TabButton active={activeTab === 'account'} onClick={() => setActiveTab('account')} icon={User} label="Mi Perfil"/>
+  </aside>
 
  {/* CONTENT AREA */}
  <Card className="flex-1 p-10 glass-dark border-border relative overflow-hidden">
  <div className="absolute top-0 right-0 p-8 opacity-[0.01] dark:opacity-[0.02] -translate-y-1/4 translate-x-1/4 pointer-events-none">
  <Building2 size={200} className="text-foreground"/>
  </div>
+ 
+
  
  {activeTab === 'business' && (
  <div className="space-y-8 animate-fade-in relative z-10">
@@ -508,7 +508,7 @@ export const Settings = () => {
  ].map((c) => (
  <button
  key={c.color}
- onClick={() => updateOrganization({ theme_color: c.color })}
+  onClick={() => setFormData({ ...formData, theme_color: c.color })}
  className={`h-10 w-10 rounded-2xl border-4 transition-all hover:scale-110 active:scale-95 shadow-lg ${profile?.theme_color === c.color ? 'border-border dark:border-white' : 'border-transparent'}`}
  style={{ backgroundColor: c.color }}
  title={c.name}
@@ -517,7 +517,7 @@ export const Settings = () => {
  <input 
  type="color"
  value={organization?.theme_color || '#3b82f6'}
- onChange={(e) => updateOrganization({ theme_color: e.target.value })}
+  onChange={(e) => setFormData({ ...formData, theme_color: e.target.value })}
  className="h-10 w-10 rounded-2xl cursor-pointer bg-transparent border-none appearance-none"
  aria-label="Selector de color primario personalizado"
  />
@@ -536,7 +536,7 @@ export const Settings = () => {
  ].map((c) => (
  <button
  key={c.color}
- onClick={() => updateOrganization({ theme_secondary_color: c.color })}
+  onClick={() => setFormData({ ...formData, theme_secondary_color: c.color })}
  className={`h-10 w-10 rounded-2xl border-4 transition-all hover:scale-110 active:scale-95 shadow-lg ${organization?.theme_secondary_color === c.color ? 'border-border dark:border-white' : 'border-transparent'}`}
  style={{ backgroundColor: c.color }}
  title={c.name}
@@ -545,7 +545,7 @@ export const Settings = () => {
  <input 
  type="color"
  value={organization?.theme_secondary_color || '#2563eb'}
- onChange={(e) => updateOrganization({ theme_secondary_color: e.target.value })}
+  onChange={(e) => setFormData({ ...formData, theme_secondary_color: e.target.value })}
  className="h-10 w-10 rounded-2xl cursor-pointer bg-transparent border-none appearance-none"
  aria-label="Selector de color secundario personalizado"
  />
@@ -566,7 +566,7 @@ export const Settings = () => {
  ].map((p) => (
  <button
  key={p.name}
- onClick={() => updateOrganization({ theme_color: p.primary, theme_secondary_color: p.secondary })}
+  onClick={() => setFormData({ ...formData, theme_color: p.primary, theme_secondary_color: p.secondary })}
  className="px-3 py-1.5 rounded-lg border border-border hover:border-brand-500/50 transition-all group overflow-hidden relative"
  >
  <div className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity bg-brand-500"/>
@@ -583,13 +583,13 @@ export const Settings = () => {
  <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-1">Estilo de Interactividad</label>
  <div className="grid grid-cols-2 gap-3 p-1.5 bg-muted rounded-2xl border border-border">
  <button 
- onClick={() => updateOrganization({ theme_style: 'solid' })}
+  onClick={() => setFormData({ ...formData, theme_style: 'solid' })}
  className={`py-3 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${organization?.theme_style !== 'gradient' ? 'bg-card text-brand-500 shadow-xl' : 'text-muted-foreground hover:text-foreground '}`}
  >
  Color Sólido
  </button>
  <button 
- onClick={() => updateOrganization({ theme_style: 'gradient' })}
+  onClick={() => setFormData({ ...formData, theme_style: 'gradient' })}
  className={`py-3 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${organization?.theme_style === 'gradient' ? 'bg-brand-500 text-white shadow-xl shadow-brand-500/20' : 'text-muted-foreground hover:text-foreground '}`}
  >
  Difuminado (V5)

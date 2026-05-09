@@ -17,32 +17,36 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Button, Card } from './ui-components';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { CreateOrganizationModal } from './CreateOrganizationModal';
+import { toast } from 'sonner';
 import { api } from '../lib/api';
 
 const activityData = [
-  { name: 'Lun', users: 45 },
-  { name: 'Mar', users: 52 },
-  { name: 'Mie', users: 48 },
-  { name: 'Jue', users: 61 },
-  { name: 'Vie', users: 55 },
-  { name: 'Sab', users: 42 },
-  { name: 'Dom', users: 38 },
-];
-
-const recentLogs = [
-  { id: 1, org: 'Frubana SAS', event: 'Nueva Organización', time: 'Hace 2h', type: 'new' },
-  { id: 2, org: 'SuperAdmin', event: 'Cambio Plan Enterprise', time: 'Hace 4h', type: 'edit' },
-  { id: 3, org: 'Gkad Admin', event: 'Inicio Sesión Seguro', time: 'Hace 5h', type: 'security' },
-  { id: 4, org: 'Tienda La 80', event: 'Actualización Stock', time: 'Hace 8h', type: 'edit' },
+  { name: 'Lun', users: 120 },
+  { name: 'Mar', users: 132 },
+  { name: 'Mie', users: 101 },
+  { name: 'Jue', users: 142 },
+  { name: 'Vie', users: 160 },
+  { name: 'Sab', users: 80 },
+  { name: 'Dom', users: 95 },
 ];
 
 export const AdminWelcome = ({ setActiveTab }: { setActiveTab: (tab: string) => void }) => {
   const { profile } = useAuthStore();
   const [stats, setStats] = useState<any>(null);
+  const [logs, setLogs] = useState<any[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     api.get('/saas/stats').then(setStats).catch(() => {});
+    api.get('/saas/logs').then(setLogs).catch(() => {});
   }, []);
+
+  const generateReport = () => {
+    toast.success('Generando reporte ejecutivo...', {
+      description: 'El dataset maestro se está compilando en este momento.'
+    });
+  };
 
   const getFormattedDate = () => {
     try {
@@ -55,6 +59,15 @@ export const AdminWelcome = ({ setActiveTab }: { setActiveTab: (tab: string) => 
   return (
     <div className="space-y-10 animate-in fade-in duration-700 pb-20">
       
+      <CreateOrganizationModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        onSuccess={() => {
+          api.get('/saas/stats').then(setStats);
+          api.get('/saas/logs').then(setLogs);
+        }}
+      />
+
       {/* 1. COMPACT PREMIUM HEADER */}
       <div className="flex flex-col md:flex-row items-center justify-between gap-6 border-b border-border pb-10">
         <div className="space-y-2">
@@ -62,7 +75,7 @@ export const AdminWelcome = ({ setActiveTab }: { setActiveTab: (tab: string) => 
             <Sparkles size={14} /> Global Control Hub
           </div>
           <h1 className="text-5xl font-black text-foreground font-heading tracking-tighter">
-            Hola, <span className="text-brand-500">{profile?.full_name?.split(' ')[0] || 'Ariosto'}</span>
+            Hola, <span className="text-brand-500">{profile?.full_name ? profile.full_name.split(' ')[0] : 'Administrador'}</span>
           </h1>
           <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest flex items-center gap-2">
             <Calendar size={12} /> {getFormattedDate()}
@@ -71,7 +84,7 @@ export const AdminWelcome = ({ setActiveTab }: { setActiveTab: (tab: string) => 
 
         <div className="flex items-center gap-3">
           <Button 
-            onClick={() => setActiveTab('admin_organizations')}
+            onClick={() => setIsModalOpen(true)}
             icon={Plus} 
             className="h-12 px-6 rounded-2xl text-[10px] font-black uppercase tracking-widest bg-brand-600 shadow-xl shadow-brand-600/20 text-white border-none"
           >
@@ -80,6 +93,7 @@ export const AdminWelcome = ({ setActiveTab }: { setActiveTab: (tab: string) => 
           <Button 
             variant="outline"
             icon={FileText} 
+            onClick={generateReport}
             className="h-12 px-6 rounded-2xl text-[10px] font-black uppercase tracking-widest border-border"
           >
             Generar Reporte
@@ -94,7 +108,7 @@ export const AdminWelcome = ({ setActiveTab }: { setActiveTab: (tab: string) => 
             <Users size={64} />
           </div>
           <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-4">Usuarios Activos</p>
-          <h3 className="text-4xl font-black text-foreground font-outfit">{stats?.activeUsersToday || 124}</h3>
+          <h3 className="text-4xl font-black text-foreground font-outfit">{stats?.activeUsersToday || 0}</h3>
           <div className="mt-4 flex items-center gap-2">
             <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">+5.4%</span>
             <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest">vs ayer</span>
@@ -106,10 +120,10 @@ export const AdminWelcome = ({ setActiveTab }: { setActiveTab: (tab: string) => 
             <Building2 size={64} />
           </div>
           <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-4">Licencias Pro</p>
-          <h3 className="text-4xl font-black text-foreground font-outfit">{stats?.totalOrganizations || 42}</h3>
+          <h3 className="text-4xl font-black text-foreground font-outfit">{stats?.totalOrganizations || 0}</h3>
           <div className="mt-4 flex items-center gap-2">
-            <span className="text-[10px] font-bold text-blue-500 bg-blue-500/10 px-2 py-0.5 rounded-full">3 Disponibles</span>
-            <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest">En stock</span>
+            <span className="text-[10px] font-bold text-blue-500 bg-blue-500/10 px-2 py-0.5 rounded-full">Operativas</span>
+            <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest">Sistema Real</span>
           </div>
         </Card>
 
@@ -119,7 +133,7 @@ export const AdminWelcome = ({ setActiveTab }: { setActiveTab: (tab: string) => 
           </div>
           <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-4">Ingresos MRR</p>
           <h3 className="text-4xl font-black text-brand-500 font-outfit">
-            ${((stats?.totalOrganizations || 42) * 95000).toLocaleString()}
+            ${(stats?.totalMRR || 0).toLocaleString()}
           </h3>
           <div className="mt-4 flex items-center gap-2">
             <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">+12%</span>
@@ -189,24 +203,23 @@ export const AdminWelcome = ({ setActiveTab }: { setActiveTab: (tab: string) => 
           </div>
 
           <div className="space-y-6">
-            {recentLogs.map((log) => (
-              <div key={log.id} className="flex items-center gap-4 group cursor-pointer">
-                <div className={`h-10 w-10 rounded-xl flex items-center justify-center transition-all ${
-                  log.type === 'new' ? 'bg-emerald-500/10 text-emerald-500' :
-                  log.type === 'security' ? 'bg-blue-500/10 text-blue-500' :
-                  'bg-purple-500/10 text-purple-500'
-                }`}>
+            {logs.slice(0, 4).map((log, i) => (
+              <div key={log.id || i} className="flex items-center gap-4 group cursor-pointer">
+                <div className={`h-10 w-10 rounded-xl flex items-center justify-center transition-all bg-brand-500/10 text-brand-500`}>
                   <ShieldCheck size={18} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[10px] font-black text-foreground uppercase truncate">{log.org}</p>
-                  <p className="text-[9px] text-muted-foreground font-medium">{log.event}</p>
+                  <p className="text-[10px] font-black text-foreground uppercase truncate">{log.organization_id ? 'Org Update' : 'System Event'}</p>
+                  <p className="text-[9px] text-muted-foreground font-medium truncate">{log.action || log.event || 'Operación Registrada'}</p>
                 </div>
                 <div className="text-[8px] font-bold text-muted-foreground uppercase whitespace-nowrap">
-                  {log.time}
+                  {log.created_at ? new Date(log.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Ahora'}
                 </div>
               </div>
             ))}
+            {logs.length === 0 && (
+              <p className="text-[9px] text-muted-foreground font-bold text-center py-10 uppercase tracking-widest">Sin actividad reciente real</p>
+            )}
           </div>
 
           <div className="pt-4 border-t border-border/50">

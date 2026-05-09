@@ -99,7 +99,6 @@ export const useOrganizationStore = create<OrganizationState>((set, get) => ({
  if (finalOrg && finalOrg.id) {
  set({ organization: finalOrg });
  get().applyBranding(finalOrg);
- toast.success('Sincronización corporativa exitosa');
  }
  } catch (error: any) {
  // Rollback visual si falla
@@ -153,6 +152,11 @@ export const useOrganizationStore = create<OrganizationState>((set, get) => ({
  const root = document.documentElement;
  if (org.theme_color) root.style.setProperty('--brand-primary', org.theme_color);
  if (org.theme_secondary_color) root.style.setProperty('--brand-secondary', org.theme_secondary_color);
+ if (org.theme_style === 'gradient') {
+   document.body.classList.add('theme-gradient');
+ } else {
+   document.body.classList.remove('theme-gradient');
+ }
  
  // Inyectar logo en el DOM para acceso global si es necesario
  (window as any).__GKAD_LOGO__ = org.logo_url;
