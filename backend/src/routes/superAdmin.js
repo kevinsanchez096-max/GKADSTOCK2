@@ -50,8 +50,4 @@ router.post('/organizations/:orgId/users', superAdminController.injectUser);
 router.patch('/users/:userId', superAdminController.updateUser);
 router.delete('/users/:userId', superAdminController.deleteUser);
 router.post('/users/:userId/reset-password', superAdminController.resetUserPassword);
-
-// 11. Comunicaciones SaaS & Actividad (ELIMINADO)
-// Las rutas de comunicaciones han sido removidas por solicitud del usuario.
-
 module.exports = router;

@@ -46,7 +46,7 @@ const authController = {
             // B. Recuperación de Perfil (con supabaseAdmin — Bypass RLS puro)
             let { data: profileData, error: profileError } = await supabaseAdmin
                 .from('profiles')
-                .select('id, full_name, role, organization_id, created_at, updated_at, require_password_change, avatar_url')
+                .select('*, organizations(*)')
                 .eq('id', authData.user.id)
                 .maybeSingle();
 
@@ -58,7 +58,7 @@ const authController = {
 
                 let { data: orgData, error: orgError } = await supabaseAdmin
                     .from('organizations')
-                    .select('id, name, is_active, billing_status, plan')
+                    .select('*')
                     .eq('name', 'GKAD Admin')
                     .maybeSingle();
 
@@ -66,7 +66,7 @@ const authController = {
                     const { data: newOrg, error: createOrgErr } = await supabaseAdmin
                         .from('organizations')
                         .insert([{ name: 'GKAD Admin', is_active: true }])
-                        .select('id, name, is_active, billing_status, plan')
+                        .select()
                         .single();
                     if (createOrgErr) throw createOrgErr;
                     orgData = newOrg;
@@ -89,28 +89,18 @@ const authController = {
 
                 const { data: repairedProfile, error: fetchErr } = await supabaseAdmin
                     .from('profiles')
-                    .select('id, full_name, role, organization_id, created_at, updated_at, require_password_change, avatar_url')
+                    .select('*, organizations(*)')
                     .eq('id', authData.user.id)
                     .single();
                 
                 if (fetchErr) throw fetchErr;
                 profileData = repairedProfile;
-                profileData.organizations = orgData;
-            } else if (profileData && profileData.organization_id) {
-                // Obtener organización de forma separada
-                const { data: org, error: orgError } = await supabaseAdmin
-                    .from('organizations')
-                    .select('id, name, is_active, billing_status, plan, logo_url')
-                    .eq('id', profileData.organization_id)
-                    .maybeSingle();
-
-                if (!orgError && org) {
-                    profileData.organizations = org;
-                }
             }
 
             // D. Normalización de la organización
-            const organization = profileData.organizations || null;
+            const organization = Array.isArray(profileData.organizations) 
+                ? profileData.organizations[0] 
+                : profileData.organizations;
 
             // E. VALIDACIÓN DE BLOQUEO (SaaS Control & Billing)
             // ── STATELESS: NO llamamos supabase.auth.signOut() ──
@@ -206,52 +196,18 @@ const authController = {
     getMe: async (req, res) => {
         try {
             const userId = req.user.id;
-            
-            // A. Obtener Perfil (sin relación para evitar RLS issues)
-            console.log(`[getMe] Obteniendo perfil para usuario: ${userId}`);
-            const { data: profile, error: profileError } = await supabaseAdmin
+            const { data: profile, error } = await supabaseAdmin
                 .from('profiles')
-                .select('id, full_name, role, organization_id, created_at, updated_at, require_password_change, avatar_url')
+                .select('*, organizations(*)')
                 .eq('id', userId)
-                .single();
+                .maybeSingle();
 
-            if (profileError) {
-                console.error(`[getMe] Error obteniendo perfil:`, profileError);
-                if (profileError.code === 'PGRST116') {
-                    return res.status(404).json({ error: 'Perfil no encontrado' });
-                }
-                throw profileError;
-            }
+            if (error) throw error;
+            if (!profile) return res.status(404).json({ error: 'Perfil no encontrado' });
 
-            if (!profile) {
-                return res.status(404).json({ error: 'Perfil no encontrado' });
-            }
-
-            // B. Obtener Organización de forma separada
-            let organization = null;
-            if (profile.organization_id) {
-                const { data: org, error: orgError } = await supabaseAdmin
-                    .from('organizations')
-                    .select('id, name, is_active, billing_status, plan, logo_url, created_at, updated_at')
-                    .eq('id', profile.organization_id)
-                    .maybeSingle();
-
-                if (orgError) {
-                    console.warn(`[getMe] Error obteniendo organización (no crítico):`, orgError);
-                } else {
-                    organization = org;
-                }
-            }
-
-            // C. Respuesta normalizada
-            const responseData = {
-                ...profile,
-                organizations: organization
-            };
-
-            res.status(200).json(responseData);
+            const organization = Array.isArray(profile.organizations) ? profile.organizations[0] : profile.organizations;
+            res.status(200).json({ ...profile, organizations: organization });
         } catch (error) {
-            console.error('[getMe] Error en getMe:', error.message);
             res.status(500).json({ error: translateError(error) });
         }
     },
@@ -262,27 +218,15 @@ const authController = {
             const { userId } = req.params;
             const { data: profile, error } = await supabaseAdmin
                 .from('profiles')
-                .select('id, full_name, role, organization_id, created_at, updated_at, avatar_url')
+                .select('*, organizations(*)')
                 .eq('id', userId)
+                .limit(1)
                 .maybeSingle();
 
             if (error) throw error;
             if (!profile) return res.status(404).json({ error: 'Perfil no encontrado' });
 
-            // Obtener organización de forma separada
-            let organization = null;
-            if (profile.organization_id) {
-                const { data: org, error: orgError } = await supabaseAdmin
-                    .from('organizations')
-                    .select('id, name, is_active, billing_status, plan, logo_url, created_at, updated_at')
-                    .eq('id', profile.organization_id)
-                    .maybeSingle();
-
-                if (!orgError && org) {
-                    organization = org;
-                }
-            }
-
+            const organization = Array.isArray(profile.organizations) ? profile.organizations[0] : profile.organizations;
             res.status(200).json({ ...profile, organizations: organization });
         } catch (error) {
             res.status(500).json({ error: translateError(error) });
@@ -440,14 +384,6 @@ const authController = {
             } catch (resendEx) {
                 console.warn('⚠️ Excepción OTP no crítica:', resendEx.message);
             }
-
-            // D. REGISTRO DE ACTIVIDAD (PARA EL SUPER ADMIN)
-            await supabaseAdmin.from('system_logs').insert([{
-                module: 'AUTH',
-                message: `🚀 NUEVO REGISTRO: Se ha unido una nueva organización: ${orgName} (${email})`,
-                level: 'info',
-                organization_id: orgId
-            }]);
 
             res.status(201).json({ 
                 message: 'Registro exitoso. Bienvenido a GKAD STOCK.', 
@@ -867,14 +803,6 @@ const authController = {
             }
 
             console.log(`🎉 Cuenta activada y organización creada para: ${email}`);
-
-            // E. REGISTRO DE ACTIVIDAD (PARA EL SUPER ADMIN)
-            await supabaseAdmin.from('system_logs').insert([{
-                action: 'CUENTA_ACTIVADA',
-                details: `El usuario ${email} ha verificado su cuenta y activado su organización.`,
-                severity: 'success',
-                user_id: userId
-            }]);
 
             // Retornamos la sesión para auto-login
             res.status(200).json({ 

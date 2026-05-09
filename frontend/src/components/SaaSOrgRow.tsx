@@ -380,25 +380,19 @@ export const SaaSOrgRow = ({ org, isExpanded, onToggle, isMenuOpen, onToggleMenu
  </div>
  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-8">
  {/* DATOS BÁSICOS */}
- <div className="space-y-1 min-w-0">
+ <div className="space-y-1">
  <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Representante Legal</p>
- <p className="text-[12px] font-bold text-foreground uppercase truncate" title={org.legal_representative}>{org.legal_representative || 'Sin representante legal'}</p>
+ <p className="text-[12px] font-bold text-foreground uppercase">{org.legal_representative || 'Sin representante legal'}</p>
  </div>
  <div className="space-y-1">
  <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">NIT / Identificación</p>
  <p className="text-[12px] font-bold text-foreground uppercase">{org.tax_id || 'Sin NIT registrado'}</p>
  </div>
- <div className="space-y-1 min-w-0 overflow-hidden">
+ <div className="space-y-1">
  <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Contacto Directo</p>
- <div className="space-y-1.5 w-full">
- <div className="flex items-center gap-2 text-muted-foreground min-w-0">
- <Phone size={10} className="flex-shrink-0" /> 
- <span className="text-[11px] font-medium truncate uppercase">{org.phone_number || 'Sin teléfono'}</span>
- </div>
- <div className="flex items-center gap-2 text-muted-foreground min-w-0" title={org.corporate_email}>
- <Mail size={10} className="flex-shrink-0" /> 
- <span className="text-[11px] font-medium truncate lowercase w-full">{org.corporate_email || 'No configurado'}</span>
- </div>
+ <div className="flex flex-col gap-1">
+ <span className="text-[11px] font-medium text-muted-foreground flex items-center gap-2"><Phone size={10} /> {org.phone_number || 'Sin teléfono'}</span>
+ <span className="text-[11px] font-medium text-muted-foreground flex items-center gap-2"><Mail size={10} /> {org.corporate_email || 'No configurado'}</span>
  </div>
  </div>
 
@@ -414,9 +408,9 @@ export const SaaSOrgRow = ({ org, isExpanded, onToggle, isMenuOpen, onToggleMenu
  <span className="text-[11px] font-bold text-foreground">DIVISA: {org.currency}</span>
  </div>
  </div>
- <div className="space-y-1 min-w-0">
+ <div className="space-y-1">
  <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Dirección Principal</p>
- <p className="text-[11px] font-medium text-muted-foreground truncate" title={org.primary_address}>{org.primary_address || 'Sin dirección'}</p>
+ <p className="text-[11px] font-medium text-muted-foreground">{org.primary_address || 'Sin dirección'}</p>
  </div>
 
  {/* BRANDING */}
