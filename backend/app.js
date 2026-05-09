@@ -16,7 +16,23 @@ const app = express();
 
 // Middlewares Globales
 app.use(helmet()); // Seguridad de cabeceras HTTP
-app.use(cors()); // Soporte de solicitudes externas (Frontend)
+// Configuración estricta de CORS (Producción vs Desarrollo)
+const allowedOrigins = process.env.NODE_ENV === 'production' 
+  ? ['https://gkadstock-2.vercel.app'] 
+  : ['http://localhost:5173', 'http://localhost:3000']; // Para no romper tu entorno de pruebas local
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('No permitido por CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
 app.use(morgan('dev')); // Logger de solicitudes
 app.use(express.json()); // Parsing de JSON
 
