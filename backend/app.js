@@ -82,7 +82,7 @@ app.use((err, req, res, next) => {
 });
 module.exports = app;
 
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
   const PORT = process.env.PORT || 4000;
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Servidor local GKAD STOCK corriendo en: http://localhost:${PORT}`);

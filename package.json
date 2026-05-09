@@ -4,7 +4,7 @@
   "description": "Unified GKAD STOCK V5.0 Project for Vercel",
   "scripts": {
     "build": "npm install --prefix frontend && npm run build --prefix frontend && cp -r frontend/dist dist",
-    "start": "node backend/server.js"
+    "start": "node backend/app.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
