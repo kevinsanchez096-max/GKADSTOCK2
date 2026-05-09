@@ -28,6 +28,7 @@ import { useAuthStore } from '../store/useAuthStore';
 import { useShopStore } from '../store/useShopStore';
 import { useOrganizationStore } from '../store/useOrganizationStore';
 import { ProfileSettingsModal } from './ProfileSettingsModal';
+import { NotificationBell } from './NotificationBell';
 import { toast } from 'sonner';
 
 interface LayoutProps {
@@ -236,6 +237,8 @@ export const DashboardLayout = ({
  >
  {darkMode ? <Sun size={18} /> : <Moon size={18} />}
  </button>
+
+ <NotificationBell />
 
  <div className="h-8 w-[1px] bg-border"/>
 
