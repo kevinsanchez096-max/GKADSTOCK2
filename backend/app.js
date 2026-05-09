@@ -77,6 +77,12 @@ app.use((err, req, res, next) => {
     };
     
     res.status(statusCode).json(errorResponse);
-};
+});
 
 module.exports = app;
+
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(4000, () => {
+    console.log('Servidor local en puerto 4000');
+  });
+}
