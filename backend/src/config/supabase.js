@@ -1,12 +1,12 @@
 const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config();
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseUrl = process.env.SUPABASE_URL || 'https://missing-vercel-url.supabase.co';
+const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || 'missing-vercel-key';
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'missing-vercel-key';
 
-if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceRoleKey) {
-    console.error('❌ ERROR CRÍTICO: Faltan variables SUPABASE en el .env');
+if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    console.error('❌ ERROR CRÍTICO: Faltan variables SUPABASE en Vercel o en el .env');
 }
 
 /**
