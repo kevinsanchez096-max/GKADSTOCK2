@@ -87,21 +87,21 @@ export const GlobalUserAudit = () => {
  switch (role) {
  case 'super_admin':
  return (
- <span className="flex items-center gap-2 px-3 py-1 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 text-[9px] font-black border border-purple-500/20 uppercase tracking-widest shadow-sm">
+ <span className="flex items-center gap-2 px-3 py-1 rounded-xl bg-purple-500/10 text-purple-400 text-[9px] font-black border border-purple-500/20 uppercase tracking-widest shadow-sm">
  <ShieldCheck className="h-3 w-3"strokeWidth={2.5} />
  SUPREMO
  </span>
  );
  case 'admin':
  return (
- <span className="flex items-center gap-2 px-3 py-1 rounded-xl bg-brand-500/10 text-brand-600 dark:text-brand-500 text-[9px] font-black border border-brand-500/20 uppercase tracking-widest shadow-sm">
+ <span className="flex items-center gap-2 px-3 py-1 rounded-xl bg-brand-500/10 text-blue-400 text-[9px] font-black border border-brand-500/20 uppercase tracking-widest shadow-sm">
  <UserCircle2 className="h-3 w-3"strokeWidth={2.5} />
  ADMIN
  </span>
  );
  default:
  return (
- <span className="flex items-center gap-2 px-3 py-1 rounded-xl bg-muted text-muted-foreground text-[9px] font-black border border-border uppercase tracking-widest">
+ <span className="flex items-center gap-2 px-3 py-1 rounded-xl bg-muted text-gray-300 text-[9px] font-black border border-border uppercase tracking-widest">
  <Users className="h-3 w-3"strokeWidth={2.5} />
  OPERADOR
  </span>
@@ -265,9 +265,9 @@ const TreeNode = ({ node, depth, expandedNodes, toggleNode, getRoleBadge }: any)
  </div>
  
  <div className={`h-12 w-12 rounded-2xl flex items-center justify-center font-black text-lg border-2 shadow-2xl transition-transform group-hover:scale-110 ${
- node.role === 'super_admin' ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30' : 
- node.role === 'admin' ? 'bg-brand-500/10 text-brand-600 dark:text-brand-500 border-brand-500/30' : 
- 'bg-muted text-muted-foreground border-border'
+ node.role === 'super_admin' ? 'bg-purple-500/10 text-purple-400 border-purple-500/30' : 
+ node.role === 'admin' ? 'bg-brand-500/10 text-blue-400 border-brand-500/30' : 
+ 'bg-muted text-gray-300 border-border'
  }`}>
  {node.full_name.charAt(0).toUpperCase()}
  </div>
