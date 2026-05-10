@@ -40,6 +40,7 @@ export const SalesHistory = () => {
  const [refreshing, setRefreshing] = useState(false);
  const [loadingDetails, setLoadingDetails] = useState(false);
  const [displayLimit, setDisplayLimit] = useState(20); // Límite de registros a mostrar
+ const [customMargin, setCustomMargin] = useState<string>('100'); // Margen promedio personalizado
 
  // Helper de Seguridad: Parseo de Items (Evita Crash de Pantalla Negra)
  const getSafeItems = (itemsInput: any) => {
@@ -101,14 +102,8 @@ export const SalesHistory = () => {
   }, [filteredSales]);
 
   const estimatedProfit = useMemo(() => {
-  return totalGross - totalCost;
-  }, [totalGross, totalCost]);
-
-  const calculatedMarginPercentage = useMemo(() => {
-  if (totalCost === 0 && totalGross > 0) return 100;
-  if (totalCost === 0 && totalGross === 0) return 0;
-  return ((estimatedProfit / totalCost) * 100).toFixed(1);
-  }, [estimatedProfit, totalCost, totalGross]);
+  return totalGross * (Number(customMargin) / 100);
+  }, [totalGross, customMargin]);
 
  // FUNCIÓN: Ver Detalles (Sólo para el Modal Visual)
  const handleViewDetails = async (sale: any) => {
@@ -324,10 +319,14 @@ export const SalesHistory = () => {
  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Rendimiento</span>
  </div>
  <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">% MARGEN PROMEDIO</p>
- <div className="flex items-center w-full sm:w-32 rounded-xl transition-all duration-300 bg-card border border-border shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:shadow-none">
- <div className="w-full bg-transparent text-foreground font-bold text-2xl text-center py-2 pl-4">
- {calculatedMarginPercentage}
- </div>
+ <div className="flex items-center w-full sm:w-32 rounded-xl transition-all duration-300 bg-card border border-border shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:shadow-none focus-within:ring-2 focus-within:ring-brand-500">
+ <input
+ type="number"
+ value={customMargin}
+ onChange={(e) => setCustomMargin(e.target.value)}
+ className="w-full bg-transparent text-foreground font-bold text-2xl text-center py-2 pl-4 outline-none"
+ placeholder="100"
+ />
  <span className="text-foreground font-bold text-2xl pr-4">%</span>
  </div>
  </Card>
