@@ -67,6 +67,7 @@ export const POSTerminal = () => {
  const [amountReceived, setAmountReceived] = useState<string>('');
  const [discount, setDiscount] = useState<number>(0);
  const [activeStep, setActiveStep] = useState<'cart' | 'payment'>('cart');
+ const [mobileTab, setMobileTab] = useState<'products' | 'cart'>('products');
  
  // FILTROS AVANZADOS (NEW)
  const [showFilterPanel, setShowFilterPanel] = useState(false);
@@ -363,10 +364,33 @@ export const POSTerminal = () => {
  }, [products, activeStep, cart, canFinalize, loading, handleFinalizeSale, showSuccess, isReadingScale]);
 
  return (
- <div id="pos-main-container"className="h-full flex flex-col lg:flex-row bg-card text-foreground overflow-y-auto lg:overflow-hidden animate-fade-in relative selection:bg-brand-500/30 transition-colors duration-300 font-outfit">
+ <div id="pos-main-container"className="h-full flex flex-col lg:flex-row bg-card text-foreground overflow-hidden animate-fade-in relative selection:bg-brand-500/30 transition-colors duration-300 font-outfit">
  
+ {/* MOBILE TABS HEADER */}
+ <div className="flex lg:hidden bg-card border-b border-border p-3 gap-3 sticky top-0 z-[60] shadow-sm shrink-0">
+ <button 
+ onClick={() => setMobileTab('products')}
+ className={`flex-1 h-12 flex items-center justify-center gap-2 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${mobileTab === 'products' ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' : 'bg-muted text-muted-foreground'}`}
+ >
+ <LayoutGrid size={16} />
+ Catálogo
+ </button>
+ <button 
+ onClick={() => setMobileTab('cart')}
+ className={`flex-1 h-12 flex items-center justify-center gap-2 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all relative ${mobileTab === 'cart' ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' : 'bg-muted text-muted-foreground'}`}
+ >
+ <ShoppingCart size={16} />
+ Carrito
+ {cart.length > 0 && (
+ <span className="absolute -top-1.5 -right-1.5 h-5 w-5 bg-card border border-brand-500 text-brand-600 text-[10px] font-black flex items-center justify-center rounded-full shadow-sm">
+ {cart.length}
+ </span>
+ )}
+ </button>
+ </div>
+
  {/* IZQUIERDA: LIBRERÍA DE PRODUCTOS (FIJA) */}
- <div className="flex-1 flex flex-col min-w-0 p-4 lg:p-6 space-y-6 bg-muted/20 backdrop-blur-sm">
+ <div className={`flex-1 flex-col min-w-0 p-4 lg:p-6 space-y-6 bg-muted/20 backdrop-blur-sm ${mobileTab === 'cart' ? 'hidden lg:flex' : 'flex'}`}>
  
  {/* BUSCADOR PRO */}
  <div className="flex items-center gap-4">
@@ -453,7 +477,7 @@ export const POSTerminal = () => {
  </div>
 
  {/* CATEGORÍAS PILL */}
- <div className="flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-hide">
+ <div className="flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
  <button 
  onClick={() => setSelectedCategoryId(null)}
  className={`px-6 py-2 text-[11px] font-bold whitespace-nowrap transition-all rounded-full border ${!selectedCategoryId ? 'bg-brand-500 border-brand-500 text-white shadow-lg shadow-brand-500/20' : 'bg-card  border-border text-muted-foreground hover:border-slate-400 dark:hover:border-border shadow-sm dark:shadow-none'}`}
@@ -568,7 +592,7 @@ export const POSTerminal = () => {
  </div>
 
  {/* DERECHA: CONSOLA DE ACCIÓN */}
- <div id="cart-panel"className="w-full lg:w-[400px] flex flex-col bg-card border-l border-border rounded-tl-[2.5rem] shadow-[-10px_0_30px_-10px_rgba(0,0,0,0.05)] dark:shadow-[-20px_0_50px_-20px_rgba(0,0,0,0.5)] font-outfit">
+ <div id="cart-panel"className={`w-full lg:w-[400px] flex-col bg-card border-l border-border lg:rounded-tl-[2.5rem] shadow-[-10px_0_30px_-10px_rgba(0,0,0,0.05)] dark:shadow-[-20px_0_50px_-20px_rgba(0,0,0,0.5)] font-outfit ${mobileTab === 'products' ? 'hidden lg:flex' : 'flex h-full'}`}>
  
  {/* ENCABEZADO HEADER */}
  <div className="p-4 border-b border-border flex items-center justify-between bg-muted/50">
@@ -860,28 +884,7 @@ export const POSTerminal = () => {
  )}
  </AnimatePresence>
 
- {/* FAB PARA MÓVILES: VER CARRITO */}
- <div className="fixed bottom-4 right-4 z-[90] lg:hidden">
- <button 
- onClick={() => {
- const panel = document.getElementById('cart-panel');
- if (panel) panel.scrollIntoView({ behavior: 'smooth' });
- }}
- className="h-14 px-6 bg-brand-600 text-white rounded-full shadow-2xl flex items-center gap-3 hover:bg-brand-700 active:scale-95 transition-all border-2 border-brand-400"
- >
- <div className="relative">
- <ShoppingCart size={20} />
- {cart.length > 0 && (
- <span className="absolute -top-2 -right-2 h-4 w-4 bg-card text-brand-600 text-[10px] font-black flex items-center justify-center rounded-full shadow-sm">
- {cart.length}
- </span>
- )}
- </div>
- <span className="text-xs font-black uppercase tracking-widest border-l border-white/20 pl-3">
- ${total.toLocaleString()}
- </span>
- </button>
- </div>
+
 
  {/* PLANTILLA DE IMPRESIÓN PRO (UNIFICADA) */}
  <PrintableTicket sale={lastSaleData} profile={profile} />

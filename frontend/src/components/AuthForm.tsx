@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Mail, ArrowLeft, Package, CheckCircle2, 
-  ShieldCheck, Sparkles, Lock, Circle, LogIn, Store, BarChart3, LayoutDashboard, Database
+  ShieldCheck, Sparkles, Lock, Circle, LogIn, Store, BarChart3, LayoutDashboard, Database, Eye, EyeOff
 } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
 import { toast } from 'sonner';
@@ -24,30 +24,45 @@ const DarkInput = ({
   value: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onFocus?: () => void; onBlur?: () => void;
   autoFocus?: boolean; required?: boolean; icon?: React.ElementType; autoComplete?: string;
-}) => (
-  <div className="flex flex-col gap-2">
-    <label className="text-label text-zinc-500 ml-1">
-      {label}
-    </label>
-    <div className="relative group">
-      {Icon && (
-        <Icon size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-[var(--brand-primary)] transition-colors duration-300 pointer-events-none" />
-      )}
-      <input
-        type={type}
-        placeholder={placeholder}
-        value={value}
-        onChange={onChange}
-        onFocus={onFocus}
-        onBlur={() => setTimeout(onBlur || (() => {}), 200)}
-        autoFocus={autoFocus}
-        required={required}
-        autoComplete={autoComplete}
-        className={`text-body w-full bg-[#111] border border-[#1e1e1e] rounded-xl px-4 py-4 text-white placeholder:text-zinc-600 focus:outline-none focus:border-[var(--brand-primary)] focus:ring-1 focus:ring-[var(--brand-primary)]/20 transition-all duration-300 ${Icon ? 'pl-12' : ''}`}
-      />
+}) => {
+  const [showPassword, setShowPassword] = useState(false);
+  const isPassword = type === 'password';
+  const inputType = isPassword ? (showPassword ? 'text' : 'password') : type;
+
+  return (
+    <div className="flex flex-col gap-2">
+      <label className="text-label text-zinc-500 ml-1">
+        {label}
+      </label>
+      <div className="relative group">
+        {Icon && (
+          <Icon size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-[var(--brand-primary)] transition-colors duration-300 pointer-events-none" />
+        )}
+        <input
+          type={inputType}
+          placeholder={placeholder}
+          value={value}
+          onChange={onChange}
+          onFocus={onFocus}
+          onBlur={() => setTimeout(onBlur || (() => {}), 200)}
+          autoFocus={autoFocus}
+          required={required}
+          autoComplete={autoComplete}
+          className={`text-body w-full bg-[#111] border border-[#1e1e1e] rounded-xl px-4 py-4 text-white placeholder:text-zinc-600 focus:outline-none focus:border-[var(--brand-primary)] focus:ring-1 focus:ring-[var(--brand-primary)]/20 transition-all duration-300 ${Icon ? 'pl-12' : ''} ${isPassword ? 'pr-12' : ''}`}
+        />
+        {isPassword && (
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white transition-colors"
+          >
+            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
   const [mode, setMode] = useState<FlowMode>('login');
@@ -58,6 +73,7 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [orgName, setOrgName] = useState('');
   const [otpValues, setOtpValues] = useState<string[]>(Array(6).fill(''));
@@ -83,8 +99,10 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
 
   const passwordRules = [
     { id: 'len', text: 'Mínimo 8 caracteres', check: (p: string) => p.length >= 8 },
-    { id: 'up', text: 'Una letra mayúscula', check: (p: string) => /[A-Z]/.test(p) },
+    { id: 'up', text: 'Una mayúscula', check: (p: string) => /[A-Z]/.test(p) },
+    { id: 'low', text: 'Una minúscula', check: (p: string) => /[a-z]/.test(p) },
     { id: 'num', text: 'Un número', check: (p: string) => /[0-9]/.test(p) },
+    { id: 'spec', text: 'Un carácter especial', check: (p: string) => /[^A-Za-z0-9]/.test(p) },
   ];
   const isPasswordValid = passwordRules.every(r => r.check(password));
 
@@ -130,6 +148,7 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
         setStep(4);
       } else if (step === 4) {
         if (!isPasswordValid) return setError('Contraseña débil.');
+        if (password !== confirmPassword) return setError('Las llaves no coinciden.');
         await handleSignUp();
       } else await handleVerifyRegistration();
     }
@@ -180,7 +199,7 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
   };
 
   const prevStep = () => setStep(s => Math.max(1, s - 1));
-  const switchMode = (m: FlowMode) => { setMode(m); setStep(1); setError(null); setEmail(''); setPassword(''); setOtpValues(Array(6).fill('')); setShowSuccess(false); };
+  const switchMode = (m: FlowMode) => { setMode(m); setStep(1); setError(null); setEmail(''); setPassword(''); setConfirmPassword(''); setOtpValues(Array(6).fill('')); setShowSuccess(false); };
 
   if (showSuccess) {
     return (
@@ -203,9 +222,9 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
     <div className="min-h-screen w-full flex flex-col md:flex-row bg-[#0a0a0a] font-sans selection:bg-[var(--brand-primary)]/30 overflow-hidden">
       
       {/* ── COLUMNA IZQUIERDA: BRANDING ── */}
-      <div className="hidden md:flex md:w-1/2 bg-[#0f0f0f] border-r border-[#1a1a1a] relative flex-col justify-center p-12">
+      <div className="hidden md:flex md:w-1/2 bg-[#0f0f0f] border-r border-[#1a1a1a] relative flex-col justify-center gap-10 p-12">
         <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-10">
+          <div className="flex items-center gap-3">
             <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center shadow-lg">
               <Store className="text-black" size={20} />
             </div>
@@ -214,7 +233,7 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
             </span>
           </div>
 
-          <div className="space-y-4 mb-12">
+          <div className="space-y-4 mt-10">
             <span className="text-label text-[var(--brand-primary)]">Sistema POS Enterprise</span>
             <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-5xl font-black leading-[0.9]">
               <span className="text-white">GESTIÓN DE</span> <br />
@@ -226,7 +245,7 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
           </div>
         </div>
 
-        <div className="relative z-10 space-y-5 mb-12">
+        <div className="relative z-10 space-y-5">
           {[
             { icon: LayoutDashboard, title: 'Control Total', desc: 'Panel de mando centralizado.' },
             { icon: BarChart3, title: 'Analíticas AI', desc: 'Proyecciones de venta inteligentes.' },
@@ -250,7 +269,7 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
       </div>
 
       {/* ── COLUMNA DERECHA: FORMULARIO ── */}
-      <div className="w-full md:w-1/2 flex items-center justify-center p-6 sm:p-16 bg-[#0a0a0a] h-screen overflow-y-auto">
+      <div className="w-full md:w-1/2 flex items-center justify-center p-8 sm:p-12 bg-[#0a0a0a] h-screen overflow-y-auto">
         <div className="w-full max-w-md relative">
           
           {step > 1 && (
@@ -278,7 +297,7 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
               ))}
             </div>
 
-            <div className="min-h-[200px] overflow-hidden relative">
+            <div className="min-h-[160px] relative">
               <AnimatePresence mode="wait">
                 {error && (
                   <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="bg-red-500/10 text-red-500 px-4 py-3 rounded-xl border border-red-500/20 text-label text-center mb-6">
@@ -331,6 +350,7 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
               {mode === 'register' && step === 4 && (
                 <motion.div key="r4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
                   <DarkInput label="Nueva Llave" type="password" icon={Lock} value={password} onChange={e => setPassword(e.target.value)} autoFocus required />
+                  <DarkInput label="Confirmar Llave" type="password" icon={Lock} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required />
                   <div className="bg-[#181818] border border-[#2e2e2e] p-5 rounded-2xl space-y-3">
                     <p className="text-label text-zinc-500">Seguridad del Nodo</p>
                     {passwordRules.map(rule => {
