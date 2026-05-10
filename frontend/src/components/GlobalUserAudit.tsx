@@ -172,8 +172,8 @@ export const GlobalUserAudit = () => {
 
  {/* RENDERIZADO DE VISTAS */}
  {viewMode === 'flat' ? (
- <Card className="bg-card border border-border rounded-[2.5rem] shadow-2xl overflow-hidden backdrop-blur-xl">
- <table className="w-full text-left">
+ <Card className="bg-card border border-border rounded-[2.5rem] shadow-2xl overflow-x-auto overflow-y-hidden backdrop-blur-xl max-w-[100vw] sm:max-w-none">
+ <table className="w-full text-left min-w-[800px]">
  <thead>
  <tr className="bg-muted/50 text-[9px] uppercase tracking-[0.4em] text-muted-foreground font-black border-b border-border">
  <th className="px-8 py-6">OPERADOR</th>

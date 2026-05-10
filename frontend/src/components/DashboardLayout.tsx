@@ -22,7 +22,8 @@ import {
  ChevronRight,
  ChevronLeft,
  CreditCard,
- Palette
+ Palette,
+ X
 } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
 import { useShopStore } from '../store/useShopStore';
@@ -116,7 +117,7 @@ export const DashboardLayout = ({
  `}>
  
  {/* LOGO SECTION */}
- <div className="h-20 flex items-center px-6 border-b border-border shrink-0 bg-card/40">
+ <div className="h-20 flex items-center justify-between px-6 border-b border-border shrink-0 bg-card/40">
  <div className="flex items-center gap-3">
  <div className="h-10 w-10 bg-gradient-to-br from-brand-600 to-brand-700 rounded-xl flex items-center justify-center shadow-lg shadow-brand-500/20 border border-white/20">
  <Package className="text-white h-6 w-6"/>
@@ -127,6 +128,12 @@ export const DashboardLayout = ({
  </span>
  )}
  </div>
+ <button 
+ onClick={() => setSidebarOpen(false)} 
+ className="lg:hidden p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors flex items-center justify-center min-h-[48px] min-w-[48px]"
+ >
+ <X size={24} />
+ </button>
  </div>
 
  {/* NAVIGATION (Scrollable Modern Minimalist) */}
@@ -141,7 +148,7 @@ export const DashboardLayout = ({
  setSidebarOpen(false);
  }}
  className={`
- w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group relative border sidebar-nav-item
+ w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group relative border sidebar-nav-item min-h-[48px]
  ${isActive 
  ? 'bg-brand-50/80 text-brand-600 border-brand-100 shadow-sm active dark:bg-brand-500/10 dark:text-brand-400 dark:border-brand-500/20' 
  : 'text-muted-foreground border-transparent hover:bg-muted hover:border-border hover:text-foreground'}
@@ -207,13 +214,13 @@ export const DashboardLayout = ({
  <div className={`flex-1 flex flex-col min-w-0 h-screen overflow-hidden transition-all duration-500 ${isCollapsed ? 'lg:pl-20' : 'lg:pl-72'}`}>
  
  {/* TOP HEADER (Cohesive style) */}
- <header className="h-20 bg-card/80 backdrop-blur-xl border-b border-border px-8 flex items-center justify-between z-30 shrink-0 transition-all duration-500">
+ <header className="h-20 bg-card/80 backdrop-blur-xl border-b border-border px-4 md:px-8 flex items-center justify-between z-30 shrink-0 transition-all duration-500">
  <div className="flex items-center gap-4">
  <button 
  onClick={() => setSidebarOpen(true)}
- className="lg:hidden p-2.5 bg-muted text-muted-foreground hover:bg-muted rounded-xl transition-all"
+ className="lg:hidden p-2.5 bg-muted text-muted-foreground hover:bg-muted rounded-xl transition-all min-h-[48px] min-w-[48px] flex items-center justify-center"
  >
- <Menu size={20} />
+ <Menu size={24} />
  </button>
  <h2 className="text-xl font-bold text-foreground font-outfit uppercase tracking-tight truncate">
  {menuItems.find(i => i.id === activeTab)?.label}
@@ -285,7 +292,7 @@ export const DashboardLayout = ({
  </header>
 
  <main className="flex-1 bg-background transition-colors duration-500 overflow-y-auto custom-scrollbar scroll-smooth">
- <div className={`${activeTab === 'pos' ? 'p-0 h-full' : 'p-6 md:p-10 lg:p-12'}`}>
+ <div className={`${activeTab === 'pos' ? 'p-0 h-full' : 'p-4 md:p-10 lg:p-12'}`}>
  <div className={`${activeTab === 'pos' ? 'max-w-none h-full' : 'max-w-7xl mx-auto w-full'} animate-fade-in`}>
  {children}
  </div>

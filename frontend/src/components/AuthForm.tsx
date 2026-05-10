@@ -250,15 +250,15 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
       </div>
 
       {/* ── COLUMNA DERECHA: FORMULARIO ── */}
-      <div className="w-full md:w-1/2 flex items-center justify-center p-8 sm:p-16 bg-[#0a0a0a] h-screen overflow-y-auto">
+      <div className="w-full md:w-1/2 flex items-center justify-center p-6 sm:p-16 bg-[#0a0a0a] h-screen overflow-y-auto">
         <div className="w-full max-w-md relative">
           
           {step > 1 && (
-            <button onClick={prevStep} className="absolute -top-12 left-0 flex items-center gap-2 text-zinc-500 hover:text-white transition-all group z-50">
+            <button onClick={prevStep} className="absolute -top-12 left-0 flex items-center gap-2 text-zinc-500 hover:text-white transition-all group z-50 min-h-[48px]">
               <div className="h-8 w-8 rounded-full bg-[#111] border border-[#1e1e1e] flex items-center justify-center group-hover:border-[var(--brand-primary)] group-hover:bg-[var(--brand-primary)]/10">
                 <ArrowLeft size={14} />
               </div>
-              <span className="text-[10px] font-bold uppercase tracking-widest">Volver</span>
+              <span className="text-xs md:text-[10px] font-bold uppercase tracking-widest">Volver</span>
             </button>
           )}
 
@@ -350,7 +350,7 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
                   <div className="text-center p-6 bg-[var(--brand-secondary)]/5 border border-[var(--brand-secondary)]/10 rounded-2xl">
                     <ShieldCheck className="mx-auto text-[var(--brand-secondary)] mb-3" size={32} />
                     <p className="text-label text-white">Verifica tu Acceso</p>
-                    <p className="text-[10px] text-zinc-500 mt-2">Código enviado a <span className="text-white font-bold">{email}</span></p>
+                    <p className="text-xs md:text-[10px] text-zinc-500 mt-2">Código enviado a <span className="text-white font-bold">{email}</span></p>
                   </div>
                   <div className="flex justify-between gap-2 sm:gap-3">
                     {otpValues.map((v, i) => (
@@ -364,14 +364,14 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
           </div>
 
             <div className="space-y-4 pt-2">
-              <button type="submit" disabled={loading} style={{ background: 'linear-gradient(to right, var(--brand-primary), var(--brand-secondary))' }} className="w-full py-5 rounded-2xl text-white font-black uppercase tracking-widest text-[11px] shadow-[0_10px_30px_rgba(var(--brand-primary-rgb),0.2)] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3">
+              <button type="submit" disabled={loading} style={{ background: 'linear-gradient(to right, var(--brand-primary), var(--brand-secondary))' }} className="w-full py-5 rounded-2xl text-white font-black uppercase tracking-widest text-xs md:text-[11px] shadow-[0_10px_30px_rgba(var(--brand-primary-rgb),0.2)] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 min-h-[48px]">
                 {loading ? <Circle className="animate-spin" size={16} /> : <LogIn size={16} />}
                 {mode === 'login' ? (step === 1 ? 'Continuar' : 'Entrar al Sistema') : (step === 5 ? 'Activar Cuenta' : 'Siguiente Paso')}
               </button>
 
               <div className="flex items-center gap-4 py-1">
                 <div className="h-px flex-1 bg-[#1e1e1e]" />
-                <span className="text-[10px] font-bold text-zinc-700 uppercase tracking-widest">o</span>
+                <span className="text-xs md:text-[10px] font-bold text-zinc-700 uppercase tracking-widest">o</span>
                 <div className="h-px flex-1 bg-[#1e1e1e]" />
               </div>
 

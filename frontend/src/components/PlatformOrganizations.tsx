@@ -139,8 +139,8 @@ export const PlatformOrganizations = () => {
  </div>
  </div>
 
-  <div className="bg-card border border-border rounded-[2.5rem] overflow-hidden shadow-2xl transition-colors duration-500">
-  <table className="w-full border-collapse">
+  <div className="bg-card border border-border rounded-[2.5rem] overflow-x-auto overflow-y-hidden shadow-2xl transition-colors duration-500 max-w-[100vw] sm:max-w-none">
+  <table className="w-full border-collapse min-w-[800px]">
   <thead>
  <tr className="bg-card border-b border-border">
  <th className="px-8 py-6 text-left text-[9px] font-black text-muted-foreground uppercase tracking-[0.3em]">ID Nodo</th>
