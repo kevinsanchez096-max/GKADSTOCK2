@@ -13,7 +13,8 @@ import {
  RefreshCw,
  ArrowDownRight,
  Loader2,
- RotateCcw
+ RotateCcw,
+ Check
 } from 'lucide-react';
 import { useShopStore } from '../store/useShopStore';
 import { useAuthStore } from '../store/useAuthStore';
@@ -40,7 +41,7 @@ export const SalesHistory = () => {
  const [refreshing, setRefreshing] = useState(false);
  const [loadingDetails, setLoadingDetails] = useState(false);
  const [displayLimit, setDisplayLimit] = useState(20); // Límite de registros a mostrar
- const [customMargin, setCustomMargin] = useState<string>('100'); // Margen promedio personalizado
+ const [customMargin, setCustomMargin] = useState<string>(localStorage.getItem('gkad_margin_projection') || '100'); // Margen promedio personalizado
 
  // Helper de Seguridad: Parseo de Items (Evita Crash de Pantalla Negra)
  const getSafeItems = (itemsInput: any) => {
@@ -319,6 +320,7 @@ export const SalesHistory = () => {
  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Rendimiento</span>
  </div>
  <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">% MARGEN PROMEDIO</p>
+ <div className="flex items-center gap-2">
  <div className="flex items-center w-full sm:w-32 rounded-xl transition-all duration-300 bg-card border border-border shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:shadow-none focus-within:ring-2 focus-within:ring-brand-500">
  <input
  type="number"
@@ -328,6 +330,17 @@ export const SalesHistory = () => {
  placeholder="100"
  />
  <span className="text-foreground font-bold text-2xl pr-4">%</span>
+ </div>
+ <button 
+ onClick={() => {
+ localStorage.setItem('gkad_margin_projection', customMargin);
+ toast.success('Margen proyectado guardado con éxito');
+ }}
+ className="h-12 w-12 flex items-center justify-center bg-brand-500 text-white rounded-xl hover:bg-brand-600 transition-colors shadow-lg shadow-brand-500/20"
+ title="Guardar margen por defecto"
+ >
+ <Check size={20} strokeWidth={3} />
+ </button>
  </div>
  </Card>
 
