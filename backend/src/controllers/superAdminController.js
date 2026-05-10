@@ -99,7 +99,7 @@ const superAdminController = {
             if (error) throw error;
 
             // Registro de Auditoría: Cambio de Estado de Org
-            const { logAuditEvent } = require('../utils/auditLogger');
+            const { logAuditEvent } = require('../auditLogger');
             logAuditEvent('MOD', 'SaaSManager', is_active ? 'ORG_ACTIVATED' : 'ORG_SUSPENDED', { 
                 org_id: orgId, 
                 executor: req.user.id 
@@ -490,7 +490,7 @@ const superAdminController = {
             console.log(`✅ [VINCULACIÓN] Perfil del administrador [${createdAuthUserId}] vinculado con éxito a la organización [${createdOrgId}]`);
 
             // Registro de Auditoría: Creación de Organización
-            const { logAuditEvent } = require('../utils/auditLogger');
+            const { logAuditEvent } = require('../auditLogger');
             logAuditEvent('MOD', 'SaaSManager', 'ORG_CREATED', { 
                 org_id: createdOrgId, 
                 org_name: name,

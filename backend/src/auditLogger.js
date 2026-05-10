@@ -1,4 +1,4 @@
-const { supabaseAdmin } = require('../config/supabase');
+const { supabaseAdmin } = require('./config/supabase');
 
 /**
  * Registra un evento de auditoría en la base de datos

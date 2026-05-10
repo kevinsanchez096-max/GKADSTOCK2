@@ -85,7 +85,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       // ── PASO 2: Hidratar perfil desde el backend (Stateless) ──
       // El backend usa el token del header Authorization (inyectado por api.ts)
       // para identificar al usuario. NUNCA ejecuta signIn internamente.
-      const profileData = await api.get('/auth/me');
+      const profileData = await api.get('/auth/me?is_login=true');
 
       // ── PASO 3: Validar bloqueos SaaS ──
       const organization = profileData?.organizations;

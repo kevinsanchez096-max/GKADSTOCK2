@@ -127,7 +127,7 @@ const authController = {
             const finalProfile = { ...profileData, organizations: organization };
             
             // Registro de Auditoría: Login Exitoso
-            const { logAuditEvent } = require('../utils/auditLogger');
+            const { logAuditEvent } = require('../auditLogger');
             logAuditEvent('SEC', 'AuthAPI', 'AUTH_SUCCESS', { 
                 user_id: authData.user.id, 
                 email: authData.user.email,
@@ -215,6 +215,17 @@ const authController = {
             if (!profile) return res.status(404).json({ error: 'Perfil no encontrado' });
 
             const organization = Array.isArray(profile.organizations) ? profile.organizations[0] : profile.organizations;
+            
+            // Registro de Auditoría: Login Exitoso (Activado por el frontend)
+            if (req.query.is_login === 'true') {
+                const { logAuditEvent } = require('../auditLogger');
+                logAuditEvent('SEC', 'AuthAPI', 'AUTH_SUCCESS', { 
+                    user_id: userId, 
+                    email: profile.email || req.user.email,
+                    role: profile.role 
+                });
+            }
+
             res.status(200).json({ ...profile, organizations: organization });
         } catch (error) {
             res.status(500).json({ error: translateError(error) });
