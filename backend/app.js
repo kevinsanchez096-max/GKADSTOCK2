@@ -92,6 +92,10 @@ app.use((err, req, res, next) => {
         ...(isDevelopment && { details: err.message, code: err.code })
     };
     
+    // Notificación: Error Crítico
+    const { sendSystemNotification } = require('./src/utils/notificationService');
+    sendSystemNotification('SYSTEM_ERROR', 'Error Crítico del Sistema', `Se ha detectado un error sistémico: ${err.message || 'Error desconocido'}`, { path: req.path, method: req.method, code: err.code });
+
     res.status(statusCode).json(errorResponse);
 });
 

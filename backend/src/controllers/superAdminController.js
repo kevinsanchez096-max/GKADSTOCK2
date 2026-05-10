@@ -105,6 +105,10 @@ const superAdminController = {
                 executor: req.user.id 
             });
 
+            // Notificación: Cambio de Estado de Org
+            const { sendSystemNotification } = require('../utils/notificationService');
+            sendSystemNotification('ORG_STATUS', is_active ? 'Organización Activada' : 'Organización Suspendida', `La organización con ID ${orgId} ha sido ${is_active ? 'activada' : 'suspendida'}.`, { org_id: orgId, executor: req.user.id });
+
             res.status(200).json({ message: is_active ? 'Activada' : 'Suspendida', organization: data });
         } catch (error) {
             res.status(500).json({ error: 'Error al cambiar estado.' });

@@ -292,6 +292,10 @@ const authController = {
 
                     const limits = { 'Esencial': 1, 'Avanzado': 3, 'Emprendedor': 25 };
                     if (limits[orgData.plan] && userCount >= limits[orgData.plan]) {
+                        // Notificación: Límite Alcanzado
+                        const { sendSystemNotification } = require('../utils/notificationService');
+                        sendSystemNotification('PLAN_LIMIT', 'Límite de Usuarios', `La organización ${orgName} ha llegado al límite de su plan ${orgData.plan} (${limits[orgData.plan]} usuarios).`, { org_name: orgName, plan: orgData.plan, limit: limits[orgData.plan] });
+
                         return res.status(403).json({ 
                             error: `Límite de usuarios alcanzado para el Plan ${orgData.plan}.`,
                             message: `Su plan actual permite máximo ${limits[orgData.plan]} usuario(s).` 
@@ -385,6 +389,10 @@ const authController = {
             }
 
             console.log('✨ Registro completado. Disparando correo OTP desde el backend...');
+
+            // Notificación: Nuevo Usuario
+            const { sendSystemNotification } = require('../utils/notificationService');
+            sendSystemNotification('NEW_USER', 'Nuevo Usuario', `El usuario ${fullName} (${email}) se ha registrado en ${orgName}.`, { email, org_name: orgName });
 
             // Reintento de envío OTP via cliente anónimo (maximiza entrega)
             try {

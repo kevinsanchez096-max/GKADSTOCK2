@@ -138,6 +138,13 @@ const salesController = {
 
             // [EXITO TRANSACCIONAL]
             console.log(`✅ [VENTA EXITOSA] Factura: ${createdSaleId} consolidada.`);
+
+            // Notificación: Venta de Alto Valor
+            if (saleData.total >= 500000) {
+                const { sendSystemNotification } = require('../utils/notificationService');
+                sendSystemNotification('HIGH_VALUE_SALE', 'Venta de Alto Valor', `Se ha registrado una venta de $${saleData.total.toLocaleString()} en la organización ${orgId}.`, { sale_id: createdSaleId, total: saleData.total, org_id: orgId });
+            }
+
             res.status(201).json({ 
                 success: true, 
                 message: 'Venta registrada con éxito', 

@@ -73,6 +73,10 @@ export const PlatformOrganizations = () => {
 
  const handleToggleMenu = (orgId: string) => {
  setOpenMenuId(prevId => prevId === orgId ? null : orgId);
+ // Al abrir el menú, también expandir la fila para mostrar el perfil completo
+ if (expandedOrgId !== orgId) {
+   setExpandedOrgId(orgId);
+ }
  };
 
  if (!isSuperAdmin) {
