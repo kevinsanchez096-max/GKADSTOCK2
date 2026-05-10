@@ -301,14 +301,44 @@ export const Inventory = () => {
  }
  }, [isHistoryModalOpen, historyDate, profile?.organization_id]);
 
- const getCategoryName = (id: string) => {
- if (!Array.isArray(categories)) return 'General';
- return categories.find(c => c.id === id)?.name || 'General';
- };
+  const getCategoryName = (id: string) => {
+  if (!Array.isArray(categories)) return 'General';
+  return categories.find(c => c.id === id)?.name || 'General';
+  };
+
+  const categoryColors = [
+    { bg: 'bg-emerald-500/15', text: 'text-emerald-600 dark:text-emerald-400', border: 'border-emerald-500/30', shadow: 'shadow-emerald-500/10' },
+    { bg: 'bg-blue-500/15', text: 'text-blue-600 dark:text-blue-400', border: 'border-blue-500/30', shadow: 'shadow-blue-500/10' },
+    { bg: 'bg-purple-500/15', text: 'text-purple-600 dark:text-purple-400', border: 'border-purple-500/30', shadow: 'shadow-purple-500/10' },
+    { bg: 'bg-amber-500/15', text: 'text-amber-600 dark:text-amber-400', border: 'border-amber-500/30', shadow: 'shadow-amber-500/10' },
+    { bg: 'bg-rose-500/15', text: 'text-rose-600 dark:text-rose-400', border: 'border-rose-500/30', shadow: 'shadow-rose-500/10' },
+    { bg: 'bg-cyan-500/15', text: 'text-cyan-600 dark:text-cyan-400', border: 'border-cyan-500/30', shadow: 'shadow-cyan-500/10' },
+    { bg: 'bg-orange-500/15', text: 'text-orange-600 dark:text-orange-400', border: 'border-orange-500/30', shadow: 'shadow-orange-500/10' },
+    { bg: 'bg-indigo-500/15', text: 'text-indigo-600 dark:text-indigo-400', border: 'border-indigo-500/30', shadow: 'shadow-indigo-500/10' },
+  ];
+
+  const getCategoryStyle = (categoryId: string) => {
+    if (!Array.isArray(categories)) return categoryColors[0];
+    const index = categories.findIndex(c => c.id === categoryId);
+    return categoryColors[index >= 0 ? index % categoryColors.length : 0];
+  };
 
  return (
  <div className="space-y-8 animate-slide-up">
  
+ {/* HEADER DE LA SECCIÓN */}
+ <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+ <div className="space-y-1">
+ <h2 className="text-3xl font-black text-foreground flex items-center gap-3 font-outfit uppercase tracking-tight">
+ <div className="p-2 bg-brand-500/10 rounded-lg border border-brand-500/20 text-brand-500">
+ <Package className="h-6 w-6"/>
+ </div>
+ CONTROL DE EXISTENCIAS
+ </h2>
+ <p className="text-muted-foreground font-bold uppercase tracking-[0.3em] text-[10px] ml-1">Gestión centralizada de stock y trazabilidad</p>
+ </div>
+ </div>
+
  {/* PANEL DE MÉTRICAS DINÁMICAS (MODO DIOS) */}
  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
  {/* Card: Capital Invertido */}
@@ -655,9 +685,11 @@ export const Inventory = () => {
  </td>
  <td className="px-8 py-5 text-muted-foreground text-xs font-mono tracking-widest hidden md:table-cell">{p.sku || 'N/A'}</td>
  <td className="px-8 py-5 hidden md:table-cell">
- <span className="px-3 py-1 text-[9px] font-black uppercase tracking-widest bg-brand-500/10 text-brand-500 rounded-lg border border-brand-500/20 shadow-sm shadow-brand-500/5">
+ {(() => { const cs = getCategoryStyle(p.category_id); return (
+ <span className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg border shadow-md ${cs.bg} ${cs.text} ${cs.border} ${cs.shadow}`}>
  {getCategoryName(p.category_id)}
  </span>
+ ); })()}
  </td>
  <td className="px-8 py-5 text-right font-black text-foreground font-outfit text-base tracking-tighter">
  ${p.price.toLocaleString()} <span className="text-[10px] text-muted-foreground font-bold uppercase ml-1 italic">/ {p.is_weighted ? 'KG' : 'UND'}</span>
@@ -721,7 +753,9 @@ export const Inventory = () => {
  </div>
 
  <div className="space-y-1 mb-6">
- <p className="text-[10px] font-black text-brand-500 uppercase tracking-widest opacity-80">{getCategoryName(p.category_id)}</p>
+ {(() => { const cs = getCategoryStyle(p.category_id); return (
+ <span className={`inline-block px-2.5 py-1 text-[9px] font-black uppercase tracking-widest rounded-md border ${cs.bg} ${cs.text} ${cs.border}`}>{getCategoryName(p.category_id)}</span>
+ ); })()}
  <h3 className="font-outfit font-black text-lg text-foreground uppercase tracking-tight truncate leading-tight">{p.name}</h3>
  <p className="text-[9px] font-mono text-muted-foreground tracking-widest">{p.sku || 'N/A'}</p>
  </div>

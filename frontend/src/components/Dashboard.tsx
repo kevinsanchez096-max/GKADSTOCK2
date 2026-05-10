@@ -173,7 +173,17 @@ export const Dashboard = () => {
  };
  }, [sales, expenses, timeFilter]);
 
- const totalSoldInRanking = ranking.reduce((acc, p) => acc + p.quantity, 0);
+  const totalSoldInRanking = ranking.reduce((acc, p) => acc + p.quantity, 0);
+
+  const translateTimeFilter = (filter: string) => {
+    const map: Record<string, string> = {
+      day: 'HOY',
+      week: 'ESTA SEMANA',
+      month: 'ESTE MES',
+      year: 'ESTE AÑO',
+    };
+    return map[filter] || filter.toUpperCase();
+  };
 
  return (
  <PlanGuard restrictedPlans={['Esencial']} moduleName="Dashboard de Analítica">
@@ -214,7 +224,7 @@ export const Dashboard = () => {
 
  {/* GRILLA SUPERIOR (3 COLUMNAS GRANDES) */}
  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
- <KPICard title="Ingresos Brutos"value={`$${analytics.totalSales.toLocaleString()}`} icon={TrendingUp} trend="+12.5%"trendUp={true} description={`Ventas en el periodo: ${timeFilter}`} />
+ <KPICard title="Ingresos Brutos"value={`$${analytics.totalSales.toLocaleString()}`} icon={TrendingUp} trend="+12.5%"trendUp={true} description={`Ventas en el periodo: ${translateTimeFilter(timeFilter)}`} />
  <KPICard title="Egresos Operativos"value={`$${analytics.totalExpenses.toLocaleString()}`} icon={ArrowDownRight} trendUp={false} trend="Fijo"description="Gastos detectados"alert={analytics.totalExpenses > analytics.totalSales} />
  <KPICard title="Utilidad Real"value={`$${analytics.netUtility.toLocaleString()}`} icon={DollarSign} trendUp={analytics.netUtility > 0} trend="Neto"description="Margen del periodo"success={analytics.netUtility > 0} />
  </div>

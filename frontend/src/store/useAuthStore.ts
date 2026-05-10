@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { api } from '../lib/api';
 import { supabase } from '../lib/supabase';
 import { useShopStore } from './useShopStore';
+import { useOrganizationStore } from './useOrganizationStore';
 
 interface AuthState {
   user: any | null;
@@ -224,21 +225,31 @@ export const useAuthStore = create<AuthState>((set) => ({
   // El backend NO ejecuta signOut() sobre el singleton.
   // ══════════════════════════════════════════════════════════════════
   signOut: async () => {
-    // ── PASO 1: Purga inmediata del estado (desbloquea la UI al instante) ──
-    // Esto hace que App.tsx vea profile===null y muestre AuthForm de inmediato.
-    set({ user: null, profile: null, loading: false });
+    // ── PASO 1: Desconectar canal Realtime de la organización ──
+    await useOrganizationStore.getState().unsubscribeFromChanges();
 
-    // ── PASO 2: Limpieza asíncrona (no bloquea la UI) ──
+    // ── PASO 2: Purga total de todos los stores ──
+    useOrganizationStore.getState().resetStore();
+    useShopStore.getState().resetStore();
+
+    // ── PASO 3: Limpiar estado de autenticación ──
+    set({ user: null, profile: null, loading: false, isInitialized: false });
+
+    // ── PASO 4: Limpiar persistencia local ──
     localStorage.removeItem('gkad_token');
-    useShopStore.getState().clearCart();
     document.documentElement.style.removeProperty('--brand-primary');
     document.documentElement.style.removeProperty('--brand-secondary');
+    document.body.classList.remove('theme-gradient');
 
+    // ── PASO 5: Cerrar sesión en Supabase ──
     try {
       await supabase.auth.signOut();
     } catch (error) {
       console.warn('Error al cerrar sesión en Supabase:', error);
     }
+
+    // ── PASO 6: Rehidratar para que el próximo login arranque limpio ──
+    set({ isInitialized: true });
   },
 
   requestOTP: async (email) => {

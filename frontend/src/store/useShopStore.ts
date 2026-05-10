@@ -41,6 +41,7 @@ interface ShopState {
  removeFromCart: (productId: string) => void;
  updateCartQuantity: (productId: string, quantity: number) => void;
  clearCart: () => void;
+  resetStore: () => void;
  
  // Acciones: Categorías
  fetchCategories: (orgId: string) => Promise<void>;
@@ -96,6 +97,9 @@ export const useShopStore = create<ShopState>((set, get) => ({
  },
 
  clearCart: () => set({ cart: [] }),
+
+  // PURGA TOTAL: Limpia todo el estado para cambio de usuario
+  resetStore: () => set({ categories: [], products: [], sales: [], cart: [], inventoryMovements: [], loading: false }),
 
  // CATEGORÍAS: Sincronización con API (Blindada)
  fetchCategories: async (orgId) => {

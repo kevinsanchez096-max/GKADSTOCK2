@@ -37,6 +37,7 @@ interface OrganizationState {
  updateOrganization: (updates: Partial<Organization>) => Promise<void>;
  subscribeToChanges: (id: string | undefined | null) => void;
  unsubscribeFromChanges: () => void;
+  resetStore: () => void;
  applyBranding: (org: Organization) => void;
 }
 
@@ -150,6 +151,9 @@ export const useOrganizationStore = create<OrganizationState>((set, get) => ({
     }
     set({ isRealtimeActive: false });
   },
+
+  // PURGA TOTAL: Reset completo para cambio de sesión
+  resetStore: () => set({ organization: null, organizations: [], isLoading: false, error: null, hydrated: false, isRealtimeActive: false }),
 
  applyBranding: (org) => {
  if (!org) return;

@@ -97,9 +97,12 @@ export const CategoryManager = () => {
 
  {/* LIST OF CATEGORIES */}
  <Card className="lg:col-span-8 p-0 glass-dark border-border shadow-2xl overflow-hidden rounded-[2.5rem]">
- <div className="p-8 border-b border-border bg-card flex items-center justify-between gap-4">
- <div className="relative flex-1">
- <div className="relative w-full max-w-2xl">
+ <div className="p-8 border-b border-border bg-card flex flex-col md:flex-row md:items-center justify-between gap-6">
+ <div className="flex flex-col">
+ <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em]">Directorio de Etiquetas</p>
+ <p className="text-[8px] text-brand-500 font-bold uppercase tracking-widest">Sincronizado con Nodo Central</p>
+ </div>
+ <div className="relative w-full md:max-w-xl">
  <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
  <Search className="w-5 h-5 text-muted-foreground"/>
  </div>
@@ -110,7 +113,6 @@ export const CategoryManager = () => {
  value={searchTerm}
  onChange={(e) => setSearchTerm(e.target.value)}
  />
- </div>
  </div>
  </div>
 
