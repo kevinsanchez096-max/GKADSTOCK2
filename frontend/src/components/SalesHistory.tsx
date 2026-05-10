@@ -39,7 +39,6 @@ export const SalesHistory = () => {
  const [loadingArqueo, setLoadingArqueo] = useState(false);
  const [refreshing, setRefreshing] = useState(false);
  const [loadingDetails, setLoadingDetails] = useState(false);
- const [profitMargin, setProfitMargin] = useState(20); // Valor Default 20%
  const [displayLimit, setDisplayLimit] = useState(20); // Límite de registros a mostrar
 
  // Helper de Seguridad: Parseo de Items (Evita Crash de Pantalla Negra)
@@ -93,14 +92,23 @@ export const SalesHistory = () => {
  });
  }, [sales, searchTerm, timeFilter]);
 
- // CÁLCULO DE INTELIGENCIA FINANCIERA (NEW)
- const totalGross = useMemo(() => {
- return filteredSales.reduce((acc, sale) => acc + (Number(sale.total) || 0), 0);
- }, [filteredSales]);
+  const totalGross = useMemo(() => {
+  return filteredSales.reduce((acc, sale) => acc + (Number(sale.total) || 0), 0);
+  }, [filteredSales]);
 
- const estimatedProfit = useMemo(() => {
- return (totalGross * profitMargin) / 100;
- }, [totalGross, profitMargin]);
+  const totalCost = useMemo(() => {
+  return filteredSales.reduce((acc, sale) => acc + (Number(sale.total_cost) || 0), 0);
+  }, [filteredSales]);
+
+  const estimatedProfit = useMemo(() => {
+  return totalGross - totalCost;
+  }, [totalGross, totalCost]);
+
+  const calculatedMarginPercentage = useMemo(() => {
+  if (totalCost === 0 && totalGross > 0) return 100;
+  if (totalCost === 0 && totalGross === 0) return 0;
+  return ((estimatedProfit / totalCost) * 100).toFixed(1);
+  }, [estimatedProfit, totalCost, totalGross]);
 
  // FUNCIÓN: Ver Detalles (Sólo para el Modal Visual)
  const handleViewDetails = async (sale: any) => {
@@ -308,23 +316,18 @@ export const SalesHistory = () => {
  <div className="absolute top-0 right-0 w-32 h-32 bg-brand-500/5 blur-[50px] -mr-16 -mt-16 rounded-full"/>
  </Card>
 
- <Card className="glass-dark border-border p-6 rounded-[2rem] flex flex-col justify-center relative overflow-hidden group ring-1 ring-white/5 focus-within:ring-brand-500/50 transition-all duration-300">
+ <Card className="glass-dark border-border p-6 rounded-[2rem] flex flex-col justify-center relative overflow-hidden group ring-1 ring-white/5 transition-all duration-300">
  <div className="flex items-center justify-between mb-4">
- <div className="p-3 bg-muted rounded-2xl text-muted-foreground border border-border group-focus-within:bg-brand-500 group-focus-within:text-white transition-all duration-500">
+ <div className="p-3 bg-muted rounded-2xl text-muted-foreground border border-border transition-all duration-500">
  <ArrowDownRight className="h-5 w-5"/>
  </div>
- <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Configuración</span>
+ <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Rendimiento</span>
  </div>
- <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">% MARGEN DE UTILIDAD</p>
- <div className="flex items-center w-full sm:w-32 rounded-xl transition-all duration-300 bg-card border border-border shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:shadow-none focus-within:ring-2 focus-within:ring-red-400">
- <input
- type="number"
- min="0"
- max="100"
- className="w-full bg-transparent text-foreground font-bold text-2xl text-center outline-none py-2 pl-4"
- value={profitMargin}
- onChange={(e) => setProfitMargin(Number(e.target.value) || 0)}
- />
+ <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">% MARGEN PROMEDIO</p>
+ <div className="flex items-center w-full sm:w-32 rounded-xl transition-all duration-300 bg-card border border-border shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:shadow-none">
+ <div className="w-full bg-transparent text-foreground font-bold text-2xl text-center py-2 pl-4">
+ {calculatedMarginPercentage}
+ </div>
  <span className="text-foreground font-bold text-2xl pr-4">%</span>
  </div>
  </Card>

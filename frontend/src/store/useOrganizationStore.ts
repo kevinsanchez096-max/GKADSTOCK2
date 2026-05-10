@@ -108,42 +108,48 @@ export const useOrganizationStore = create<OrganizationState>((set, get) => ({
  }
  },
 
- subscribeToChanges: (id) => {
- if (!id) {
- console.warn('[REALTIME] Intento de suscripción con ID nulo abortado.');
- return;
- }
- if (get().isRealtimeActive) return;
+  subscribeToChanges: async (id) => {
+    if (!id || get().isRealtimeActive) return;
+    
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) return;
 
- console.log(`[REALTIME] Suscribiendo a cambios de Org: ${id}`);
- 
- const channel = supabase
- .channel(`org_changes_${id}`)
- .on(
- 'postgres_changes',
- {
- event: 'UPDATE',
- schema: 'public',
- table: 'organizations',
- filter: `id=eq.${id}`
- },
- (payload) => {
- console.log('[REALTIME] Cambio detectado en BD:', payload.new);
- const newOrg = payload.new as Organization;
- set({ organization: newOrg });
- get().applyBranding(newOrg);
- }
- )
- .subscribe();
+      const channelName = `org_changes_${id}`;
+      
+      // Eliminar canal previo si existe para evitar duplicados antes de suscribir
+      await supabase.removeChannel(supabase.channel(channelName));
 
- set({ isRealtimeActive: true });
- },
+      supabase.channel(channelName)
+        .on('postgres_changes', { 
+          event: 'UPDATE', 
+          schema: 'public', 
+          table: 'organizations', 
+          filter: `id=eq.${id}` 
+        }, (payload) => {
+          const newOrg = payload.new as Organization;
+          set({ organization: newOrg });
+          get().applyBranding(newOrg);
+        })
+        .subscribe((status) => {
+          if (status === 'SUBSCRIBED') {
+            set({ isRealtimeActive: true });
+          }
+        });
+    } catch (err) {
+      console.warn('[WS] Error in subscription:', err);
+    }
+  },
 
- unsubscribeFromChanges: () => {
- console.log(`[REALTIME] Limpiando suscripciones`);
- supabase.removeAllChannels();
- set({ isRealtimeActive: false });
- },
+  unsubscribeFromChanges: async () => {
+    const { organization } = get();
+    if (organization?.id) {
+      const channelName = `org_changes_${organization.id}`;
+      const channel = supabase.channel(channelName);
+      await supabase.removeChannel(channel);
+    }
+    set({ isRealtimeActive: false });
+  },
 
  applyBranding: (org) => {
  if (!org) return;

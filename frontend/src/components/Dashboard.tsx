@@ -47,6 +47,11 @@ export const Dashboard = () => {
  const [expenses, setExpenses] = useState<any[]>([]);
  const [ranking, setRanking] = useState<any[]>([]);
  const [loading, setLoading] = useState(true);
+ const [chartReady, setChartReady] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setChartReady(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
 
  // Color dinámico de acento
  const [accentColor, setAccentColor] = useState('emerald');
@@ -142,6 +147,7 @@ export const Dashboard = () => {
 
  // Calcular Totales
  const totalSales = filteredSales.reduce((acc, s) => acc + Number(s.total), 0);
+  const totalCost = filteredSales.reduce((acc, s) => acc + Number(s.total_cost || 0), 0);
  const totalExpenses = filteredExpenses.reduce((acc, e) => acc + Number(e.amount), 0);
 
  // Nuevos cálculos
@@ -160,7 +166,7 @@ export const Dashboard = () => {
  return {
  totalSales,
  totalExpenses,
- netUtility: totalSales - totalExpenses,
+ netUtility: (totalSales - totalCost) - totalExpenses,
  transactionCount,
  averageTicket,
  chartData: chartData.length > 0 ? chartData : [{ name: 'Sin Datos', ventas: 0 }]
@@ -238,33 +244,35 @@ export const Dashboard = () => {
  </div>
  </div>
  
- <div className="flex-1 min-h-0 relative">
- <ResponsiveContainer width="100%"height="100%">
- <AreaChart data={analytics.chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
- <defs>
- <linearGradient id="colorSales"x1="0"y1="0"x2="0"y2="1">
- <stop offset="5%"stopColor="var(--brand-primary)"stopOpacity={0.3}/>
- <stop offset="95%"stopColor="var(--brand-primary)"stopOpacity={0}/>
- </linearGradient>
- </defs>
- <CartesianGrid strokeDasharray="3 3"vertical={false} stroke="#334155"opacity={0.2} />
- <XAxis dataKey="name"axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: 600 }} dy={10} />
- <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: 600 }} tickFormatter={(value) => `$${value/1000}k`} />
- <Tooltip 
- contentStyle={{ 
- backgroundColor: darkMode ? 'rgba(15, 23, 42, 0.9)' : 'rgba(255, 255, 255, 0.9)', 
- backdropFilter: 'blur(8px)', 
- border: darkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.1)', 
- borderRadius: '16px', 
- boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)' 
- }}
- itemStyle={{ color: darkMode ? '#e2e8f0' : '#0f172a', fontWeight: 'bold' }}
- labelStyle={{ color: darkMode ? '#94a3b8' : '#64748b', marginBottom: '4px', fontSize: '12px', fontWeight: 'bold' }}
- />
-  <Area type="monotone" dataKey="ventas" stroke="var(--brand-primary)" strokeWidth={4} fillOpacity={1} fill="url(#colorSales)" activeDot={{ r: 8, fill: 'var(--brand-primary)', stroke: '#fff', strokeWidth: 3 }} />
- </AreaChart>
- </ResponsiveContainer>
- </div>
+   <div style={{ position: 'relative', width: '100%', height: '300px' }}>
+    {chartReady && (
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={analytics.chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+          <defs>
+            <linearGradient id="colorSales"x1="0"y1="0"x2="0"y2="1">
+              <stop offset="5%"stopColor="var(--brand-primary)"stopOpacity={0.3}/>
+              <stop offset="95%"stopColor="var(--brand-primary)"stopOpacity={0}/>
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3"vertical={false} stroke="#334155"opacity={0.2} />
+          <XAxis dataKey="name"axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: 600 }} dy={10} />
+          <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: 600 }} tickFormatter={(value) => `$${value/1000}k`} />
+          <Tooltip 
+            contentStyle={{ 
+              backgroundColor: darkMode ? 'rgba(15, 23, 42, 0.9)' : 'rgba(255, 255, 255, 0.9)', 
+              backdropFilter: 'blur(8px)', 
+              border: darkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.1)', 
+              borderRadius: '16px', 
+              boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)' 
+            }}
+            itemStyle={{ color: darkMode ? '#e2e8f0' : '#0f172a', fontWeight: 'bold' }}
+            labelStyle={{ color: darkMode ? '#94a3b8' : '#64748b', marginBottom: '4px', fontSize: '12px', fontWeight: 'bold' }}
+          />
+          <Area type="monotone" dataKey="ventas" stroke="var(--brand-primary)" strokeWidth={4} fillOpacity={1} fill="url(#colorSales)" activeDot={{ r: 8, fill: 'var(--brand-primary)', stroke: '#fff', strokeWidth: 3 }} />
+        </AreaChart>
+      </ResponsiveContainer>
+    )}
+  </div>
  </Card>
 
  <Card className="p-8 flex flex-col bg-card dark:bg-[#151b2b] rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none border border-transparent/60 relative overflow-hidden">

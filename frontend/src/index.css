@@ -13,7 +13,7 @@
   
   /* Sistema de Marca Dinámico */
   --brand-primary: #3b82f6; 
-  --brand-secondary: color-mix(in srgb, var(--brand-primary), black 15%);
+  --brand-secondary: #10b981; 
 
   --color-brand-50: color-mix(in srgb, var(--brand-primary), white 90%);
   --color-brand-100: color-mix(in srgb, var(--brand-primary), white 80%);

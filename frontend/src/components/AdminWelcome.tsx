@@ -36,6 +36,11 @@ export const AdminWelcome = ({ setActiveTab }: { setActiveTab: (tab: string) => 
   const [stats, setStats] = useState<any>(null);
   const [logs, setLogs] = useState<any[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [chartReady, setChartReady] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setChartReady(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     api.get('/saas/stats').then(setStats).catch(() => {});
@@ -156,37 +161,39 @@ export const AdminWelcome = ({ setActiveTab }: { setActiveTab: (tab: string) => 
             </div>
           </div>
 
-          <div className="h-64 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={activityData}>
-                <defs>
-                  <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="rgb(59, 130, 246)" stopOpacity={0.1}/>
-                    <stop offset="95%" stopColor="rgb(59, 130, 246)" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
-                <XAxis 
-                  dataKey="name" 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{fill: '#888', fontSize: 10, fontWeight: 'bold'}}
-                />
-                <YAxis hide />
-                <Tooltip 
-                  contentStyle={{backgroundColor: '#111', border: 'none', borderRadius: '12px', fontSize: '10px'}}
-                  itemStyle={{color: '#fff'}}
-                />
-                <Area 
-                  type="monotone" 
-                  dataKey="users" 
-                  stroke="rgb(59, 130, 246)" 
-                  strokeWidth={3}
-                  fillOpacity={1} 
-                  fill="url(#colorUsers)" 
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+          <div style={{ position: 'relative', width: '100%', height: '300px' }}>
+            {chartReady && (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={activityData}>
+                  <defs>
+                    <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="rgb(59, 130, 246)" stopOpacity={0.1}/>
+                      <stop offset="95%" stopColor="rgb(59, 130, 246)" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
+                  <XAxis 
+                    dataKey="name" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{fill: '#888', fontSize: 10, fontWeight: 'bold'}}
+                  />
+                  <YAxis hide />
+                  <Tooltip 
+                    contentStyle={{backgroundColor: '#111', border: 'none', borderRadius: '12px', fontSize: '10px'}}
+                    itemStyle={{color: '#fff'}}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="users" 
+                    stroke="rgb(59, 130, 246)" 
+                    strokeWidth={3}
+                    fillOpacity={1} 
+                    fill="url(#colorUsers)" 
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            )}
           </div>
         </Card>
 

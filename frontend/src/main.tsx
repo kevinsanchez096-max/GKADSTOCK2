@@ -23,6 +23,8 @@ const DEV_NOISE_PATTERNS = [
  'Lock was not released',
  'Lock broken by another request',
  'lock:sb-',
+ 'width(-1) and height(-1)',
+ 'WebSocket is closed before the connection is established',
 ];
 
 const _origWarn = console.warn.bind(console);

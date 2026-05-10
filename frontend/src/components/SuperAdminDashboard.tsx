@@ -53,6 +53,11 @@ export const SuperAdminDashboard = ({ setActiveTab }: { setActiveTab?: (tab: str
   const [showFilters, setShowFilters] = useState(false);
   const [filterPlan, setFilterPlan] = useState('All');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [chartReady, setChartReady] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setChartReady(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   const fetchDashboardData = async () => {
     setLoading(true);
@@ -206,42 +211,46 @@ export const SuperAdminDashboard = ({ setActiveTab }: { setActiveTab?: (tab: str
               <div className="flex items-center gap-2"><div className="h-2 w-2 rounded-full bg-red-500"/><span className="text-[8px] font-black uppercase text-muted-foreground">Churn</span></div>
             </div>
           </div>
-          <div className="h-72 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={growthData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#888', fontSize: 10, fontWeight: 'bold'}} />
-                <YAxis axisLine={false} tickLine={false} tick={{fill: '#888', fontSize: 10, fontWeight: 'bold'}} />
-                <Tooltip contentStyle={{backgroundColor: '#111', border: 'none', borderRadius: '12px'}} />
-                <Line type="monotone" dataKey="mrr" stroke="#3b82f6" strokeWidth={4} dot={{ r: 6, fill: '#3b82f6', strokeWidth: 3, stroke: '#fff' }} />
-                <Line type="monotone" dataKey="churn" stroke="#ef4444" strokeWidth={2} strokeDasharray="5 5" />
-              </LineChart>
-            </ResponsiveContainer>
+          <div style={{ position: 'relative', width: '100%', height: '300px' }}>
+            {chartReady && (
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={growthData}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#888', fontSize: 10, fontWeight: 'bold'}} />
+                  <YAxis axisLine={false} tickLine={false} tick={{fill: '#888', fontSize: 10, fontWeight: 'bold'}} />
+                  <Tooltip contentStyle={{backgroundColor: '#111', border: 'none', borderRadius: '12px'}} />
+                  <Line type="monotone" dataKey="mrr" stroke="#3b82f6" strokeWidth={4} dot={{ r: 6, fill: '#3b82f6', strokeWidth: 3, stroke: '#fff' }} />
+                  <Line type="monotone" dataKey="churn" stroke="#ef4444" strokeWidth={2} strokeDasharray="5 5" />
+                </LineChart>
+              </ResponsiveContainer>
+            )}
           </div>
         </Card>
 
         {/* Plan Distribution */}
         <Card className="p-10 border-border flex flex-col justify-between">
           <h3 className="text-xs font-black uppercase tracking-[0.3em] text-foreground mb-8">Mezcla de Planes</h3>
-          <div className="h-48 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={distributionData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={80}
-                  paddingAngle={8}
-                  dataKey="value"
-                >
-                  {distributionData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
+          <div style={{ position: 'relative', width: '100%', height: '300px' }}>
+            {chartReady && (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={distributionData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    paddingAngle={8}
+                    dataKey="value"
+                  >
+                    {distributionData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
           </div>
           <div className="space-y-3 mt-8">
             {distributionData.map((d, i) => (

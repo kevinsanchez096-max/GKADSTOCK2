@@ -168,14 +168,32 @@ const salesController = {
                 .from('sales')
                 .select(`
                     *,
-                    profiles (full_name)
+                    profiles (full_name),
+                    sale_items (
+                        quantity,
+                        products (cost_price)
+                    )
                 `)
                 .eq('organization_id', orgId)
                 .order('created_at', { ascending: false })
                 .limit(limit);
 
             if (error) throw error;
-            res.status(200).json(data || []);
+            
+            const enrichedData = (data || []).map(sale => {
+                const total_cost = sale.sale_items?.reduce((acc, item) => {
+                    const cp = item.products?.cost_price || 0;
+                    return acc + (item.quantity * cp);
+                }, 0) || 0;
+                
+                const { sale_items, ...rest } = sale;
+                return {
+                    ...rest,
+                    total_cost
+                };
+            });
+            
+            res.status(200).json(enrichedData);
         } catch (error) {
             console.error('🔥 [SALES ERROR] getSalesHistory:', error.message);
             res.status(500).json({ error: error.message });

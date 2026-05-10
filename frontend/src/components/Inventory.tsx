@@ -126,9 +126,29 @@ export const Inventory = () => {
  is_weighted: false
  });
 
+  const [purchasePrice, setPurchasePrice] = useState<string>('');
+  const [profitMargin, setProfitMargin] = useState<string>('0');
+
+  useEffect(() => {
+    if (purchasePrice) {
+      const pp = Number(purchasePrice);
+      const pm = Number(profitMargin) || 0;
+      if (!isNaN(pp) && !isNaN(pm)) {
+        if (pm >= 100) {
+          setNewProduct(prev => ({...prev, price: '0.00'}));
+          return;
+        }
+        const calculated = pp / (1 - (pm / 100));
+        setNewProduct(prev => ({...prev, price: calculated.toFixed(2)}));
+      }
+    }
+  }, [purchasePrice, profitMargin]);
+
  const resetForm = () => {
  setNewProduct({ name: '', sku: '', price: '', stock: '', min_stock: '5', unit: 'unid', category_id: '', barcode: '', is_weighted: false });
  setEditingProduct(null);
+  setPurchasePrice('');
+  setProfitMargin('0');
  };
 
  const handleEdit = (product: any) => {
@@ -144,6 +164,8 @@ export const Inventory = () => {
  barcode: product.barcode || '',
  is_weighted: !!product.is_weighted
  });
+  setPurchasePrice(product.cost_price ? product.cost_price.toString() : '');
+  setProfitMargin('0');
  setIsAddModalOpen(true);
  };
 
@@ -253,14 +275,15 @@ export const Inventory = () => {
  }
  if (!profile?.organization_id) return;
 
- const productData = {
- ...newProduct,
- name: toTitleCase(newProduct.name.trim()),
- organization_id: profile.organization_id,
- price: Number(newProduct.price),
- stock: Number(newProduct.stock),
- min_stock: Number(newProduct.min_stock)
- };
+   const productData = {
+   ...newProduct,
+   name: toTitleCase(newProduct.name.trim()),
+   organization_id: profile.organization_id,
+   price: Number(newProduct.price),
+   cost_price: Number(purchasePrice) || 0,
+   stock: Number(newProduct.stock),
+   min_stock: Number(newProduct.min_stock)
+   };
 
  if (editingProduct) {
  await updateProduct(editingProduct.id, productData);
@@ -472,19 +495,54 @@ export const Inventory = () => {
  </select>
  </div>
 
+  {/* NUEVO: Calculadora de Precio y Margen */}
+  <Input 
+  label="Precio de Compra (Costo)"
+  type="number"
+  placeholder="0.00"
+  min="0"
+  step="0.01"
+  value={purchasePrice}
+  onChange={(e) => setPurchasePrice(e.target.value)}
+  icon={DollarSign}
+  className="bg-background border-border text-foreground font-bold"
+  />
+  <Input 
+  label="Margen de Ganancia (%)"
+  type="number"
+  placeholder="30"
+  min="0"
+  step="1"
+  value={profitMargin}
+  onChange={(e) => setProfitMargin(e.target.value)}
+  icon={TrendingUp}
+  className="bg-background border-border text-foreground font-bold"
+  />
+
  {/* Fila 3: Precio y Tipo de Venta */}
- <Input 
- label="P.V.P Actual"
- type="number"
- placeholder="0.00"
- min="0"
- step="0.01"
- required 
- value={newProduct.price} 
- onChange={(e) => setNewProduct({...newProduct, price: e.target.value})} 
- icon={DollarSign} 
- className="bg-background border-border text-foreground font-bold"
- />
+  <div className="space-y-1">
+   <Input 
+   label={purchasePrice ? "P.V.P Calculado (Venta)" : "P.V.P Actual"}
+   type="text"
+   placeholder="0.00"
+   required 
+   readOnly={!!purchasePrice}
+   value={Number(profitMargin) >= 100 ? "ERROR %" : newProduct.price} 
+   onChange={(e) => setNewProduct({...newProduct, price: e.target.value})} 
+   icon={DollarSign} 
+   className={`bg-background border-border text-foreground font-bold ${Number(profitMargin) >= 100 ? 'border-red-500 text-red-500' : ''}`}
+   />
+   {purchasePrice && Number(profitMargin) < 100 && (
+     <p className="text-[10px] font-bold text-emerald-500 ml-1 animate-pulse">
+       Ganancia: ${(Number(newProduct.price) - Number(purchasePrice)).toLocaleString()} ({`${(((Number(newProduct.price) - Number(purchasePrice)) / Number(purchasePrice)) * 100).toFixed(1)}%`} sobre el costo)
+     </p>
+   )}
+   {purchasePrice && Number(profitMargin) >= 100 && (
+     <p className="text-[10px] font-bold text-red-500 ml-1">
+       El margen debe ser menor a 100%
+     </p>
+   )}
+  </div>
  <div className="space-y-2 text-left">
  <label className="text-[10px] font-bold text-muted-foreground ml-1 uppercase tracking-widest">Unidad de Medida</label>
  <div className="flex bg-muted rounded-xl p-1 border border-border">
