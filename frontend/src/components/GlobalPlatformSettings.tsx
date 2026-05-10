@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { 
   ShieldAlert, 
   Activity, 
@@ -16,15 +16,73 @@ import {
   Cpu,
   Globe,
   BellRing,
-  Download
+  Download,
+  Play,
+  Pause
 } from 'lucide-react';
 import { Card, Button } from './ui-components';
 import { api } from '../lib/api';
+import { supabase } from '../lib/supabase';
 import { toast } from 'sonner';
+
+interface AuditLog {
+  id: string;
+  time?: string;
+  created_at: string;
+  event: string;
+  origin: string;
+  level: string;
+  metadata: any;
+}
 
 export const GlobalPlatformSettings = () => {
   const [loading, setLoading] = useState(false);
   const [backupLoading, setBackupLoading] = useState(false);
+  const [logs, setLogs] = useState<AuditLog[]>([]);
+  const [isMonitoring, setIsMonitoring] = useState(true);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // ── 1. CARGA INICIAL DE LOGS ──────────────────────────────────────────
+  const fetchLogs = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('system_audit_logs')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+      setLogs(data || []);
+    } catch (err: any) {
+      console.error('[AUDIT] Error fetching logs:', err.message);
+    }
+  };
+
+  useEffect(() => {
+    fetchLogs();
+  }, []);
+
+  // ── 2. SUSCRIPCIÓN REALTIME ───────────────────────────────────────────
+  useEffect(() => {
+    if (!isMonitoring) return;
+
+    const channel = supabase.channel('realtime_audit_logs')
+      .on('postgres_changes', { 
+        event: 'INSERT', 
+        schema: 'public', 
+        table: 'system_audit_logs' 
+      }, (payload) => {
+        const newLog = payload.new as AuditLog;
+        setLogs(prev => [newLog, ...prev].slice(0, 50));
+        
+        // Auto-scroll si está al final (opcional, aquí los nuevos van arriba)
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [isMonitoring]);
 
   const triggerBackup = () => {
     setBackupLoading(true);
@@ -32,6 +90,15 @@ export const GlobalPlatformSettings = () => {
       setBackupLoading(false);
       toast.success('Backup del Sistema Consolidado en AWS S3');
     }, 2000);
+  };
+
+  const clearConsole = () => {
+    setLogs([]);
+    toast.info('Vista de consola despejada');
+  };
+
+  const formatTime = (dateStr: string) => {
+    return new Date(dateStr).toLocaleTimeString('es-CO', { hour12: false });
   };
 
   return (
@@ -133,29 +200,58 @@ export const GlobalPlatformSettings = () => {
             <h3 className="text-xs font-black uppercase tracking-[0.3em] text-foreground">Audit Log Console</h3>
           </div>
           <div className="flex items-center gap-4">
-            <span className="text-[8px] font-black text-emerald-500 animate-pulse uppercase tracking-widest">Live Monitoring</span>
+            <button 
+              onClick={() => setIsMonitoring(!isMonitoring)}
+              className={`flex items-center gap-2 px-3 py-1 rounded-full transition-all ${isMonitoring ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'}`}
+            >
+              {isMonitoring ? <Pause size={10} /> : <Play size={10} />}
+              <span className={`text-[8px] font-black uppercase tracking-widest ${isMonitoring ? 'animate-pulse' : ''}`}>
+                {isMonitoring ? 'Live Monitoring' : 'Monitoring Paused'}
+              </span>
+            </button>
             <div className="h-4 w-px bg-border/20" />
-            <Button variant="ghost" size="sm" className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Clear Console</Button>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={clearConsole}
+              className="text-[9px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground"
+            >
+              Clear Console
+            </Button>
           </div>
         </div>
-        <div className="h-[400px] overflow-y-auto p-8 font-mono text-[11px] space-y-3 bg-[#0a0a0a] text-white/70">
-          {[
-            { time: '16:02:14', event: 'SYS_BACKUP_INITIATED', origin: 'Worker-01', level: 'INFO' },
-            { time: '16:00:05', event: 'AUTH_SUCCESS', origin: 'SuperAdmin_Ariosto', level: 'SEC' },
-            { time: '15:58:42', event: 'ORG_CREATED', origin: 'Platform_API', level: 'MOD' },
-            { time: '15:55:01', event: 'HEARTBEAT_STABLE', origin: 'Infra_Manager', level: 'SYS' },
-            { time: '15:52:12', event: 'NEW_SUBSCRIPTION', origin: 'Stripe_Hook', level: 'FIN' },
-          ].map((log, i) => (
-            <div key={i} className="flex gap-6 border-b border-white/5 pb-2 hover:text-white transition-colors">
-              <span className="text-brand-500/50">[{log.time}]</span>
-              <span className={`w-20 font-black ${log.level === 'SEC' ? 'text-emerald-500' : log.level === 'FIN' ? 'text-blue-500' : 'text-zinc-500'}`}>[{log.level}]</span>
-              <span className="font-black text-brand-500/80">[{log.origin}]</span>
-              <span className="uppercase tracking-tight font-bold">{log.event}</span>
+        <div 
+          ref={scrollRef}
+          className="h-[400px] overflow-y-auto p-8 font-mono text-[11px] space-y-3 bg-[#0a0a0a] text-white/70"
+        >
+          {logs.length === 0 ? (
+            <div className="h-full flex flex-col items-center justify-center opacity-20 space-y-4">
+              <Terminal size={40} strokeWidth={1} />
+              <p className="uppercase tracking-[0.4em] text-[10px]">Sin eventos registrados</p>
             </div>
-          ))}
+          ) : (
+            logs.map((log) => (
+              <div key={log.id} className="flex gap-6 border-b border-white/5 pb-2 hover:text-white transition-colors group">
+                <span className="text-brand-500/50">[{formatTime(log.created_at)}]</span>
+                <span className={`w-20 font-black ${
+                  log.level === 'SEC' ? 'text-emerald-500' : 
+                  log.level === 'FIN' ? 'text-blue-500' : 
+                  log.level === 'MOD' ? 'text-amber-500' :
+                  log.level === 'SYS' ? 'text-purple-500' :
+                  'text-zinc-500'
+                }`}>[{log.level}]</span>
+                <span className="font-black text-brand-500/80">[{log.origin}]</span>
+                <span className="uppercase tracking-tight font-bold">{log.event}</span>
+                <span className="ml-auto text-[8px] opacity-0 group-hover:opacity-40 transition-opacity uppercase truncate max-w-[200px]">
+                  {JSON.stringify(log.metadata)}
+                </span>
+              </div>
+            ))
+          )}
         </div>
       </Card>
 
     </div>
   );
 };
+

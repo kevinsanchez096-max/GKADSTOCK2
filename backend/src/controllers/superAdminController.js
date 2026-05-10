@@ -97,6 +97,14 @@ const superAdminController = {
                 .single();
 
             if (error) throw error;
+
+            // Registro de Auditoría: Cambio de Estado de Org
+            const { logAuditEvent } = require('../utils/auditLogger');
+            logAuditEvent('MOD', 'SaaSManager', is_active ? 'ORG_ACTIVATED' : 'ORG_SUSPENDED', { 
+                org_id: orgId, 
+                executor: req.user.id 
+            });
+
             res.status(200).json({ message: is_active ? 'Activada' : 'Suspendida', organization: data });
         } catch (error) {
             res.status(500).json({ error: 'Error al cambiar estado.' });
@@ -480,6 +488,15 @@ const superAdminController = {
             }
 
             console.log(`✅ [VINCULACIÓN] Perfil del administrador [${createdAuthUserId}] vinculado con éxito a la organización [${createdOrgId}]`);
+
+            // Registro de Auditoría: Creación de Organización
+            const { logAuditEvent } = require('../utils/auditLogger');
+            logAuditEvent('MOD', 'SaaSManager', 'ORG_CREATED', { 
+                org_id: createdOrgId, 
+                org_name: name,
+                admin_email: adminEmail,
+                executor: superAdminId 
+            });
 
             res.status(201).json({ 
                 message: 'Provisión atómica completada con éxito.',

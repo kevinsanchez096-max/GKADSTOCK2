@@ -125,6 +125,15 @@ const authController = {
             }
 
             const finalProfile = { ...profileData, organizations: organization };
+            
+            // Registro de Auditoría: Login Exitoso
+            const { logAuditEvent } = require('../utils/auditLogger');
+            logAuditEvent('SEC', 'AuthAPI', 'AUTH_SUCCESS', { 
+                user_id: authData.user.id, 
+                email: authData.user.email,
+                role: profileData.role 
+            });
+
             res.status(200).json({ user: authData.user, session: authData.session, profile: finalProfile });
 
         } catch (error) {
