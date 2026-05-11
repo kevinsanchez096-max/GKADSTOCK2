@@ -35,6 +35,13 @@ function App() {
     checkAuth();
   }, [checkAuth]);
 
+  // Reset de navegación al cerrar sesión para evitar "residuos" de vista
+  useEffect(() => {
+    if (!user) {
+      setActiveTab('home');
+    }
+  }, [user]);
+
   // Sincronización de Organización Global
   const { fetchOrganization, subscribeToChanges, unsubscribeFromChanges } = useOrganizationStore();
   useEffect(() => {

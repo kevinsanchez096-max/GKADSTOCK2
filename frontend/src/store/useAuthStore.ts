@@ -248,8 +248,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       console.warn('Error al cerrar sesión en Supabase:', error);
     }
 
-    // ── PASO 6: Rehidratar para que el próximo login arranque limpio ──
-    set({ isInitialized: true });
+    // ── PASO 6: Redirigir y forzar recarga total para asegurar limpieza de memoria ──
+    window.location.href = '/';
   },
 
   requestOTP: async (email) => {
