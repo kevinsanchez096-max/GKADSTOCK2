@@ -71,16 +71,13 @@ export const DashboardLayout = ({
  } catch (error) {
  toast.error('Error al sincronizar');
  } finally {
- setTimeout(() => setIsSyncing(false), 500); // Dar tiempo visual al spin
+ setIsSyncing(false);
  }
  };
 
  useEffect(() => {
   localStorage.setItem('sidebar_state', isCollapsed ? 'collapsed' : 'expanded');
-  const timer = setTimeout(() => {
-    window.dispatchEvent(new Event('sidebar_toggle'));
-  }, 550);
-  return () => clearTimeout(timer);
+  window.dispatchEvent(new Event('sidebar_toggle'));
   }, [isCollapsed]);
 
  // ── CONFIGURACIÓN DE MENÚS BASADA EN ROLES (RBAC) ──

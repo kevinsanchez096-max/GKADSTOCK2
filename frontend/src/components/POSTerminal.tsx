@@ -397,7 +397,10 @@ export const POSTerminal = () => {
  </div>
 
  {/* IZQUIERDA: LIBRERÍA DE PRODUCTOS (FIJA) */}
- <div className={`flex-1 flex-col min-w-0 p-4 lg:p-6 space-y-6 bg-muted/20 backdrop-blur-sm overflow-hidden ${mobileTab === 'cart' ? 'hidden lg:flex' : 'flex'}`}>
+ <div 
+   style={{ transition: 'width 300ms cubic-bezier(0.4, 0, 0.2, 1)' }}
+   className={`flex-1 flex-col min-w-0 p-4 lg:p-6 space-y-6 bg-muted/20 backdrop-blur-sm overflow-hidden ${mobileTab === 'cart' ? 'hidden lg:flex' : 'flex'}`}
+ >
  
  {/* BUSCADOR PRO */}
  <div className="flex items-center gap-4">
@@ -534,25 +537,33 @@ export const POSTerminal = () => {
  )}
  </AnimatePresence>
 
- {/* GRID DE PRODUCTOS */}
- <div className={`flex-1 overflow-y-auto grid gap-3 custom-scrollbar pr-1 pb-24 lg:pb-0 transition-all duration-300 ease-in-out ${
- viewMode === 'grid' 
- ? (sidebarCollapsed ? 'grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 2xl:grid-cols-6' : 'grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5')
- : (sidebarCollapsed ? 'grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-7' : 'grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6')
- }`}>
+  {/* CONTENEDOR DE PRODUCTOS (ANIMADO) */}
+  <div 
+    style={{ transition: 'all 300ms cubic-bezier(0.4, 0, 0.2, 1)' }}
+    className="flex-1 overflow-y-auto custom-scrollbar pr-1 pb-24 lg:pb-0"
+  >
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: sidebarCollapsed 
+          ? (viewMode === 'grid' ? 'repeat(5, 1fr)' : 'repeat(6, 1fr)') 
+          : (viewMode === 'grid' ? 'repeat(4, 1fr)' : 'repeat(5, 1fr)'),
+        gap: '12px'
+      }}
+    >
  <AnimatePresence mode="popLayout">
  {filteredProducts.length > 0 ? (
  filteredProducts.map(p => (
- <motion.div
- layout
- initial={{ opacity: 0, y: 10 }}
- animate={{ opacity: 1, y: 0 }}
- key={p.id}
- onClick={() => addToCart(p)}
- className={`group relative flex flex-col bg-card backdrop-blur-md border border-border p-3.5 cursor-pointer rounded-2xl transition-all duration-300 hover:shadow-[0_0_20px_rgba(59,130,246,0.15)] hover:border-brand-500/50 hover:-translate-y-1 active:scale-[0.97] ${
- viewMode === 'grid' ? 'h-[160px]' : 'h-[130px] p-2.5'
- }`}
- >
+  <motion.div
+  layout
+  initial={{ opacity: 0, y: 10 }}
+  animate={{ opacity: 1, y: 0 }}
+  key={p.id}
+  onClick={() => addToCart(p)}
+  className={`group relative flex flex-col bg-card backdrop-blur-md border border-border p-3.5 cursor-pointer rounded-2xl hover:shadow-[0_0_20px_rgba(59,130,246,0.15)] hover:border-brand-500/50 hover:-translate-y-1 active:scale-[0.97] ${
+  viewMode === 'grid' ? 'h-[160px]' : 'h-[130px] p-2.5'
+  }`}
+  >
  {/* Badge de Stock Superior */}
  <div className="flex items-center justify-between mb-2">
  <span className="px-2 py-0.5 bg-muted rounded-full text-[9px] font-black text-muted-foreground uppercase tracking-tighter">
@@ -582,9 +593,9 @@ export const POSTerminal = () => {
   <div className={`${viewMode === 'grid' ? 'h-9 w-9' : 'h-7 w-7'} bg-brand-500/10 text-brand-600 dark:text-brand-400 rounded-xl flex items-center justify-center transition-all duration-300 shadow-sm group-hover:bg-brand-500 group-hover:text-white group-hover:scale-110 group-hover:shadow-lg`}>
   <Plus size={viewMode === 'grid' ? 18 : 14} strokeWidth={3} />
   </div>
- </div>
-
- {/* Glow Effect (Hover) */}
+   </div>
+ 
+  {/* Glow Effect (Hover) */}
  <div className="absolute inset-0 bg-brand-500/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none rounded-2xl"/>
  </motion.div>
  ))
@@ -595,6 +606,7 @@ export const POSTerminal = () => {
  </div>
  )}
  </AnimatePresence>
+ </div>
  </div>
  </div>
 
