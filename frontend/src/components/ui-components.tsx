@@ -113,11 +113,13 @@ export const Input = ({ label, error, helperText, icon: Icon, className, onChang
 };
 
 // CARD PREMIUM V5
-export const Card = ({ children, className }: { children: ReactNode; className?: string }) => {
+export const Card = ({ children, className, ...props }: any) => {
  return (
- <div className={cn('backdrop-blur-xl border rounded-2xl shadow-sm transition-all duration-300 bg-card border-border text-card-foreground', className)}>
+ <div 
+ className={cn('backdrop-blur-xl border rounded-2xl shadow-sm transition-all duration-300 bg-card border-border text-card-foreground', className)}
+ {...props}
+ >
  {children}
  </div>
  );
 };
-
