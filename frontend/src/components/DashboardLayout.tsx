@@ -142,33 +142,56 @@ export const DashboardLayout = ({
  {menuItems.map((item) => {
  const isActive = activeTab === item.id;
  return (
- <button
- key={item.id}
- onClick={() => {
- setActiveTab(item.id);
- setSidebarOpen(false);
- }}
- className={`
- w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group relative border sidebar-nav-item min-h-[48px]
- ${isActive 
- ? 'bg-brand-50/80 text-brand-600 border-brand-100 shadow-sm active dark:bg-brand-500/10 dark:text-brand-400 dark:border-brand-500/20' 
- : 'text-muted-foreground border-transparent hover:bg-muted hover:border-border hover:text-foreground'}
- ${isCollapsed ? 'justify-center px-0' : ''}
- `}
- title={isCollapsed ? item.label : undefined}
- >
- {/* Active Bar Indicator */}
- {isActive && !isCollapsed && (
- <motion.div 
- layoutId="active-nav-bar"
- className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 bg-brand-600 rounded-r-full shadow-[0_0_8px_rgba(var(--brand-primary),0.5)]"
- />
- )}
-
- <item.icon className={`
- h-5 w-5 shrink-0 transition-all duration-300
- ${isActive ? 'text-brand-600 dark:text-brand-400' : `${item.color} opacity-70 group-hover:opacity-100 group-hover:scale-110 group-hover:drop-shadow-[0_0_5px_currentColor]`}
- `} />
+  <button
+  key={item.id}
+  onClick={() => {
+  setActiveTab(item.id);
+  setSidebarOpen(false);
+  }}
+  className={`
+  w-full flex items-center gap-3 px-3 py-2 rounded-[50px] text-sm font-bold transition-all duration-300 group relative min-h-[52px]
+  ${isActive && !isCollapsed 
+  ? 'text-white shadow-lg shadow-brand-500/20' 
+  : 'text-muted-foreground hover:text-foreground'}
+  ${isCollapsed ? 'justify-center px-0 bg-transparent' : ''}
+  `}
+  style={isActive && !isCollapsed ? { backgroundColor: 'var(--brand-primary)' } : {}}
+  title={isCollapsed ? item.label : undefined}
+  >
+  {/* Icon Circle */}
+  <div 
+  className={`
+  h-10 w-10 shrink-0 rounded-full flex items-center justify-center transition-all duration-300
+  ${isActive 
+  ? (isCollapsed ? '' : 'bg-white/15') 
+  : 'bg-[#1a1a1a]'}
+  `}
+  style={{
+  backgroundColor: isActive 
+  ? (isCollapsed ? 'var(--brand-primary)' : 'rgba(255,255,255,0.15)') 
+  : undefined,
+  '--hover-bg': 'color-mix(in srgb, var(--brand-primary), transparent 80%)'
+  } as any}
+  onMouseEnter={(e) => {
+  if (!isActive) {
+  e.currentTarget.style.backgroundColor = 'var(--hover-bg)';
+  const icon = e.currentTarget.querySelector('svg');
+  if (icon) icon.style.color = 'var(--brand-primary)';
+  }
+  }}
+  onMouseLeave={(e) => {
+  if (!isActive) {
+  e.currentTarget.style.backgroundColor = '#1a1a1a';
+  const icon = e.currentTarget.querySelector('svg');
+  if (icon) icon.style.color = '';
+  }
+  }}
+  >
+  <item.icon className={`
+  h-5 w-5 shrink-0 transition-all duration-300
+  ${isActive ? 'text-white' : `${item.color}`}
+  `} />
+  </div>
  
  {!isCollapsed && (
  <span className={`truncate ${isActive ? 'font-bold' : ''}`}>
