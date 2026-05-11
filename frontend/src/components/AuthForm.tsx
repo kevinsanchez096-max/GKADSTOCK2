@@ -233,9 +233,9 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
             </span>
           </div>
 
-          <div className="space-y-4 mt-10">
-            <span className="text-label text-[var(--brand-primary)]">Sistema POS Enterprise</span>
-            <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-5xl font-black leading-[0.9]">
+           <div className="flex flex-col mt-10">
+            <span className="text-label text-[var(--brand-primary)] mb-4">Sistema POS Enterprise</span>
+            <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-5xl font-black leading-[1.1] tracking-[-2px]">
               <span className="text-white">GESTIÓN DE</span> <br />
               <span className="text-[var(--brand-primary)]">INVENTARIOS</span>
             </motion.h1>
@@ -272,22 +272,24 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
       <div className="w-full md:w-1/2 flex items-center justify-center p-8 sm:p-12 bg-[#0a0a0a] h-screen overflow-y-auto">
         <div className="w-full max-w-md relative">
           
-          {step > 1 && (
-            <button onClick={prevStep} className="absolute -top-12 left-0 flex items-center gap-2 text-zinc-500 hover:text-white transition-all group z-50 min-h-[48px]">
-              <div className="h-8 w-8 rounded-full bg-[#111] border border-[#1e1e1e] flex items-center justify-center group-hover:border-[var(--brand-primary)] group-hover:bg-[var(--brand-primary)]/10">
-                <ArrowLeft size={14} />
-              </div>
-              <span className="text-xs md:text-[10px] font-bold uppercase tracking-widest">Volver</span>
-            </button>
-          )}
+          <div className="mb-8 flex flex-col gap-6">
+            {step > 1 && (
+              <button type="button" onClick={prevStep} className="flex items-center gap-3 text-zinc-500 hover:text-[var(--brand-primary)] transition-all group w-fit">
+                <div className="h-9 w-9 rounded-xl bg-[#111] border border-[#1e1e1e] flex items-center justify-center group-hover:border-[var(--brand-primary)] group-hover:bg-[var(--brand-primary)]/10 transition-all">
+                  <ArrowLeft size={16} />
+                </div>
+                <span className="text-[11px] font-black uppercase tracking-[2px]">Volver</span>
+              </button>
+            )}
 
-          <div className="mb-6">
-            <h2 className="text-heading text-white uppercase tracking-tighter">
-              {mode === 'login' ? 'Bienvenido de nuevo' : 'Crea tu cuenta'}
-            </h2>
-            <p className="text-body text-zinc-500 mt-2">
-              {mode === 'login' ? 'Introduce tus credenciales para acceder al nodo.' : 'Inicializa tu organización en el sistema central.'}
-            </p>
+            <div>
+              <h2 className="text-heading text-white uppercase tracking-tighter">
+                {mode === 'login' ? 'Bienvenido de nuevo' : 'Crea tu cuenta'}
+              </h2>
+              <p className="text-body text-zinc-500 mt-2">
+                {mode === 'login' ? 'Introduce tus credenciales para acceder al nodo.' : 'Inicializa tu organización en el sistema central.'}
+              </p>
+            </div>
           </div>
 
           <form onSubmit={handleNext} className="space-y-5">
@@ -383,11 +385,18 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
             </AnimatePresence>
           </div>
 
-            <div className="space-y-4 pt-2">
-              <button type="submit" disabled={loading} style={{ background: 'linear-gradient(to right, var(--brand-primary), var(--brand-secondary))' }} className="w-full py-5 rounded-2xl text-white font-black uppercase tracking-widest text-xs md:text-[11px] shadow-[0_10px_30px_rgba(var(--brand-primary-rgb),0.2)] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 min-h-[48px]">
-                {loading ? <Circle className="animate-spin" size={16} /> : <LogIn size={16} />}
-                {mode === 'login' ? (step === 1 ? 'Continuar' : 'Entrar al Sistema') : (step === 5 ? 'Activar Cuenta' : 'Siguiente Paso')}
-              </button>
+            <div className="space-y-4 pt-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {step > 1 && (
+                  <button type="button" onClick={prevStep} className="w-full py-5 rounded-2xl border border-[#1e1e1e] text-zinc-400 font-black uppercase tracking-widest text-[11px] hover:bg-white/5 transition-all">
+                    Atrás
+                  </button>
+                )}
+                <button type="submit" disabled={loading} style={{ background: 'linear-gradient(to right, var(--brand-primary), var(--brand-secondary))' }} className={`w-full py-5 rounded-2xl text-white font-black uppercase tracking-widest text-[11px] shadow-[0_10px_30px_rgba(var(--brand-primary-rgb),0.2)] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 min-h-[48px] ${step === 1 ? 'sm:col-span-2' : ''}`}>
+                  {loading ? <Circle className="animate-spin" size={16} /> : <LogIn size={16} />}
+                  {mode === 'login' ? (step === 1 ? 'Continuar' : 'Entrar al Sistema') : (step === 5 ? 'Activar Cuenta' : 'Siguiente Paso')}
+                </button>
+              </div>
 
               <div className="flex items-center gap-4 py-1">
                 <div className="h-px flex-1 bg-[#1e1e1e]" />
