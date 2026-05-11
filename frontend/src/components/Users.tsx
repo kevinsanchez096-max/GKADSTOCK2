@@ -68,6 +68,15 @@ export const Users = () => {
  fullName: newEmployee.name,
  role: newEmployee.role
  });
+
+ // Notificar al sistema
+ await supabase.from('system_notifications').insert([{
+ type: 'NEW_USER',
+ title: 'Nuevo Colaborador Vinculado',
+ message: `El usuario "${newEmployee.name}" ha sido añadido al equipo como ${newEmployee.role}.`,
+ metadata: { email: newEmployee.email, organization: profile?.organization_name }
+ }]);
+
  toast.success('✅ Usuario creado exitosamente', {
  description: `El nuevo colaborador está listo para acceder al sistema`,
  duration: 5000
@@ -115,7 +124,7 @@ export const Users = () => {
  </h2>
  <p className="text-muted-foreground font-bold uppercase tracking-[0.3em] text-[10px] ml-1">Control de Accesos y Jerarquía Operativa</p>
  </div>
- {profile?.role === 'super_admin' && (
+ {(profile?.role === 'super_admin' || profile?.role === 'admin') && (
  <Button 
  className={`h-14 px-8 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 border ${
  isLimitReached 

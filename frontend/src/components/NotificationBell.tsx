@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { 
   Bell, 
   ShieldAlert, 
@@ -8,12 +8,16 @@ import {
   AlertCircle, 
   TrendingUp, 
   ZapOff,
-  AlertTriangle
+  AlertTriangle,
+  RefreshCw,
+  Wifi,
+  WifiOff
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../store/useAuthStore';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { toast } from 'sonner';
 
 interface SystemNotification {
   id: string;
@@ -30,20 +34,32 @@ export const NotificationBell = () => {
   const [notifications, setNotifications] = useState<SystemNotification[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isConnected, setIsConnected] = useState(true);
+  const channelRef = useRef<any>(null);
 
   const isSuperAdmin = profile?.role === 'super_admin';
 
-  const fetchNotifications = async () => {
-    const { data } = await supabase
-      .from('system_notifications')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(20);
-    
-    if (data) {
-      setNotifications(data);
-      const unread = data.filter(n => !n.read).length;
-      setUnreadCount(unread);
+  const fetchNotifications = async (silent = false) => {
+    if (!silent) setIsRefreshing(true);
+    try {
+      const { data, error } = await supabase
+        .from('system_notifications')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(20);
+      
+      if (error) throw error;
+
+      if (data) {
+        setNotifications(data);
+        const unread = data.filter(n => !n.read).length;
+        setUnreadCount(unread);
+      }
+    } catch (err) {
+      console.error('[Notifications] Error fetching:', err);
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
@@ -52,8 +68,10 @@ export const NotificationBell = () => {
 
     fetchNotifications();
 
-    const subscription = supabase
-      .channel('system-notifications')
+    // Configuración de Realtime con mayor estabilidad
+    const channelName = `system-alerts-${profile?.id || 'guest'}`;
+    const channel = supabase
+      .channel(channelName)
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'system_notifications' },
@@ -62,23 +80,38 @@ export const NotificationBell = () => {
           setNotifications(prev => [newNotification, ...prev].slice(0, 20));
           setUnreadCount(prev => prev + 1);
           
+          // Toast elegante para notificaciones críticas
+          if (newNotification.type === 'SYSTEM_ERROR' || newNotification.type === 'PLAN_LIMIT') {
+            toast.error(newNotification.title, {
+              description: newNotification.message,
+              icon: <ShieldAlert className="text-red-500" />
+            });
+          }
+
           if (Notification.permission === 'granted') {
              new Notification(`GKAD ALERTA: ${newNotification.title}`, {
                body: newNotification.message,
+               icon: '/logo.png'
              });
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        setIsConnected(status === 'SUBSCRIBED');
+      });
+
+    channelRef.current = channel;
 
     if (Notification.permission === 'default') {
       Notification.requestPermission();
     }
 
     return () => {
-      supabase.removeChannel(subscription);
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+      }
     };
-  }, [isSuperAdmin]);
+  }, [isSuperAdmin, profile?.id]);
 
   const markAllAsRead = async () => {
     if (unreadCount === 0) return;
@@ -126,10 +159,10 @@ export const NotificationBell = () => {
           setIsOpen(nextState);
           if (nextState) markAllAsRead();
         }}
-        className="relative p-2.5 bg-muted text-muted-foreground hover:text-brand-600 hover:bg-card hover:border-border border border-transparent rounded-xl transition-all shadow-sm"
-        title="Panel de Control Global"
+        className={`relative p-2.5 bg-muted/50 backdrop-blur-md text-muted-foreground hover:text-brand-500 hover:bg-card border border-border/50 rounded-xl transition-all shadow-sm group ${isOpen ? 'ring-2 ring-brand-500/20 bg-card text-brand-500' : ''}`}
+        title="Centro de Control Global"
       >
-        <Bell size={18} className={unreadCount > 0 ? "animate-pulse text-brand-500" : ""} />
+        <Bell size={18} className={`${unreadCount > 0 ? "animate-pulse text-brand-500" : ""} group-hover:scale-110 transition-transform`} />
         {unreadCount > 0 && (
           <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-background shadow-lg shadow-red-500/50 animate-bounce">
             {unreadCount > 9 ? '9+' : unreadCount}
@@ -138,56 +171,79 @@ export const NotificationBell = () => {
       </button>
 
       {isOpen && (
-        <div className="absolute top-full right-0 mt-3 w-80 bg-card border border-border shadow-2xl rounded-2xl overflow-hidden z-50 animate-fade-in origin-top-right">
-          <div className="p-4 border-b border-border bg-muted flex items-center justify-between">
-            <h4 className="font-black text-sm uppercase tracking-tight flex items-center gap-2 text-foreground">
-              <ShieldAlert size={14} className="text-brand-500" />
-              Centro de Alertas
-            </h4>
-            <span className="text-[9px] uppercase tracking-widest font-bold text-brand-500 bg-brand-500/10 px-2 py-1 rounded-md border border-brand-500/20">
-              {notifications.length} Eventos
-            </span>
+        <div className="absolute top-full right-0 mt-4 w-85 bg-card/95 backdrop-blur-xl border border-border shadow-[0_20px_50px_rgba(0,0,0,0.3)] rounded-[2rem] overflow-hidden z-[100] animate-in slide-in-from-top-4 duration-300 origin-top-right">
+          <div className="p-6 border-b border-border bg-muted/30 flex items-center justify-between">
+            <div>
+              <h4 className="font-black text-xs uppercase tracking-[0.2em] flex items-center gap-2 text-foreground">
+                <ShieldAlert size={14} className="text-brand-500" />
+                GKAD SIGNAL CENTER
+              </h4>
+              <div className="flex items-center gap-1.5 mt-1">
+                {isConnected ? (
+                  <div className="flex items-center gap-1">
+                    <Wifi size={8} className="text-emerald-500" />
+                    <span className="text-[7px] font-black text-emerald-500 uppercase tracking-widest">En Línea</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1">
+                    <WifiOff size={8} className="text-red-500" />
+                    <span className="text-[7px] font-black text-red-500 uppercase tracking-widest">Desconectado</span>
+                  </div>
+                )}
+              </div>
+            </div>
+            <button 
+              onClick={(e) => { e.stopPropagation(); fetchNotifications(); }}
+              disabled={isRefreshing}
+              className="p-2 hover:bg-brand-500/10 rounded-lg text-muted-foreground hover:text-brand-500 transition-all active:rotate-180 duration-500"
+            >
+              <RefreshCw size={14} className={isRefreshing ? "animate-spin" : ""} />
+            </button>
           </div>
           
-          <div className="max-h-[350px] overflow-y-auto custom-scrollbar bg-black/5 dark:bg-black/20">
+          <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
             {notifications.length === 0 ? (
-              <div className="p-8 text-center text-muted-foreground">
-                <CheckCircle2 size={30} className="mx-auto mb-2 opacity-20" />
-                <p className="text-[10px] uppercase font-bold tracking-widest">Sistema Limpio</p>
+              <div className="p-12 text-center text-muted-foreground flex flex-col items-center">
+                <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-4 opacity-50">
+                  <CheckCircle2 size={32} className="text-emerald-500" />
+                </div>
+                <p className="text-[10px] uppercase font-black tracking-[0.3em]">Sistema Sincronizado</p>
+                <p className="text-[8px] uppercase font-bold tracking-widest mt-1 opacity-40">No hay alertas pendientes</p>
               </div>
             ) : (
-              <div className="divide-y divide-border/50">
+              <div className="divide-y divide-border/30">
                 {notifications.map((notif) => (
                   <div 
                     key={notif.id} 
-                    className={`p-4 hover:bg-brand-500/5 transition-colors cursor-pointer group relative ${!notif.read ? 'bg-brand-500/[0.02]' : ''}`}
+                    className={`p-5 hover:bg-brand-500/[0.03] transition-all cursor-pointer group relative ${!notif.read ? 'bg-brand-500/[0.01]' : ''}`}
                   >
                     {!notif.read && (
-                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-brand-500 shadow-[2px_0_10px_rgba(var(--brand-primary-rgb),0.5)]" />
+                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-brand-500 shadow-[2px_0_15px_rgba(var(--brand-primary-rgb),0.6)]" />
                     )}
-                    <div className="flex gap-3">
-                      <div className={`h-9 w-9 rounded-full flex items-center justify-center shrink-0 border transition-all group-hover:scale-110 ${
-                        !notif.read ? 'bg-brand-500/10 border-brand-500/30' : 'bg-muted border-border'
+                    <div className="flex gap-4">
+                      <div className={`h-10 w-10 rounded-2xl flex items-center justify-center shrink-0 border transition-all group-hover:scale-110 shadow-sm ${
+                        !notif.read ? 'bg-brand-500/10 border-brand-500/20' : 'bg-muted border-border/50'
                       }`}>
                         {getIcon(notif.type)}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between">
-                          <p className={`text-[9px] font-black uppercase tracking-widest ${
+                        <div className="flex items-center justify-between mb-1">
+                          <p className={`text-[8px] font-black uppercase tracking-[0.2em] ${
                             notif.type === 'SYSTEM_ERROR' ? 'text-red-500' :
                             notif.type === 'HIGH_VALUE_SALE' ? 'text-emerald-500' :
                             'text-brand-500'
                           }`}>
                             {getLabel(notif.type)}
                           </p>
-                          <span className="text-[8px] text-muted-foreground font-bold">
+                          <div className="flex items-center gap-1 text-[8px] text-muted-foreground font-bold">
+                            <Clock size={8} />
                             {formatDistanceToNow(new Date(notif.created_at), { addSuffix: true, locale: es })}
-                          </span>
+                          </div>
                         </div>
-                        <p className={`text-xs font-black truncate mt-0.5 ${notif.read ? 'text-foreground/70' : 'text-foreground'}`}>
+                        <p className={`text-xs font-black tracking-tight mb-1 truncate ${notif.read ? 'text-foreground/60' : 'text-foreground'}`}>
                           {notif.title}
                         </p>
-                        <p className="text-[10px] text-muted-foreground leading-tight mt-1 line-clamp-2">
+                        <p className="text-[10px] text-muted-foreground leading-relaxed line-clamp-2 font-medium">
                           {notif.message}
                         </p>
                       </div>
@@ -198,9 +254,12 @@ export const NotificationBell = () => {
             )}
           </div>
           
-          <div className="p-3 border-t border-border bg-muted text-center hover:bg-muted/80 transition-colors cursor-pointer" onClick={() => setIsOpen(false)}>
-            <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">
-              Cerrar Panel
+          <div 
+            className="p-4 border-t border-border bg-muted/50 text-center hover:bg-brand-500 hover:text-white transition-all cursor-pointer group" 
+            onClick={() => setIsOpen(false)}
+          >
+            <span className="text-[9px] font-black uppercase tracking-[0.4em] group-hover:tracking-[0.6em] transition-all">
+              CERRAR RADAR
             </span>
           </div>
         </div>

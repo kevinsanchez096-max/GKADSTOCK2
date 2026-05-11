@@ -28,6 +28,15 @@ export const CreateOrganizationModal = ({ isOpen, onClose, onSuccess }: CreateOr
 
     try {
       await api.post('/saas/organizations', formData);
+      
+      // Registrar notificación del sistema
+      await supabase.from('system_notifications').insert([{
+        type: 'ORG_STATUS',
+        title: 'Nueva Organización Creada',
+        message: `La organización "${formData.name}" ha sido desplegada con éxito en el plan ${formData.plan}.`,
+        metadata: { name: formData.name, plan: formData.plan }
+      }]);
+
       toast.success('Inquilino aprovisionado con éxito');
       onSuccess();
       onClose();

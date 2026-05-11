@@ -205,17 +205,12 @@ export const Inventory = () => {
  organization_id: profile.organization_id 
  });
 
- // 3. Registrar el Gasto directamente en Supabase
- const { error: expenseError } = await supabase
- .from('expenses')
- .insert([{
- description: `Merma de Inventario: ${mermaData.reason} - ${selectedMermaProduct.name}`,
- amount: valorPerdida,
- category: 'MERMA_INVENTARIO',
- organization_id: profile.organization_id
- }]);
-
- if (expenseError) throw new Error(`Fallo al registrar gasto: ${expenseError.message}`);
+    // 3. Registrar el Gasto a través de la API segura (Evita RLS Violation)
+    await api.post('/expenses', {
+      description: `Merma de Inventario: ${mermaData.reason} - ${selectedMermaProduct.name}`,
+      amount: valorPerdida,
+      category: 'MERMA_INVENTARIO'
+    });
 
  // 4. Éxito: Feedback, cerrar modal, limpiar y recargar
  toast.success(`Merma registrada: -${deductQty} (${mermaData.reason})`, { icon: '📉' });
