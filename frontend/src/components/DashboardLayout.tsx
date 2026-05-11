@@ -76,8 +76,12 @@ export const DashboardLayout = ({
  };
 
  useEffect(() => {
- localStorage.setItem('sidebar_state', isCollapsed ? 'collapsed' : 'expanded');
- }, [isCollapsed]);
+  localStorage.setItem('sidebar_state', isCollapsed ? 'collapsed' : 'expanded');
+  const timer = setTimeout(() => {
+    window.dispatchEvent(new Event('sidebar_toggle'));
+  }, 550);
+  return () => clearTimeout(timer);
+  }, [isCollapsed]);
 
  // ── CONFIGURACIÓN DE MENÚS BASADA EN ROLES (RBAC) ──
  const standardMenuItems = [

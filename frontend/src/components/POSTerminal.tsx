@@ -66,6 +66,13 @@ export const POSTerminal = () => {
  const [showSuccess, setShowSuccess] = useState(false);
  const [amountReceived, setAmountReceived] = useState<string>('');
  const [discount, setDiscount] = useState<number>(0);
+ const [sidebarCollapsed, setSidebarCollapsed] = useState(() => localStorage.getItem('sidebar_state') === 'collapsed');
+
+ useEffect(() => {
+   const handleToggle = () => setSidebarCollapsed(localStorage.getItem('sidebar_state') === 'collapsed');
+   window.addEventListener('sidebar_toggle', handleToggle);
+   return () => window.removeEventListener('sidebar_toggle', handleToggle);
+ }, []);
  const [activeStep, setActiveStep] = useState<'cart' | 'payment'>('cart');
  const [mobileTab, setMobileTab] = useState<'products' | 'cart'>('products');
  
@@ -390,7 +397,7 @@ export const POSTerminal = () => {
  </div>
 
  {/* IZQUIERDA: LIBRERÍA DE PRODUCTOS (FIJA) */}
- <div className={`flex-1 flex-col min-w-0 p-4 lg:p-6 space-y-6 bg-muted/20 backdrop-blur-sm ${mobileTab === 'cart' ? 'hidden lg:flex' : 'flex'}`}>
+ <div className={`flex-1 flex-col min-w-0 p-4 lg:p-6 space-y-6 bg-muted/20 backdrop-blur-sm overflow-hidden ${mobileTab === 'cart' ? 'hidden lg:flex' : 'flex'}`}>
  
  {/* BUSCADOR PRO */}
  <div className="flex items-center gap-4">
@@ -528,10 +535,10 @@ export const POSTerminal = () => {
  </AnimatePresence>
 
  {/* GRID DE PRODUCTOS */}
- <div className={`flex-1 overflow-y-auto grid gap-3 custom-scrollbar pr-1 pb-24 lg:pb-0 ${
+ <div className={`flex-1 overflow-y-auto grid gap-3 custom-scrollbar pr-1 pb-24 lg:pb-0 transition-all duration-300 ease-in-out ${
  viewMode === 'grid' 
- ? 'grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5' 
- : 'grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6'
+ ? (sidebarCollapsed ? 'grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 2xl:grid-cols-6' : 'grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5')
+ : (sidebarCollapsed ? 'grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-7' : 'grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6')
  }`}>
  <AnimatePresence mode="popLayout">
  {filteredProducts.length > 0 ? (

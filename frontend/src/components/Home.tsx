@@ -76,9 +76,10 @@ export const Home = ({ setActiveTab }: { setActiveTab: (tab: string) => void }) 
  [sales]
  );
 
- const today = new Date().toISOString().split('T')[0];
+ const today = new Date();
+ today.setHours(0, 0, 0, 0);
  const todaySales = (sales || [])
- .filter(s => s.created_at?.startsWith(today))
+ .filter(s => new Date(s.created_at || 0) >= today)
  .reduce((acc, curr) => acc + (Number(curr.total) || 0), 0);
 
  const containerVariants = {
