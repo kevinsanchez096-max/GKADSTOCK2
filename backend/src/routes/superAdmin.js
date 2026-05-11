@@ -43,6 +43,7 @@ router.post('/super-admins', superHardenedMiddleware, superAdminController.creat
 // 9. Administrar Organizaciones (Creación y Edición)
 router.post('/organizations', superAdminController.createOrganization);
 router.patch('/organizations/:orgId', superAdminController.updateOrganization);
+router.get('/pulse-stats', superAdminController.getPulseStats);
 router.delete('/organizations/:orgId', superAdminController.deleteOrganization);
 router.post('/organizations/:orgId/users', superAdminController.injectUser);
 

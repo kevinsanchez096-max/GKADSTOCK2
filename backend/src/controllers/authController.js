@@ -583,6 +583,14 @@ const authController = {
                 .eq('id', userId)
                 .single();
 
+            // E. Registrar Auditoría de Acceso
+            const { logAuditEvent } = require('../auditLogger');
+            logAuditEvent('INFO', 'AuthAPI', 'AUTH_SUCCESS', { 
+                user_id: userId, 
+                email: finalProfile.email,
+                organization_id: finalProfile.organization_id 
+            });
+
             if (refreshErr) throw refreshErr;
 
             // Normalización del objeto organization para el frontend

@@ -73,10 +73,22 @@ const superAdminController = {
                 };
             });
 
+            // CONSULTA C: Conteo de Eliminadas (Basado en Logs Históricos)
+            const { count: deletedCount } = await supabase
+                .from('system_audit_logs')
+                .select('id', { count: 'exact', head: true })
+                .eq('event', 'ORG_DELETED');
+
             res.status(200).json({
                 success: true,
                 message: 'Organizaciones recuperadas correctamente.',
-                data: formattedOrgs
+                data: formattedOrgs,
+                summary: {
+                    total: orgs.length,
+                    active: orgs.filter(o => o.is_active && (!o.billing_status || o.billing_status.toLowerCase() === 'activo')).length,
+                    suspended: orgs.filter(o => !o.is_active || (o.billing_status && o.billing_status.toLowerCase() !== 'activo')).length,
+                    deleted: deletedCount || 0
+                }
             });
         } catch (error) {
             console.error('❌ [FATAL] Error en getAllOrganizations (Plan B):', error);
@@ -118,49 +130,170 @@ const superAdminController = {
     // 3. Estadísticas Globales (Reforzado para Demo)
     getGlobalStats: async (req, res) => {
         try {
-            const startOfToday = new Date();
-            startOfToday.setHours(0,0,0,0);
-
-            const [orgResponse, userResponse, salesResponse, attentionResponse, activeResponse] = await Promise.all([
+            const { range } = req.query;
+            const [orgResponse, userResponse, attentionResponse] = await Promise.all([
                 supabase.from('organizations').select('id', { count: 'exact', head: true }),
                 supabase.from('profiles').select('id', { count: 'exact', head: true }),
-                supabase.from('sales').select('total'),
-                supabase.from('organizations').select('id', { count: 'exact', head: true }).or('health_status.eq.Atención,health_status.eq.Crítico'),
-                // Consultamos usuarios con actividad reciente en Auth (vía profiles si last_active está presente)
-                // O mejor aún, para esta demo, simulamos la tracción basada en la tabla auth si tuviéramos acceso directo,
-                // Pero como usamos perfiles, buscaremos los que se crearon o actualizaron recientemente si last_active no está en profiles.
-                // Si no hay last_active en profiles, usaremos una fracción realista del 30-40% para impacto visual profesional.
-                supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('status', 'active')
+                supabase.from('organizations').select('id', { count: 'exact', head: true }).or('health_status.eq.Atención,health_status.eq.Crítico')
             ]);
 
-            const orgCount = orgResponse.count || 0;
-            const userCount = userResponse.count || 0;
-            const salesData = salesResponse.data || [];
-
-            // Simulación de tracción lógica (65-80% de los usuarios suelen estar activos en un sistema POS diario)
-            const activeUsersToday = Math.max(1, Math.floor(userCount * (0.65 + Math.random() * 0.15)));
-
-            // Cálculo de MRR
-            const { data: activeOrgs } = await supabase
-                .from('organizations')
-                .select('license_price')
-                .eq('billing_status', 'activo');
-
+            const { data: activeOrgs } = await supabase.from('organizations').select('license_price').eq('billing_status', 'activo');
             const totalMRR = (activeOrgs || []).reduce((sum, org) => sum + Number(org.license_price || 0), 0);
-            
+
+            // ── CÁLCULO DE SALUD DE NEGOCIO ──
+            const { data: healthOrgs } = await supabase.from('organizations').select('health_status, billing_status');
+            const totalOrgs = healthOrgs?.length || 0;
+            const healthyOrgs = (healthOrgs || []).filter(o => o.health_status === 'Saludable').length;
+            const activeBillingOrgs = (healthOrgs || []).filter(o => o.billing_status === 'activo').length;
+            const efficiency = totalOrgs > 0 ? Math.round((healthyOrgs / totalOrgs) * 100) : 100;
+            const retention = totalOrgs > 0 ? Math.round((activeBillingOrgs / totalOrgs) * 100) : 100;
+
+            const pulseData = await superAdminController.getPulseLogic(range || 'Mes');
+
             res.status(200).json({
-                totalOrganizations: orgCount,
-                totalUsers: userCount,
-                activeUsersToday, // Métrica de impacto para la demo
-                totalGlobalSales: salesData.reduce((sum, sale) => sum + Number(sale.total || 0), 0),
+                totalOrganizations: orgResponse.count || 0,
+                totalUsers: userResponse.count || 0,
+                activeUsersToday: pulseData.activeToday,
                 requiresAttention: attentionResponse.count || 0,
                 totalMRR: totalMRR,
-                averageSalesPerOrg: orgCount > 0 ? (salesData.length / orgCount).toFixed(2) : "0.00"
+                dailyActivity: pulseData.activity,
+                growthData: await superAdminController.calculateGrowthData(range || 'Mes'),
+                businessHealth: {
+                    efficiency,
+                    retention,
+                    summary: efficiency > 80 ? `Ecosistema estable (${efficiency}%).` : `Atención requerida (${efficiency}%).`
+                }
             });
         } catch (error) {
-            console.error('Error en getGlobalStats:', error);
-            res.status(500).json({ error: 'Error al calcular métricas.' });
+            console.error('❌ [STATS ERROR]:', error);
+            res.status(500).json({ error: 'Error en analíticas.' });
         }
+    },
+
+    getPulseStats: async (req, res) => {
+        try {
+            const { range } = req.query;
+            const data = await superAdminController.getPulseLogic(range || 'Mes');
+            res.status(200).json(data);
+        } catch (error) {
+            res.status(500).json({ error: 'Error en pulso.' });
+        }
+    },
+
+    getPulseLogic: async (range) => {
+        let startDate = new Date();
+        let activityMap = {};
+        const days = ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'];
+
+        if (range === 'Hoy') {
+            startDate.setHours(0, 0, 0, 0);
+            for (let i = 0; i < 24; i += 4) { activityMap[`${i}:00`] = new Set(); }
+        } else if (range === 'Semana') {
+            startDate.setDate(startDate.getDate() - 7);
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date(); d.setDate(d.getDate() - i);
+                activityMap[days[d.getDay()]] = new Set();
+            }
+        } else if (range === 'Año') {
+            startDate.setFullYear(startDate.getFullYear() - 1);
+            const monthsShort = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+            for (let i = 11; i >= 0; i--) {
+                const d = new Date(); d.setMonth(d.getMonth() - i);
+                activityMap[monthsShort[d.getMonth()]] = new Set();
+            }
+        } else {
+            startDate.setDate(startDate.getDate() - 30);
+            ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'].forEach(s => activityMap[s] = new Set());
+        }
+
+        const { data: logs } = await supabase.from('system_audit_logs').select('created_at, metadata').gte('created_at', startDate.toISOString());
+
+        (logs || []).forEach(log => {
+            if (!log.metadata?.user_id) return;
+            const date = new Date(log.created_at);
+            if (range === 'Hoy') {
+                const hour = Math.floor(date.getHours() / 4) * 4;
+                activityMap[`${hour}:00`]?.add(log.metadata.user_id);
+            } else if (range === 'Semana') {
+                activityMap[days[date.getDay()]]?.add(log.metadata.user_id);
+            } else if (range === 'Año') {
+                const monthsShort = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+                activityMap[monthsShort[date.getMonth()]]?.add(log.metadata.user_id);
+            } else {
+                const diff = Math.floor((new Date() - date) / (1000 * 60 * 60 * 24));
+                const week = Math.min(4, Math.floor(diff / 7) + 1);
+                activityMap[`Sem ${5-week}`]?.add(log.metadata.user_id);
+            }
+        });
+
+        const activity = Object.keys(activityMap).map(name => ({ name, users: activityMap[name].size }));
+        const todayName = days[new Date().getDay()];
+        const activeToday = range === 'Hoy' ? activityMap[`${Math.floor(new Date().getHours()/4)*4}:00`]?.size : activityMap[todayName]?.size;
+
+        return { activity, activeToday: activeToday || 1 };
+    },
+
+    calculateGrowthData: async (range) => {
+        const { data: orgs } = await supabase
+            .from('organizations')
+            .select('created_at, license_price, is_active, billing_status');
+
+        const { data: deletionLogs } = await supabase
+            .from('system_audit_logs')
+            .select('created_at, metadata')
+            .eq('event', 'ORG_DELETED');
+
+        const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+        const now = new Date();
+        const results = [];
+
+        let iterations = 6;
+        let step = 'month';
+
+        if (range === 'Año') iterations = 12;
+        if (range === 'Semana') { iterations = 7; step = 'day'; }
+        if (range === 'Hoy') { iterations = 6; step = 'hour'; }
+
+        for (let i = iterations - 1; i >= 0; i--) {
+            let label = '';
+            let endOfPeriod = new Date();
+
+            if (step === 'month') {
+                const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                label = months[d.getMonth()];
+                endOfPeriod = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59);
+            } else if (step === 'day') {
+                const d = new Date(); d.setDate(d.getDate() - i);
+                label = d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+                endOfPeriod = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59);
+            } else {
+                const d = new Date(); d.setHours(d.getHours() - (i * 4));
+                label = `${d.getHours()}:00`;
+                endOfPeriod = d;
+            }
+            
+            // Suscripciones Activas: Orgs que existen y están activas
+            const activeMRR = (orgs || [])
+                .filter(o => new Date(o.created_at) <= endOfPeriod && o.billing_status === 'activo')
+                .reduce((sum, o) => sum + Number(o.license_price || 0), 0);
+
+            // Pérdidas por Suspensión: Orgs que existen pero no están activas
+            const suspendedMRR = (orgs || [])
+                .filter(o => new Date(o.created_at) <= endOfPeriod && o.billing_status !== 'activo')
+                .reduce((sum, o) => sum + Number(o.license_price || 0), 0);
+
+            // Pérdidas por Eliminación: Orgs que ya no existen (registradas en logs)
+            const deletedMRR = (deletionLogs || [])
+                .filter(log => new Date(log.created_at) <= endOfPeriod)
+                .reduce((sum, log) => sum + Number(log.metadata?.lost_mrr || 0), 0);
+
+            results.push({
+                name: label,
+                mrr: activeMRR,
+                churn: suspendedMRR + deletedMRR
+            });
+        }
+        return results;
     },
 
     // 4. Obtener Usuarios de una Organización
@@ -200,6 +333,13 @@ const superAdminController = {
             const { orgId } = req.params;
             console.log(`🧨 [PURGE] Iniciando borrado total de Org: ${orgId}`);
 
+            // 0. Rescatar datos para auditoría histórica de pérdidas
+            const { data: orgData } = await supabase
+                .from('organizations')
+                .select('name, license_price')
+                .eq('id', orgId)
+                .single();
+
             // A. Rescatar IDs de usuarios para limpieza en Auth
             const { data: profiles } = await supabase.from('profiles').select('id').eq('organization_id', orgId);
 
@@ -214,6 +354,20 @@ const superAdminController = {
 
             // C. Borrado de Perfiles y Organización (Identidad y Padre)
             await supabase.from('profiles').delete().eq('organization_id', orgId);
+            
+            // Registro de Auditoría de Pérdida Financiera antes de borrar el nodo
+            const { logAuditEvent } = require('../auditLogger');
+            logAuditEvent('MOD', 'SaaSManager', 'ORG_DELETED', { 
+                org_id: orgId, 
+                org_name: orgData?.name,
+                lost_mrr: orgData?.license_price || 0,
+                executor: req.user.id 
+            });
+
+            // Notificación: Eliminación de Organización
+            const { sendSystemNotification } = require('../utils/notificationService');
+            sendSystemNotification('ORG_DELETED', 'Organización Eliminada', `La organización '${orgData?.name || orgId}' ha sido eliminada permanentemente el ${new Date().toLocaleString('es-ES')}.`, { org_id: orgId, executor: req.user.id });
+
             const { error: orgError } = await supabase.from('organizations').delete().eq('id', orgId);
 
             if (orgError) {
@@ -492,6 +646,10 @@ const superAdminController = {
             }
 
             console.log(`✅ [VINCULACIÓN] Perfil del administrador [${createdAuthUserId}] vinculado con éxito a la organización [${createdOrgId}]`);
+
+            // Notificación: Creación de Organización
+            const { sendSystemNotification } = require('../utils/notificationService');
+            sendSystemNotification('ORG_CREATED', 'Nueva Organización', `Se ha creado '${name}' exitosamente el ${new Date().toLocaleString('es-ES')}.`, { org_id: createdOrgId, executor: superAdminId });
 
             // Registro de Auditoría: Creación de Organización
             const { logAuditEvent } = require('../auditLogger');

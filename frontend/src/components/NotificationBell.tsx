@@ -22,7 +22,7 @@ import { toast } from 'sonner';
 interface SystemNotification {
   id: string;
   created_at: string;
-  type: 'NEW_USER' | 'ORG_STATUS' | 'HIGH_VALUE_SALE' | 'SYSTEM_ERROR' | 'PLAN_LIMIT';
+  type: 'NEW_USER' | 'ORG_STATUS' | 'HIGH_VALUE_SALE' | 'SYSTEM_ERROR' | 'PLAN_LIMIT' | 'ORG_CREATED' | 'ORG_DELETED';
   title: string;
   message: string;
   read: boolean;
@@ -86,6 +86,11 @@ export const NotificationBell = () => {
               description: newNotification.message,
               icon: <ShieldAlert className="text-red-500" />
             });
+          } else if (newNotification.type === 'ORG_CREATED' || newNotification.type === 'ORG_DELETED') {
+            toast.info(newNotification.title, {
+              description: newNotification.message,
+              icon: newNotification.type === 'ORG_CREATED' ? <CheckCircle2 className="text-emerald-500" /> : <Trash2 size={16} className="text-red-500" />
+            });
           }
 
           if (Notification.permission === 'granted') {
@@ -134,6 +139,8 @@ export const NotificationBell = () => {
       case 'ORG_STATUS': return <ZapOff size={16} className="text-amber-500" />;
       case 'PLAN_LIMIT': return <AlertTriangle size={16} className="text-orange-500" />;
       case 'SYSTEM_ERROR': return <AlertCircle size={16} className="text-red-500" />;
+      case 'ORG_CREATED': return <CheckCircle2 size={16} className="text-emerald-500" />;
+      case 'ORG_DELETED': return <Trash2 size={16} className="text-red-500" />;
       default: return <ShieldAlert size={16} className="text-brand-500" />;
     }
   };
@@ -145,6 +152,8 @@ export const NotificationBell = () => {
       case 'ORG_STATUS': return 'Infraestructura';
       case 'PLAN_LIMIT': return 'Límite de Plan';
       case 'SYSTEM_ERROR': return 'Fallo Crítico';
+      case 'ORG_CREATED': return 'Nueva Empresa';
+      case 'ORG_DELETED': return 'Baja de Empresa';
       default: return 'Alerta';
     }
   };

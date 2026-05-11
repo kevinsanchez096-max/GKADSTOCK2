@@ -1,57 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { 
-  Users, 
   Building2, 
-  TrendingUp, 
-  Clock, 
-  Plus, 
-  FileText,
-  Calendar,
-  Sparkles,
+  Users, 
+  CreditCard, 
+  ShieldCheck, 
   ChevronRight,
-  ShieldCheck,
-  Activity
+  Zap,
+  Globe,
+  Lock,
+  LayoutDashboard
 } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Button, Card } from './ui-components';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { CreateOrganizationModal } from './CreateOrganizationModal';
-import { toast } from 'sonner';
-import { api } from '../lib/api';
-
-const activityData = [
-  { name: 'Lun', users: 120 },
-  { name: 'Mar', users: 132 },
-  { name: 'Mie', users: 101 },
-  { name: 'Jue', users: 142 },
-  { name: 'Vie', users: 160 },
-  { name: 'Sab', users: 80 },
-  { name: 'Dom', users: 95 },
-];
+import { Card } from './ui-components';
 
 export const AdminWelcome = ({ setActiveTab }: { setActiveTab: (tab: string) => void }) => {
   const { profile } = useAuthStore();
-  const [stats, setStats] = useState<any>(null);
-  const [logs, setLogs] = useState<any[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [chartReady, setChartReady] = useState(false);
-  useEffect(() => {
-    const timer = setTimeout(() => setChartReady(true), 100);
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    api.get('/saas/stats').then(setStats).catch(() => {});
-    api.get('/saas/logs').then(setLogs).catch(() => {});
-  }, []);
-
-  const generateReport = () => {
-    toast.success('Generando reporte ejecutivo...', {
-      description: 'El dataset maestro se está compilando en este momento.'
-    });
-  };
 
   const getFormattedDate = () => {
     try {
@@ -61,180 +26,141 @@ export const AdminWelcome = ({ setActiveTab }: { setActiveTab: (tab: string) => 
     }
   };
 
+  const protocols = [
+    { 
+      id: 'admin_organizations', 
+      title: 'Infraestructura', 
+      desc: 'Gestión de Nodos y Organizaciones', 
+      icon: Building2, 
+      color: 'text-blue-500', 
+      bg: 'bg-blue-500/10' 
+    },
+    { 
+      id: 'admin_users', 
+      title: 'Seguridad Global', 
+      desc: 'Control de Usuarios y Permisos', 
+      icon: Users, 
+      color: 'text-orange-500', 
+      bg: 'bg-orange-500/10' 
+    },
+    { 
+      id: 'admin_subscriptions', 
+      title: 'Monetización', 
+      desc: 'Planes y Ciclos de Facturación', 
+      icon: CreditCard, 
+      color: 'text-emerald-500', 
+      bg: 'bg-emerald-500/10' 
+    },
+  ];
+
   return (
-    <div className="space-y-10 animate-in fade-in duration-700 pb-20">
+    <div className="max-w-6xl mx-auto space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-1000 pb-20 pt-10">
       
-      <CreateOrganizationModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-        onSuccess={() => {
-          api.get('/saas/stats').then(setStats);
-          api.get('/saas/logs').then(setLogs);
-        }}
-      />
-
-      {/* 1. COMPACT PREMIUM HEADER */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-6 border-b border-border pb-10">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 text-brand-500 font-black text-[10px] uppercase tracking-[0.4em]">
-            <Sparkles size={14} /> Global Control Hub
-          </div>
-          <h1 className="text-5xl font-black text-foreground font-heading tracking-tighter">
-            Hola, <span className="text-brand-500">{profile?.full_name ? profile.full_name.split(' ')[0] : 'Administrador'}</span>
-          </h1>
-          <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest flex items-center gap-2">
-            <Calendar size={12} /> {getFormattedDate()}
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <Button 
-            onClick={() => setIsModalOpen(true)}
-            icon={Plus} 
-            className="h-12 px-6 rounded-2xl text-[10px] font-black uppercase tracking-widest bg-brand-600 shadow-xl shadow-brand-600/20 text-white border-none"
-          >
-            Añadir Inquilino
-          </Button>
-          <Button 
-            variant="outline"
-            icon={FileText} 
-            onClick={generateReport}
-            className="h-12 px-6 rounded-2xl text-[10px] font-black uppercase tracking-widest border-border"
-          >
-            Generar Reporte
-          </Button>
-        </div>
-      </div>
-
-      {/* 2. CORE METRICS GRID */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="p-8 border-border relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-125 transition-transform duration-700">
-            <Users size={64} />
-          </div>
-          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-4">Usuarios Activos</p>
-          <h3 className="text-4xl font-black text-foreground font-outfit">{stats?.activeUsersToday || 0}</h3>
-          <div className="mt-4 flex items-center gap-2">
-            <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">+5.4%</span>
-            <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest">vs ayer</span>
-          </div>
-        </Card>
-
-        <Card className="p-8 border-border relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-125 transition-transform duration-700">
-            <Building2 size={64} />
-          </div>
-          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-4">Licencias Pro</p>
-          <h3 className="text-4xl font-black text-foreground font-outfit">{stats?.totalOrganizations || 0}</h3>
-          <div className="mt-4 flex items-center gap-2">
-            <span className="text-[10px] font-bold text-blue-500 bg-blue-500/10 px-2 py-0.5 rounded-full">Operativas</span>
-            <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest">Sistema Real</span>
-          </div>
-        </Card>
-
-        <Card className="p-8 border-border relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-125 transition-transform duration-700">
-            <TrendingUp size={64} />
-          </div>
-          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-4">Ingresos MRR</p>
-          <h3 className="text-4xl font-black text-brand-500 font-outfit">
-            ${(stats?.totalMRR || 0).toLocaleString()}
-          </h3>
-          <div className="mt-4 flex items-center gap-2">
-            <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">+12%</span>
-            <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest">Crecimiento mes</span>
-          </div>
-        </Card>
-      </div>
-
-      {/* 3. SYSTEM ACTIVITY & RECENT LOGS */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Activity Chart */}
-        <Card className="lg:col-span-2 p-8 border-border space-y-8">
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-foreground">Actividad del Sistema</h3>
-              <p className="text-[10px] text-muted-foreground font-medium">Usuarios concurrentes en los últimos 7 días</p>
+      {/* 1. HERO COMMAND SECTION */}
+      <div className="relative group">
+        <div className="absolute -inset-1 bg-gradient-to-r from-brand-500 to-purple-600 rounded-[3rem] blur opacity-10 group-hover:opacity-20 transition duration-1000 group-hover:duration-200"></div>
+        <div className="relative bg-card border border-border/50 rounded-[3rem] p-12 md:p-20 overflow-hidden">
+          <div className="absolute right-0 top-0 w-1/3 h-full bg-gradient-to-l from-brand-500/5 to-transparent pointer-events-none" />
+          
+          <div className="max-w-2xl space-y-8 relative z-10">
+            <div className="flex items-center gap-3">
+              <div className="h-2 w-2 rounded-full bg-brand-500 animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.8)]" />
+              <span className="text-[10px] font-black uppercase tracking-[0.5em] text-brand-500">Núcleo de Mando GKAD</span>
             </div>
-            <div className="flex items-center gap-2 px-3 py-1 bg-muted rounded-lg text-[9px] font-black text-muted-foreground uppercase tracking-widest border border-border">
-              <Activity size={12} className="text-brand-500" /> Live Status
+            
+            <div className="space-y-4">
+              <h1 className="text-5xl md:text-7xl font-black text-foreground font-heading tracking-tighter leading-[0.9]">
+                Protocolo <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-500 to-purple-500">Maestro</span> Activo.
+              </h1>
+              <p className="text-lg md:text-xl text-muted-foreground font-medium max-w-lg leading-relaxed">
+                Bienvenido, <span className="text-foreground font-black">{profile?.full_name?.split(' ')[0]}</span>. El ecosistema global se encuentra bajo supervisión operativa.
+              </p>
             </div>
-          </div>
 
-          <div style={{ position: 'relative', width: '100%', height: '300px' }}>
-            {chartReady && (
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={activityData}>
-                  <defs>
-                    <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="rgb(59, 130, 246)" stopOpacity={0.1}/>
-                      <stop offset="95%" stopColor="rgb(59, 130, 246)" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
-                  <XAxis 
-                    dataKey="name" 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{fill: '#888', fontSize: 10, fontWeight: 'bold'}}
-                  />
-                  <YAxis hide />
-                  <Tooltip 
-                    contentStyle={{backgroundColor: '#111', border: 'none', borderRadius: '12px', fontSize: '10px'}}
-                    itemStyle={{color: '#fff'}}
-                  />
-                  <Area 
-                    type="monotone" 
-                    dataKey="users" 
-                    stroke="rgb(59, 130, 246)" 
-                    strokeWidth={3}
-                    fillOpacity={1} 
-                    fill="url(#colorUsers)" 
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            )}
-          </div>
-        </Card>
-
-        {/* Recent Activity Feed */}
-        <Card className="p-8 border-border space-y-8">
-          <div className="flex items-center justify-between">
-            <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-foreground">Log de Actividad</h3>
-            <button 
-              onClick={() => setActiveTab('admin_organizations')}
-              className="text-[9px] font-bold text-brand-500 hover:underline"
-            >
-              Ver Todo
-            </button>
-          </div>
-
-          <div className="space-y-6">
-            {logs.slice(0, 4).map((log, i) => (
-              <div key={log.id || i} className="flex items-center gap-4 group cursor-pointer">
-                <div className={`h-10 w-10 rounded-xl flex items-center justify-center transition-all bg-brand-500/10 text-brand-500`}>
-                  <ShieldCheck size={18} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[10px] font-black text-foreground uppercase truncate">{log.organization_id ? 'Org Update' : 'System Event'}</p>
-                  <p className="text-[9px] text-muted-foreground font-medium truncate">{log.action || log.event || 'Operación Registrada'}</p>
-                </div>
-                <div className="text-[8px] font-bold text-muted-foreground uppercase whitespace-nowrap">
-                  {log.created_at ? new Date(log.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Ahora'}
-                </div>
+            <div className="flex flex-wrap items-center gap-6 pt-4">
+              <div className="flex items-center gap-3 px-6 py-3 bg-white/5 rounded-2xl border border-white/5">
+                <Globe size={16} className="text-brand-500" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{getFormattedDate()}</span>
               </div>
-            ))}
-            {logs.length === 0 && (
-              <p className="text-[9px] text-muted-foreground font-bold text-center py-10 uppercase tracking-widest">Sin actividad reciente real</p>
-            )}
-          </div>
-
-          <div className="pt-4 border-t border-border/50">
-            <div className="p-4 bg-muted rounded-2xl border border-border flex items-center gap-4 group cursor-pointer hover:bg-card transition-all">
-              <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-              <p className="text-[9px] font-black text-foreground uppercase tracking-widest">Base de Datos: Saludable</p>
-              <ChevronRight size={14} className="ml-auto text-muted-foreground group-hover:translate-x-1 transition-transform" />
+              <div className="flex items-center gap-3 px-6 py-3 bg-white/5 rounded-2xl border border-white/5">
+                <Lock size={16} className="text-emerald-500" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500">Acceso Nivel 5</span>
+              </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 2. MISSION PROTOCOLS */}
+      <div className="space-y-8">
+        <div className="flex items-center justify-between px-4">
+          <h2 className="text-xs font-black uppercase tracking-[0.4em] text-muted-foreground">Protocolos de Misión</h2>
+          <div className="h-px flex-1 mx-8 bg-gradient-to-r from-border/50 to-transparent" />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {protocols.map((protocol, i) => (
+            <button
+              key={i}
+              onClick={() => setActiveTab(protocol.id)}
+              className="group relative p-10 bg-card border border-border/50 rounded-[2.5rem] text-left hover:border-brand-500/50 transition-all duration-500 hover:shadow-2xl hover:shadow-brand-500/10 hover:-translate-y-2"
+            >
+              <div className={`h-16 w-16 rounded-[1.5rem] ${protocol.bg} flex items-center justify-center ${protocol.color} mb-8 group-hover:scale-110 transition-transform duration-500`}>
+                <protocol.icon size={32} />
+              </div>
+              <h3 className="text-lg font-black text-foreground uppercase tracking-tight mb-2">{protocol.title}</h3>
+              <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-widest leading-relaxed opacity-60">{protocol.desc}</p>
+              
+              <div className="mt-8 flex items-center gap-2 text-brand-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                <span className="text-[9px] font-black uppercase tracking-widest">Ejecutar</span>
+                <ChevronRight size={14} />
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* 3. ECOSYSTEM PULSE (SIMPLIFIED) */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <Card className="p-10 border-border/50 bg-gradient-to-br from-card to-brand-500/5 flex items-center justify-between overflow-hidden relative">
+          <div className="absolute -right-10 -bottom-10 opacity-5 rotate-12">
+            <Zap size={200} />
+          </div>
+          <div className="space-y-6 relative z-10">
+            <div className="space-y-1">
+              <h3 className="text-sm font-black uppercase tracking-[0.3em] text-foreground">Estado del Ecosistema</h3>
+              <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest opacity-60">Sincronización en tiempo real con nodos globales</p>
+            </div>
+            <div className="flex items-center gap-6">
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.8)]" />
+                <span className="text-[11px] font-black uppercase text-foreground">Sistemas Operativos</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-brand-500" />
+                <span className="text-[11px] font-black uppercase text-foreground">Red de Datos Activa</span>
+              </div>
+            </div>
+          </div>
+          <button 
+            onClick={() => setActiveTab('admin_metrics')}
+            className="h-14 px-8 rounded-2xl bg-brand-500 text-white font-black uppercase text-[10px] tracking-widest hover:scale-105 transition-transform flex items-center gap-3 shadow-2xl shadow-brand-500/20"
+          >
+            Ver Analíticas
+            <LayoutDashboard size={16} />
+          </button>
+        </Card>
+
+        <Card className="p-10 border-border/50 bg-black/20 flex flex-col justify-center gap-6">
+          <div className="flex items-center gap-4">
+            <div className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground">
+              <ShieldCheck size={20} />
+            </div>
+            <div className="space-y-0.5">
+              <p className="text-[10px] font-black text-foreground uppercase tracking-widest">Seguridad de Infraestructura</p>
+              <p className="text-[9px] text-muted-foreground font-bold uppercase">Cifrado de grado militar activo</p>
+            </div>
+            <div className="ml-auto text-[9px] font-black text-emerald-500 uppercase tracking-widest bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">Protegido</div>
           </div>
         </Card>
       </div>
