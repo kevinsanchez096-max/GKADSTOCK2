@@ -194,19 +194,6 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
     setLoading(true);
     try {
       await useAuthStore.getState().activateAccount(email.trim().toLowerCase(), code);
-      
-      // Registrar notificación en el Signal Center para el Super Admin
-      try {
-        await supabase.from('system_notifications').insert([{
-          type: 'ORG_STATUS',
-          title: 'Nuevo Nodo Corporativo',
-          message: `La organización "${orgName}" ha sido inicializada y activada por ${fullName}.`,
-          metadata: { organization: orgName, admin: fullName, email: email.trim().toLowerCase() }
-        }]);
-      } catch (notifErr) {
-        console.error('Error al registrar notificación:', notifErr);
-      }
-
       setShowSuccess(true);
     } catch (err: any) { setError(err.message || 'Código inválido.'); } finally { setLoading(false); }
   };

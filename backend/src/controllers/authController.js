@@ -831,6 +831,18 @@ const authController = {
             }
 
             console.log(`🎉 Cuenta activada y organización creada para: ${email}`);
+            
+            // ── E. Notificar al Super Admin (Bypass RLS) ──────────────────────
+            try {
+                await supabaseAdmin.from('system_notifications').insert([{
+                    type: 'ORG_STATUS',
+                    title: 'Nuevo Nodo Corporativo',
+                    message: `La organización "${orgName}" ha sido inicializada y activada por ${fullName}.`,
+                    metadata: { organization: orgName, admin: fullName, email: email }
+                }]);
+            } catch (notifErr) {
+                console.error('⚠️ Fallo al disparar notificación administrativa:', notifErr.message);
+            }
 
             // Retornamos la sesión para auto-login
             res.status(200).json({ 
