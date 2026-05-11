@@ -11,7 +11,8 @@ import {
   AlertTriangle,
   RefreshCw,
   Wifi,
-  WifiOff
+  WifiOff,
+  Trash2
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../store/useAuthStore';
