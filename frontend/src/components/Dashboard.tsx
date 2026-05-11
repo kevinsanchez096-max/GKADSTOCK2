@@ -333,15 +333,15 @@ const KPICard = ({ title, value, icon: Icon, trend, trendUp, description, alert,
  
  if (variant === 'mini') {
  return (
-  <Card className="p-6 flex items-center justify-center gap-8 bg-[#0d0d0d] border-[#1a1a1a] border-[0.5px] rounded-[35px] transition-all hover:border-[var(--brand-primary)]/30 overflow-hidden">
+  <Card className="p-6 px-12 flex items-center gap-10 bg-[#0d0d0d] border-[#1a1a1a] border-[0.5px] rounded-[35px] transition-all hover:border-[var(--brand-primary)]/30 overflow-hidden">
  <div className="p-4 bg-[#1a1a1a] rounded-[10px] text-[var(--brand-primary)]">
  <Icon size={24} />
  </div>
- <div>
+ <div className="min-w-0 flex-1">
  <h2 className={`font-black text-white leading-none tracking-tighter transition-all duration-300 ${value.toString().length > 10 ? 'text-lg' : value.toString().length > 8 ? 'text-xl' : 'text-2xl'}`}>
  {value}
  </h2>
- <p className="text-[10px] font-bold text-[#444] uppercase tracking-[2px] mt-2 leading-none">{title}</p>
+ <p className="text-[10px] font-bold text-[#444] uppercase tracking-[2px] mt-2 leading-none truncate">{title}</p>
  </div>
  </Card>
  );
