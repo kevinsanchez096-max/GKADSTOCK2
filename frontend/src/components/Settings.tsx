@@ -22,6 +22,7 @@ import { toast } from 'sonner';
 import { X, Loader2, History, Lock, Layers, Upload, Printer } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useRef } from 'react';
+import { GkadLogo } from './GkadLogo';
 
 export const Settings = () => {
  const { user, profile } = useAuthStore();

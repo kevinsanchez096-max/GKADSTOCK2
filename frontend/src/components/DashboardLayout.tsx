@@ -30,6 +30,7 @@ import { useShopStore } from '../store/useShopStore';
 import { useOrganizationStore } from '../store/useOrganizationStore';
 import { ProfileSettingsModal } from './ProfileSettingsModal';
 import { NotificationBell } from './NotificationBell';
+import { GkadLogo } from './GkadLogo';
 import { toast } from 'sonner';
 
 interface LayoutProps {
@@ -119,16 +120,7 @@ export const DashboardLayout = ({
  
  {/* LOGO SECTION */}
  <div className="h-20 flex items-center justify-between px-6 border-b border-border shrink-0 bg-card/40">
- <div className="flex items-center gap-3">
- <div className="h-10 w-10 bg-gradient-to-br from-brand-600 to-brand-700 rounded-xl flex items-center justify-center shadow-lg shadow-brand-500/20 border border-white/20">
- <Package className="text-white h-6 w-6"/>
- </div>
- {!isCollapsed && (
- <span className="font-extrabold text-foreground truncate font-outfit tracking-tighter uppercase text-xl animate-fade-in">
- GKAD <span className="text-brand-600">STOCK</span>
- </span>
- )}
- </div>
+        <GkadLogo size={32} isCollapsed={isCollapsed} />
  <button 
  onClick={() => setSidebarOpen(false)} 
  className="lg:hidden p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors flex items-center justify-center min-h-[48px] min-w-[48px]"

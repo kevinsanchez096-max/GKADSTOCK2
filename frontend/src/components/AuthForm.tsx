@@ -7,6 +7,7 @@ import {
 import { useAuthStore } from '../store/useAuthStore';
 import { toast } from 'sonner';
 import { supabase } from '../lib/supabase';
+import { GkadLogo } from './GkadLogo';
 
 interface AuthFormProps {
   darkMode: boolean;
@@ -219,26 +220,19 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
   }
 
   return (
-    <div className="min-h-screen w-full flex flex-col md:flex-row bg-[#0a0a0a] font-sans selection:bg-[var(--brand-primary)]/30 overflow-hidden">
+    <div className="h-screen w-full flex flex-col md:flex-row bg-[#0a0a0a] font-sans selection:bg-[var(--brand-primary)]/30 overflow-hidden">
       
       {/* ── COLUMNA IZQUIERDA: BRANDING ── */}
-      <div className="hidden md:flex md:w-1/2 bg-[#0f0f0f] border-r border-[#1a1a1a] relative flex-col justify-between p-16">
+      <div className="hidden md:flex md:w-1/2 bg-[#0f0f0f] border-r border-[#1a1a1a] relative flex-col justify-between p-12 lg:p-16 overflow-hidden">
         {/* TOP: LOGO */}
         <div className="relative z-10">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center shadow-lg">
-              <Store className="text-black" size={20} />
-            </div>
-            <span className="text-2xl font-black tracking-tighter text-white uppercase">
-              GKAD <span className="text-[var(--brand-primary)]">STOCK</span>
-            </span>
-          </div>
+          <GkadLogo size={44} />
         </div>
 
         {/* CENTER: CONTENT */}
-        <div className="relative z-10 flex flex-col gap-12">
+        <div className="relative z-10 flex flex-col gap-8 lg:gap-10 mt-4">
           <div className="flex flex-col">
-            <span className="text-label text-[var(--brand-primary)] mb-4">Sistema POS Enterprise</span>
+
             <motion.h1 
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }} 
@@ -253,7 +247,7 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
             </p>
           </div>
 
-          <div className="space-y-5">
+          <div className="space-y-4">
             {[
               { icon: LayoutDashboard, title: 'Control Total', desc: 'Panel de mando centralizado.' },
               { icon: BarChart3, title: 'Analíticas AI', desc: 'Proyecciones de venta inteligentes.' },
@@ -279,7 +273,7 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
       </div>
 
       {/* ── COLUMNA DERECHA: FORMULARIO ── */}
-      <div className="w-full md:w-1/2 flex flex-col items-center justify-start md:justify-center p-6 sm:p-12 bg-[#0a0a0a] min-h-screen overflow-y-auto scrollbar-hide">
+      <div className="w-full md:w-1/2 flex flex-col items-center justify-start md:justify-center p-6 sm:p-12 bg-[#0a0a0a] h-full overflow-hidden">
         <div className="w-full max-w-md relative py-12 md:py-0">
           
           <div className="mb-6 flex flex-col gap-4">
@@ -431,6 +425,8 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
                   {mode === 'login' ? (step === 1 ? 'Continuar' : 'Entrar al Sistema') : (step === 5 ? 'Activar Cuenta' : 'Siguiente Paso')}
                 </button>
               </div>
+
+
 
               <div className="flex items-center gap-3 py-1">
                 <div className="h-px flex-1 bg-[#1e1e1e]" />

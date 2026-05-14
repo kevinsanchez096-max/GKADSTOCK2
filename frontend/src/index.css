@@ -170,9 +170,19 @@ input[type=number] {
   to { transform: translateY(0); opacity: 1; }
 }
 
+@keyframes slide-right {
+  0% { transform: translateX(-100%); }
+  50% { transform: translateX(0%); }
+  100% { transform: translateX(100%); }
+}
+
 @keyframes pulse-slow {
   0%, 100% { opacity: 0.3; transform: scale(1); }
   50% { opacity: 0.6; transform: scale(1.1); }
+}
+
+.animate-slide-right {
+  animation: slide-right 3s infinite linear;
 }
 
 .animate-fade-in {
