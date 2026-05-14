@@ -69,9 +69,9 @@ export const Inventory = () => {
  );
 
  const capital = filtered.reduce((acc, p) => {
- const pPrice = Number(p?.price || 0);
+ const pCost = Number(p?.cost_price || 0);
  const pStock = Number(p?.stock || 0);
- return acc + (pPrice * pStock);
+ return acc + (pCost * pStock);
  }, 0);
 
  const critical = filtered.filter(p => Number(p?.stock || 0) <= Number(p?.min_stock || 0)).length;
@@ -350,7 +350,7 @@ export const Inventory = () => {
  ${metrics.totalCapital.toLocaleString()}
  </h3>
  <div className="mt-4 flex items-center gap-2">
- <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-500 text-[8px] font-black rounded-lg border border-emerald-500/20 uppercase tracking-widest">Valor de Mercado</span>
+ <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-500 text-[8px] font-black rounded-lg border border-emerald-500/20 uppercase tracking-widest">Capital Invertido</span>
  </div>
  </div>
  <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"/>

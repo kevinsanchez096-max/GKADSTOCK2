@@ -266,7 +266,7 @@ const authController = {
         }
     },
 
-    // 4. Registro (Blindado, Resiliente y Transparente)
+    // 4. Registro (Blindado: No crea registros en BD hasta verificación)
     register: async (req, res) => {
         try {
             const { email, password, fullName, orgName, createdBy } = req.body;
@@ -274,157 +274,64 @@ const authController = {
                 return res.status(400).json({ error: 'Todos los campos son obligatorios' });
             }
 
-            console.log(`🚀 Iniciando registro resiliente para: ${email}`);
+            console.log(`🚀 Iniciando registro previo para: ${email}`);
 
-            // --- Lógica de Poder: Validación de Límites por Plan ---
-            if (createdBy) { // Si lo está creando otro usuario (Admin), validar límites
-                const { data: orgData } = await supabaseAdmin
-                    .from('organizations')
-                    .select('plan')
-                    .eq('name', orgName)
-                    .single();
-
-                if (orgData) {
-                    const { count: userCount } = await supabaseAdmin
-                        .from('profiles')
-                        .select('*', { count: 'exact', head: true })
-                        .eq('organization_id', (await supabaseAdmin.from('organizations').select('id').eq('name', orgName).single()).data?.id);
-
-                    const limits = { 'Esencial': 1, 'Avanzado': 3, 'Emprendedor': 25 };
-                    if (limits[orgData.plan] && userCount >= limits[orgData.plan]) {
-                        // Notificación: Límite Alcanzado
-                        const { sendSystemNotification } = require('../utils/notificationService');
-                        sendSystemNotification('PLAN_LIMIT', 'Límite de Usuarios', `La organización ${orgName} ha llegado al límite de su plan ${orgData.plan} (${limits[orgData.plan]} usuarios).`, { org_name: orgName, plan: orgData.plan, limit: limits[orgData.plan] });
-
-                        return res.status(403).json({ 
-                            error: `Límite de usuarios alcanzado para el Plan ${orgData.plan}.`,
-                            message: `Su plan actual permite máximo ${limits[orgData.plan]} usuario(s).` 
-                        });
-                    }
-                }
-            }
-
-            // ---------------------------------------------------------
-            // FASE A: Autenticación (Service Role — STATELESS)
-            // ---------------------------------------------------------
-            let authData;
-            const { data: existingUser } = await supabaseAdmin.auth.admin.listUsers();
-            const userInAuth = existingUser.users.find(u => u.email === email.toLowerCase());
-
-            if (userInAuth) {
-                console.log('ℹ️ El usuario ya existe en Auth. Vinculando infraestructura...');
-                authData = { user: userInAuth };
-            } else {
-                const { data: newAuth, error: authError } = await supabaseAdmin.auth.admin.createUser({ 
-                    email, 
-                    password,
-                    email_confirm: false, // Forzar verificación
-                    user_metadata: { full_name: fullName }
-                });
-
-                if (authError) throw authError;
-                authData = newAuth;
-            }
-
-            console.log('✅ Usuario identificado en Auth. Pasando a fase de persistencia...');
-
-            // ---------------------------------------------------------
-            // FASE B: Administración Dinámica
-            // ---------------------------------------------------------
-            
-            // B. Crear Organización (Inactiva por defecto hasta verificación)
-            let orgId;
-            const { data: orgData, error: orgError } = await supabaseAdmin
+            // 1. Validación preventiva de Organización
+            const { data: existingOrg } = await supabaseAdmin
                 .from('organizations')
-                .insert([{ name: orgName, is_active: false }])
-                .select()
-                .single();
-
-            if (orgError) {
-                if (orgError.code === '23505') {
-                    console.warn('⚠️ La organización ya existe. Recuperando registro...');
-                    const { data: existingOrg } = await supabaseAdmin
-                        .from('organizations')
-                        .select('id')
-                        .eq('name', orgName)
-                        .maybeSingle();
-                    orgId = existingOrg?.id;
-                } else {
-                    console.error('❌ Error Administrativo (Organizations):', orgError.message);
-                    // REGISTRO ATÓMICO: Si falla la creación de la infraestructura, eliminamos el usuario de Auth
-                    await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
-                    return res.status(500).json({ error: 'Fallo al crear organización. Registro abortado por seguridad.' });
-                }
-            } else {
-                orgId = orgData.id;
+                .select('id')
+                .eq('name', orgName)
+                .maybeSingle();
+            
+            if (existingOrg) {
+                return res.status(400).json({ error: 'El nombre de la organización ya está registrado.' });
             }
 
-            if (!orgId) {
-                await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
-                return res.status(500).json({ error: 'Fallo al obtener ID de organización.' });
-            }
-
-            console.log(`✅ Organización confirmada (ID: ${orgId}). Creando perfil...`);
-
-            // C. Crear Perfil (Tolerante a Triggers automáticos)
-            const { error: profileError } = await supabaseAdmin
-                .from('profiles')
-                .insert([{
-                    id: authData.user.id,
+            // 2. Crear Usuario en Auth (Service Role)
+            // Guardamos orgName y fullName en la metadata del usuario para recuperarlos al activar.
+            const { data: newAuth, error: authError } = await supabaseAdmin.auth.admin.createUser({ 
+                email, 
+                password,
+                email_confirm: false, // Forzar verificación OTP
+                user_metadata: { 
                     full_name: fullName,
-                    organization_id: orgId,
-                    role: 'admin',
+                    organization_name: orgName,
                     created_by: createdBy || null
-                }]);
-
-            if (profileError) {
-                if (profileError.code === '23505') {
-                    console.warn('ℹ️ El perfil ya fue creado por un proceso externo (Trigger). Continuando...');
-                } else {
-                    console.error('❌ Error Administrativo (Profiles):', profileError.message);
-                    // REGISTRO ATÓMICO: Si falla el perfil, eliminamos el usuario de Auth para evitar huérfanos
-                    await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
-                    return res.status(500).json({ error: 'Fallo al crear perfil de usuario. Registro abortado.' });
                 }
+            });
+
+            if (authError) {
+                if (authError.message.includes('already registered')) {
+                    return res.status(400).json({ error: 'Este correo electrónico ya está registrado.' });
+                }
+                throw authError;
             }
 
-            console.log('✨ Registro completado. Disparando correo OTP desde el backend...');
+            console.log('✅ Usuario creado en Auth (Pendiente). Disparando OTP...');
 
-            // Notificación: Nuevo Usuario
+            // Notificación de intento de registro
             const { sendSystemNotification } = require('../utils/notificationService');
-            sendSystemNotification('NEW_USER', 'Nuevo Usuario', `El usuario ${fullName} (${email}) se ha registrado en ${orgName}.`, { email, org_name: orgName });
+            sendSystemNotification('NEW_USER_PENDING', 'Registro Iniciado', `El usuario ${fullName} ha iniciado el registro para ${orgName}.`, { email, org_name: orgName });
 
-            // Reintento de envío OTP via cliente anónimo (maximiza entrega)
+            // Reintento de envío OTP via cliente anónimo (Asegura entrega)
             try {
                 const { createClient } = require('@supabase/supabase-js');
                 const anonClient = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY, {
                     auth: { persistSession: false, autoRefreshToken: false }
                 });
-                const { error: resendErr } = await anonClient.auth.resend({
-                    type: 'signup',
-                    email: email.toLowerCase()
-                });
-                if (resendErr) {
-                    console.warn('⚠️ Reintento OTP no crítico:', resendErr.message);
-                } else {
-                    console.log('📧 Correo OTP redisparado correctamente.');
-                }
-            } catch (resendEx) {
-                console.warn('⚠️ Excepción OTP no crítica:', resendEx.message);
+                await anonClient.auth.resend({ type: 'signup', email: email.toLowerCase() });
+            } catch (otpErr) {
+                console.warn('⚠️ Reintento OTP:', otpErr.message);
             }
 
             res.status(201).json({ 
-                message: 'Registro exitoso. Bienvenido a GKAD STOCK.', 
-                user: authData.user, 
-                organization_id: orgId 
+                message: 'Código de verificación enviado. Su cuenta no estará activa hasta que confirme el código.', 
+                user: newAuth.user
             });
 
         } catch (error) {
-            console.error('🔥 FALLO TÉCNICO EN REGISTRO:', error.message);
-            res.status(500).json({ 
-                error: error.message || 'Error técnico crítico durante el registro',
-                details: error
-            });
+            console.error('🔥 FALLO EN REGISTRO:', error.message);
+            res.status(500).json({ error: translateError(error) });
         }
     },
 
@@ -815,7 +722,8 @@ const authController = {
                                     id: userId,
                                     full_name: fullName,
                                     organization_id: existingOrg.id,
-                                    role: 'admin'
+                                    role: 'admin',
+                                    created_by: meta.created_by || null
                                 }]);
                         }
                     } else {
@@ -829,7 +737,8 @@ const authController = {
                             id: userId,
                             full_name: fullName,
                             organization_id: orgData.id,
-                            role: 'admin'
+                            role: 'admin',
+                            created_by: meta.created_by || null
                         }]);
 
                     if (profileError && profileError.code !== '23505') {
