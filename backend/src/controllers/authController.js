@@ -1,4 +1,5 @@
 const { supabaseAdmin } = require('../config/supabase');
+const { logAuditEvent } = require('../auditLogger');
 
 /**
  * Función auxiliar para traducir errores técnicos de Supabase/Postgres a Español
@@ -127,8 +128,7 @@ const authController = {
             const finalProfile = { ...profileData, organizations: organization };
             
             // Registro de Auditoría: Login Exitoso
-            const { logAuditEvent } = require('../auditLogger');
-            logAuditEvent('SEC', 'AuthAPI', 'AUTH_SUCCESS', { 
+            await logAuditEvent('SEC', 'AuthAPI', 'AUTH_SUCCESS', { 
                 user_id: authData.user.id, 
                 email: authData.user.email,
                 role: profileData.role 
@@ -204,31 +204,51 @@ const authController = {
     // 3. Obtener Sesión Actual (Me)
     getMe: async (req, res) => {
         try {
+            console.log(`🔍 [GET_ME] Solicitud para usuario: ${req.user?.id}`);
             const userId = req.user.id;
-            const { data: profile, error } = await supabaseAdmin
+            
+            // A. Recuperar Perfil y Organización
+            const { data: profile, error: dbError } = await supabaseAdmin
                 .from('profiles')
                 .select('*, organizations(*)')
                 .eq('id', userId)
                 .maybeSingle();
 
-            if (error) throw error;
-            if (!profile) return res.status(404).json({ error: 'Perfil no encontrado' });
-
-            const organization = Array.isArray(profile.organizations) ? profile.organizations[0] : profile.organizations;
-            
-            // Registro de Auditoría: Login Exitoso (Activado por el frontend)
-            if (req.query.is_login === 'true') {
-                const { logAuditEvent } = require('../auditLogger');
-                logAuditEvent('SEC', 'AuthAPI', 'AUTH_SUCCESS', { 
-                    user_id: userId, 
-                    email: profile.email || req.user.email,
-                    role: profile.role 
-                });
+            if (dbError) {
+                console.error('❌ [GET_ME] Error DB:', dbError.message);
+                throw dbError;
             }
 
-            res.status(200).json({ ...profile, organizations: organization });
+            if (!profile) {
+                console.warn('⚠️ [GET_ME] Perfil no encontrado');
+                return res.status(404).json({ error: 'Perfil no encontrado' });
+            }
+
+            // B. Normalización de Organización
+            const organization = Array.isArray(profile.organizations) 
+                ? profile.organizations[0] 
+                : profile.organizations;
+            
+            // C. Registro de Auditoría (No bloqueante)
+            if (req.query.is_login === 'true') {
+                try {
+                    await logAuditEvent('SEC', 'AuthAPI', 'AUTH_SUCCESS', { 
+                        user_id: userId, 
+                        email: profile.email || req.user.email,
+                        role: profile.role 
+                    });
+                } catch (auditErr) {
+                    console.error('⚠️ [GET_ME] Error en auditoría:', auditErr.message);
+                }
+            }
+
+            return res.status(200).json({ ...profile, organizations: organization });
         } catch (error) {
-            res.status(500).json({ error: translateError(error) });
+            console.error('🔥 [GET_ME] Fallo Crítico:', error.message);
+            return res.status(500).json({ 
+                error: 'Fallo interno al recuperar identidad',
+                details: error.message 
+            });
         }
     },
 

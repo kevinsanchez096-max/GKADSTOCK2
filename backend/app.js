@@ -17,19 +17,24 @@ const app = express();
 // Middlewares Globales
 app.use(helmet()); // Seguridad de cabeceras HTTP
 // Configuración estricta de CORS (Producción vs Desarrollo)
-const allowedOrigins = process.env.NODE_ENV === 'production' 
-  ? ['https://gkadstock-2.vercel.app'] 
-  : ['http://localhost:5173', 'http://localhost:3000']; // Para no romper tu entorno de pruebas local
+// Configuración de CORS dinámica
+const allowedOrigins = [
+  'http://localhost:5173', 
+  'http://localhost:3000',
+  'https://gkadstock-2.vercel.app',
+  'https://gkadstock-2-noww.vercel.app' // Añadido para el despliegue actual
+];
 
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
+    // Permitir cualquier subdominio de vercel.app en producción por seguridad y flexibilidad
+    if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
       callback(null, true);
     } else {
       callback(new Error('No permitido por CORS'));
     }
   },
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
 }));
@@ -76,27 +81,29 @@ app.use('/', mainRouter);
 
 // Manejador de errores global
 app.use((err, req, res, next) => {
-    const isDevelopment = process.env.NODE_ENV === 'development';
     console.error('❌ Error Global de Ruta:', {
         message: err.message || err,
-        code: err.code,
-        status: err.status || 500,
-        stack: isDevelopment ? err.stack : undefined
+        path: req.path,
+        method: req.method
     });
     
     const statusCode = err.status || 500;
-    const errorResponse = {
-        error: isDevelopment 
-            ? (err.message || 'Error interno del servidor')
-            : 'Error interno del servidor, pero el sistema sigue en línea.',
-        ...(isDevelopment && { details: err.message, code: err.code })
-    };
     
-    // Notificación: Error Crítico
-    const { sendSystemNotification } = require('./src/utils/notificationService');
-    sendSystemNotification('SYSTEM_ERROR', 'Error Crítico del Sistema', `Se ha detectado un error sistémico: ${err.message || 'Error desconocido'}`, { path: req.path, method: req.method, code: err.code });
+    // Notificación: Error Crítico (Segura)
+    try {
+        const { sendSystemNotification } = require('./src/utils/notificationService');
+        if (sendSystemNotification) {
+            sendSystemNotification('SYSTEM_ERROR', 'Error Crítico', err.message || 'Error desconocido');
+        }
+    } catch (notifErr) {
+        console.error('⚠️ Fallo al enviar notificación de error:', notifErr.message);
+    }
 
-    res.status(statusCode).json(errorResponse);
+    res.status(statusCode).json({
+        error: 'Fallo interno del servidor',
+        details: err.message || 'Sin detalles adicionales',
+        path: req.path
+    });
 });
 
 module.exports = app;
