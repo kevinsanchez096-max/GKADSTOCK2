@@ -438,6 +438,31 @@ export const AuthForm = ({ darkMode, toggleDarkMode, initialMode }: AuthFormProp
                     <DarkInput label="Nueva Contraseña" type="password" icon={Lock} value={password} onChange={e => setPassword(e.target.value)} autoComplete="new-password" autoFocus required />
                     <DarkInput label="Confirmar Contraseña" type="password" icon={ShieldCheck} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} autoComplete="new-password" required />
                   </div>
+
+                  {/* Panel de Políticas de Seguridad (Restablecimiento) */}
+                  <div className="bg-[#0f0f0f] border border-[#1e1e1e] p-5 rounded-[1.5rem] space-y-3 shadow-inner mt-2">
+                    <div className="flex items-center justify-between">
+                      <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Políticas de Seguridad</p>
+                      <div className={`h-1.5 w-1.5 rounded-full transition-all duration-700 ${isPasswordValid ? 'bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)]' : 'bg-zinc-700'}`} />
+                    </div>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                      {passwordRules.map(rule => {
+                        const ok = rule.check(password);
+                        return (
+                          <div key={rule.id} className="flex items-center gap-2 transition-all duration-300">
+                            <div className={`h-3.5 w-3.5 rounded-full border flex items-center justify-center transition-all ${
+                              ok ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-500' : 'bg-zinc-900 border-zinc-800 text-zinc-700'
+                            }`}>
+                              {ok ? <CheckCircle2 size={8} strokeWidth={3} /> : <div className="h-0.5 w-0.5 bg-current rounded-full" />}
+                            </div>
+                            <span className={`text-[9px] font-bold tracking-tight transition-colors ${ok ? 'text-zinc-200' : 'text-zinc-600'}`}>
+                              {rule.text}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </motion.div>
               )}
 

@@ -1,7 +1,11 @@
+const path = require('path');
 console.log('🚀 Iniciando Función Vercel: /api/index.js');
 
 try {
-  const app = require('../backend/app');
+  const backendAppPath = path.join(process.cwd(), 'backend', 'app.js');
+  console.log('📂 Cargando backend desde:', backendAppPath);
+  const app = require(backendAppPath);
+  
   module.exports = (req, res) => {
     try {
       return app(req, res);
@@ -13,6 +17,11 @@ try {
 } catch (initErr) {
   console.error('🔥 Fallo crítico de inicialización:', initErr);
   module.exports = (req, res) => {
-    res.status(500).json({ error: 'Initialization Error', details: initErr.message });
+    res.status(500).json({ 
+      error: 'Initialization Error', 
+      details: initErr.message,
+      stack: initErr.stack,
+      cwd: process.cwd()
+    });
   };
 }
