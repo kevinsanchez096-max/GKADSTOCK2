@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Mail, ArrowLeft, Package, CheckCircle2, 
+  Mail, ArrowLeft, ArrowRight, Package, CheckCircle2, 
   ShieldCheck, Sparkles, Lock, Circle, LogIn, Store, BarChart3, LayoutDashboard, Database, Eye, EyeOff
 } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
@@ -9,12 +9,13 @@ import { toast } from 'sonner';
 import { supabase } from '../lib/supabase';
 import { GkadLogo } from './GkadLogo';
 
+type FlowMode = 'login' | 'register' | 'forgot-password' | 'reset-password';
+
 interface AuthFormProps {
   darkMode: boolean;
   toggleDarkMode: () => void;
+  initialMode?: FlowMode;
 }
-
-type FlowMode = 'login' | 'register';
 
 // ── Componente de Input Premium ────────────────────────────────
 const DarkInput = ({ 
@@ -65,9 +66,23 @@ const DarkInput = ({
   );
 };
 
-export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
-  const [mode, setMode] = useState<FlowMode>('login');
+export const AuthForm = ({ darkMode, toggleDarkMode, initialMode }: AuthFormProps) => {
+  const [mode, setMode] = useState<FlowMode>(initialMode || 'login');
   const [step, setStep] = useState(1);
+
+  useEffect(() => {
+    const hash = window.location.hash;
+    const params = new URLSearchParams(window.location.search);
+    const isUrlRecovery = hash.includes('type=recovery') || params.get('type') === 'recovery' || hash.includes('recovery_token=');
+
+    if (initialMode) {
+      setMode(initialMode);
+      setStep(1);
+    } else if (isUrlRecovery) {
+      setMode('reset-password');
+      setStep(1);
+    }
+  }, [initialMode]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -84,8 +99,8 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
   const [recentEmails, setRecentEmails] = useState<string[]>([]);
   const [showRecent, setShowRecent] = useState(false);
 
-  const { login } = useAuthStore();
-  const totalSteps = mode === 'login' ? 2 : 5;
+  const { login, requestPasswordReset } = useAuthStore();
+  const totalSteps = mode === 'login' ? 2 : (mode === 'register' ? 5 : 2);
 
   useEffect(() => {
     const stored = localStorage.getItem('gkad_recent_emails');
@@ -137,6 +152,18 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
         if (!email.trim() || !email.includes('@')) return setError('Correo inválido.');
         setStep(2);
       } else await handleLogin();
+    } else if (mode === 'forgot-password') {
+      if (step === 1) {
+        if (!email.trim() || !email.includes('@')) return setError('Correo inválido.');
+        try {
+          await requestPasswordReset(email.trim());
+          setStep(2);
+        } catch (err: any) {
+          setError(err.message || 'Error al enviar correo de recuperación.');
+        }
+      }
+    } else if (mode === 'reset-password') {
+      await handleResetPassword();
     } else {
       if (step === 1) {
         if (!email.trim() || !email.includes('@')) return setError('Correo inválido.');
@@ -149,7 +176,7 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
         setStep(4);
       } else if (step === 4) {
         if (!isPasswordValid) return setError('Contraseña débil.');
-        if (password !== confirmPassword) return setError('Las llaves no coinciden.');
+        if (password !== confirmPassword) return setError('Las contraseñas no coinciden.');
         await handleSignUp();
       } else await handleVerifyRegistration();
     }
@@ -173,6 +200,30 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
         setError(msg || 'Fallo de acceso.');
       }
     } finally { setLoading(false); }
+  };
+
+  const handleResetPassword = async () => {
+    if (!isPasswordValid) return setError('Contraseña débil.');
+    if (password !== confirmPassword) return setError('Las contraseñas no coinciden.');
+    
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password });
+      if (error) throw error;
+      
+      // Cerrar sesión después de cambiar contraseña para forzar nuevo login
+      await supabase.auth.signOut();
+      
+      setShowSuccess(true);
+      // El timeout redirigirá a la raíz donde se verá el login
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 4000);
+    } catch (err: any) {
+      setError(err.message || 'Error al restablecer contraseña.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSignUp = async () => {
@@ -210,7 +261,11 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
             <CheckCircle2 size={40} />
           </div>
           <h2 className="text-heading text-white uppercase">Operación Exitosa</h2>
-          <p className="text-body text-zinc-500 mt-4 leading-relaxed">Tu organización ha sido desplegada correctamente en la red corporativa.</p>
+          <p className="text-body text-zinc-500 mt-4 leading-relaxed">
+            {mode === 'reset-password' 
+              ? 'Tu contraseña ha sido actualizada. Ya puedes ingresar con tus nuevas credenciales.' 
+              : 'Tu organización ha sido desplegada correctamente en la red corporativa.'}
+          </p>
           <button onClick={() => switchMode('login')} className="w-full py-5 mt-10 rounded-2xl bg-white text-black font-black uppercase tracking-widest hover:bg-zinc-200 transition-all shadow-xl">
             → INICIAR SESIÓN
           </button>
@@ -288,10 +343,16 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
 
             <div>
               <h2 className="text-2xl font-black text-white uppercase tracking-tighter leading-none">
-                {mode === 'login' ? 'Bienvenido de nuevo' : 'Crea tu cuenta'}
+                {mode === 'login' ? 'Bienvenido de nuevo' : 
+                 mode === 'forgot-password' ? 'Recuperar Acceso' :
+                 mode === 'reset-password' ? 'Nueva Contraseña' :
+                 'Crea tu cuenta'}
               </h2>
               <p className="text-[11px] text-zinc-500 mt-1.5">
-                {mode === 'login' ? 'Introduce tus credenciales para acceder al nodo.' : 'Inicializa tu organización en el sistema central.'}
+                {mode === 'login' ? 'Introduce tus credenciales para acceder al nodo.' : 
+                 mode === 'forgot-password' ? 'Enviaremos un enlace de recuperación a tu correo.' :
+                 mode === 'reset-password' ? 'Establece tu nueva clave perimetral.' :
+                 'Inicializa tu organización en el sistema central.'}
               </p>
             </div>
           </div>
@@ -333,8 +394,50 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
 
               {mode === 'login' && step === 2 && (
                 <motion.div key="l2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
-                  <DarkInput label="Llave de Acceso" type="password" placeholder="••••••••" icon={Lock} value={password} onChange={e => setPassword(e.target.value)} autoFocus required />
-                  <button type="button" className="text-[10px] font-bold text-[var(--brand-primary)] hover:brightness-125 transition-all uppercase tracking-widest">¿Olvidaste tu llave?</button>
+                  <DarkInput label="Contraseña" type="password" placeholder="••••••••" icon={Lock} value={password} onChange={e => setPassword(e.target.value)} autoFocus required />
+                  <button type="button" onClick={() => { setMode('forgot-password'); setStep(1); setError(null); }} className="text-[10px] font-bold text-[var(--brand-primary)] hover:brightness-125 transition-all uppercase tracking-widest">¿Olvidaste tu contraseña?</button>
+                </motion.div>
+              )}
+
+              {mode === 'forgot-password' && step === 1 && (
+                <motion.div key="fp1" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
+                  <div className="p-4 bg-blue-500/5 border border-blue-500/10 rounded-2xl mb-2">
+                    <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest leading-relaxed">
+                      Ingresa tu correo para recibir un enlace de recuperación.
+                    </p>
+                  </div>
+                  <DarkInput label="Correo Registrado" type="email" icon={Mail} value={email} onChange={e => setEmail(e.target.value)} autoFocus required />
+                </motion.div>
+              )}
+
+              {mode === 'forgot-password' && step === 2 && (
+                <motion.div key="fp2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-6 text-center py-4">
+                  <div className="h-16 w-16 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-500/20">
+                    <CheckCircle2 className="text-emerald-500" size={32} />
+                  </div>
+                  <div>
+                    <h3 className="text-white font-black uppercase tracking-widest text-[12px]">¡Correo Enviado!</h3>
+                    <p className="text-zinc-500 text-[10px] mt-2 leading-relaxed">
+                      Hemos enviado las instrucciones a <span className="text-white font-bold">{email}</span>. Revisa tu bandeja de entrada.
+                    </p>
+                  </div>
+                  <button type="button" onClick={() => { setMode('login'); setStep(1); }} className="text-[10px] font-black text-[var(--brand-primary)] uppercase tracking-widest hover:brightness-125 transition-all">
+                    Volver al Inicio
+                  </button>
+                </motion.div>
+              )}
+
+              {mode === 'reset-password' && (
+                <motion.div key="rp" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
+                  <div className="p-4 bg-[var(--brand-primary)]/5 border border-[var(--brand-primary)]/10 rounded-2xl mb-2 text-center">
+                    <Lock className="mx-auto text-[var(--brand-primary)] mb-2" size={24} />
+                    <h3 className="text-white font-black uppercase tracking-widest text-[11px]">Restablecer Contraseña</h3>
+                    <p className="text-zinc-500 text-[9px] mt-1">Crea una nueva clave segura para tu cuenta.</p>
+                  </div>
+                  <div className="space-y-3">
+                    <DarkInput label="Nueva Contraseña" type="password" icon={Lock} value={password} onChange={e => setPassword(e.target.value)} autoComplete="new-password" autoFocus required />
+                    <DarkInput label="Confirmar Contraseña" type="password" icon={ShieldCheck} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} autoComplete="new-password" required />
+                  </div>
                 </motion.div>
               )}
 
@@ -356,8 +459,8 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
               {mode === 'register' && step === 4 && (
                 <motion.div key="r4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
                   <div className="space-y-3">
-                    <DarkInput label="Nueva Llave de Acceso" type="password" icon={Lock} value={password} onChange={e => setPassword(e.target.value)} autoComplete="new-password" autoFocus required />
-                    <DarkInput label="Confirmar Identidad" type="password" icon={ShieldCheck} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} autoComplete="new-password" required />
+                    <DarkInput label="Nueva Contraseña" type="password" icon={Lock} value={password} onChange={e => setPassword(e.target.value)} autoComplete="new-password" autoFocus required />
+                    <DarkInput label="Confirmar Contraseña" type="password" icon={ShieldCheck} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} autoComplete="new-password" required />
                   </div>
 
                   <div className="bg-[#0f0f0f] border border-[#1e1e1e] p-5 rounded-[1.5rem] space-y-3 shadow-inner">
@@ -421,8 +524,14 @@ export const AuthForm = ({ darkMode, toggleDarkMode }: AuthFormProps) => {
                   style={{ background: 'linear-gradient(to right, var(--brand-primary), var(--brand-secondary))' }} 
                   className={`w-full h-12 rounded-xl text-white font-black uppercase tracking-[0.2em] text-[9px] shadow-[0_10px_30px_rgba(var(--brand-primary-rgb),0.3)] hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-3 ${step === 1 ? 'sm:col-span-2' : ''}`}
                 >
-                  {loading ? <Circle className="animate-spin" size={14} /> : <LogIn size={14} />}
-                  {mode === 'login' ? (step === 1 ? 'Continuar' : 'Entrar al Sistema') : (step === 5 ? 'Activar Cuenta' : 'Siguiente Paso')}
+                  {loading ? <Circle className="animate-spin" size={14} /> : (mode === 'login' && step === 2 ? <LogIn size={14} /> : (mode === 'reset-password' ? <CheckCircle2 size={14} /> : <ArrowRight size={14} />))}
+                  {mode === 'login' 
+                    ? (step === 1 ? 'Continuar' : 'Entrar al Sistema') 
+                    : mode === 'forgot-password'
+                      ? (step === 1 ? 'Enviar Enlace' : 'Enlace Enviado')
+                      : mode === 'reset-password'
+                        ? 'Actualizar Contraseña'
+                        : (step === 5 ? 'Activar Cuenta' : 'Siguiente Paso')}
                 </button>
               </div>
 

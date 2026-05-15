@@ -22,14 +22,40 @@ import { useOrganizationStore } from './store/useOrganizationStore';
 import { Toaster } from 'sonner';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { GlobalPlatformSettings } from './components/GlobalPlatformSettings';
+import { supabase } from './lib/supabase';
 
 function App() {
-  const { user, profile, loading, checkAuth } = useAuthStore();
+  const { user, profile, loading, isInitialized, checkAuth } = useAuthStore();
   const [activeTab, setActiveTab] = useState('home');
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('gkad_theme');
     return saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
   });
+
+  useEffect(() => {
+    console.log('🌐 App Mount URL:', window.location.href);
+    // Verificación exhaustiva: Hash y Search (Query Params)
+    const hash = window.location.hash;
+    const params = new URLSearchParams(window.location.search);
+    const isRecovery = hash.includes('type=recovery') || 
+                       params.get('type') === 'recovery' || 
+                       hash.includes('access_token=') ||
+                       hash.includes('recovery_token=');
+    
+    if (isRecovery) {
+      console.log('🎯 Recuperación detectada en URL');
+      setIsResettingPassword(true);
+    }
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('🛡️ Auth Event:', event);
+      if (event === 'PASSWORD_RECOVERY') {
+        setIsResettingPassword(true);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   useEffect(() => {
     checkAuth();
@@ -37,10 +63,10 @@ function App() {
 
   // Reset de navegación al cerrar sesión para evitar "residuos" de vista
   useEffect(() => {
-    if (!user) {
+    if (!user && !isResettingPassword) {
       setActiveTab('home');
     }
-  }, [user]);
+  }, [user, isResettingPassword]);
 
   // Sincronización de Organización Global
   const { fetchOrganization, subscribeToChanges, unsubscribeFromChanges } = useOrganizationStore();
@@ -92,7 +118,8 @@ function App() {
 
   const toggleDarkMode = () => setDarkMode(!darkMode);
 
-  if (loading) {
+  // Solo mostramos pantalla de carga global durante la inicialización del sistema
+  if (loading && !isInitialized) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
@@ -103,10 +130,14 @@ function App() {
     );
   }
 
-  if (!user) {
+  if (!user || isResettingPassword) {
     return (
       <>
-        <AuthForm darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+        <AuthForm 
+          darkMode={darkMode} 
+          toggleDarkMode={toggleDarkMode} 
+          initialMode={isResettingPassword ? 'reset-password' : 'login'}
+        />
         <Toaster position="top-right" richColors />
       </>
     );

@@ -19,6 +19,7 @@ interface AuthState {
   requestOTP: (email: string) => Promise<void>;
   verifyOTP: (email: string, token: string) => Promise<any>;
   activateAccount: (email: string, code: string) => Promise<any>;
+  requestPasswordReset: (email: string) => Promise<void>;
   checkAuth: () => Promise<void>;
 }
 
@@ -27,6 +28,20 @@ export const useAuthStore = create<AuthState>((set) => ({
   profile: null,
   loading: false,
   isInitialized: false,
+
+  requestPasswordReset: async (email) => {
+    set({ loading: true });
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}`,
+      });
+      if (error) throw error;
+      set({ loading: false });
+    } catch (error: any) {
+      set({ loading: false });
+      throw error;
+    }
+  },
 
   checkAuth: async () => {
     // Evitar múltiples llamadas simultáneas
