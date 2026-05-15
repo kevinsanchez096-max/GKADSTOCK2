@@ -233,8 +233,8 @@ export const Dashboard = () => {
  </div>
 
  {/* GRILLA INFERIOR (4 COLUMNAS PEQUEÑAS) */}
- <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 mt-6">
- <KPICard title="Transacciones Totales"value={analytics.transactionCount} icon={Package} trend="+3"trendUp={true} description="Facturas emitidas"variant="mini"/>
+ <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mt-6">
+ <KPICard title="Transacciones"value={analytics.transactionCount} icon={Package} trend="+3"trendUp={true} description="Facturas emitidas"variant="mini"/>
   <KPICard title="Ticket Promedio"value={`$${analytics.averageTicket.toLocaleString()}`} icon={Layers} trend="ACTIVO"trendUp={true} description="Gasto promedio por venta"variant="mini"/>
  <KPICard title="Divisiones"value={baseStats.activeCategories} icon={ArrowUpRight} trend="Activas"description="Categorías de stock"variant="mini"/>
  <KPICard title="Riesgos"value={baseStats.lowStockCount} icon={AlertTriangle} trendUp={false} trend={baseStats.lowStockCount > 0 ?"ALERTA":"BIEN"} alert={baseStats.lowStockCount > 0} description="Stock crítico detectado"variant="mini"/>
@@ -330,15 +330,15 @@ const KPICard = ({ title, value, icon: Icon, trend, trendUp, description, alert,
  const isUtilidadReal = title === "Utilidad Real";
   if (variant === 'mini') {
   return (
-   <Card className="p-6 px-12 flex items-center gap-10 bg-card border-border border rounded-[35px] transition-all hover:border-[var(--brand-primary)]/30 overflow-hidden shadow-md">
-  <div className="p-4 bg-muted rounded-[10px] text-[var(--brand-primary)]">
-  <Icon size={24} />
+   <Card className="p-4 flex items-center gap-3 bg-card border-border border rounded-[20px] transition-all hover:border-[var(--brand-primary)]/30 overflow-hidden shadow-md">
+  <div className="p-3 bg-muted rounded-[10px] text-[var(--brand-primary)] shrink-0">
+  <Icon size={20} />
   </div>
   <div className="min-w-0 flex-1">
-  <h2 className={`font-black text-foreground leading-none tracking-tighter transition-all duration-300 ${value.toString().length > 10 ? 'text-lg' : value.toString().length > 8 ? 'text-xl' : 'text-2xl'}`}>
+  <h2 className={`font-black text-foreground leading-none tracking-tight transition-all duration-300 ${value.toString().length > 10 ? 'text-sm' : value.toString().length > 6 ? 'text-base' : 'text-lg'}`}>
   {value}
   </h2>
-  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[2px] mt-2 leading-none truncate">{title}</p>
+  <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-[1px] mt-1 leading-tight">{title}</p>
   </div>
   </Card>
   );
