@@ -17,6 +17,7 @@ import { Suppliers } from './components/Suppliers';
 import { CategoryManager } from './components/CategoryManager';
 import { Expenses } from './components/Expenses';
 import { AuthForm } from './components/AuthForm';
+import { ResetPasswordForm } from './components/ResetPasswordForm';
 import { useAuthStore } from './store/useAuthStore';
 import { useOrganizationStore } from './store/useOrganizationStore';
 import { Toaster } from 'sonner';
@@ -24,49 +25,44 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { GlobalPlatformSettings } from './components/GlobalPlatformSettings';
 import { supabase } from './lib/supabase';
 
-const INITIAL_HREF = window.location.href;
-
 function App() {
   const { user, profile, loading, isInitialized, checkAuth } = useAuthStore();
   const [activeTab, setActiveTab] = useState('home');
-  const [isResettingPassword, setIsResettingPassword] = useState(() => {
-    return INITIAL_HREF.includes('type=recovery') || 
-           INITIAL_HREF.includes('recovery_token=') ||
-           (INITIAL_HREF.includes('access_token=') && INITIAL_HREF.includes('type=recovery'));
-  });
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('gkad_theme');
     return saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
   });
 
+  // Listener de autenticación y detección de recovery desde URL
   useEffect(() => {
-    console.log('🌐 App Mount URL:', window.location.href);
-    // Verificación exhaustiva: Hash, Search y URL completa
+    // Detectar recuperación desde URL en el primer render
     const fullUrl = window.location.href;
-    const isRecovery = fullUrl.includes('type=recovery') || 
-                       fullUrl.includes('recovery_token=') ||
-                       fullUrl.includes('access_token=') && fullUrl.includes('type=recovery');
-    
+    const isRecovery = fullUrl.includes('type=recovery') ||
+                       fullUrl.includes('recovery_token=');
     if (isRecovery) {
       console.log('🎯 Recuperación detectada en URL:', fullUrl);
       setIsResettingPassword(true);
     }
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, _session) => {
       console.log('🛡️ Auth Event:', event);
       if (event === 'PASSWORD_RECOVERY') {
         console.log('🔑 Modo recuperación de contraseña activado.');
         setIsResettingPassword(true);
-        // Evitamos intentar cargar el perfil mientras el usuario resetea su clave
-        return;
+        return; // No ejecutar nada más — no cargar perfil
       }
     });
+
     return () => subscription.unsubscribe();
   }, []);
 
+  // Inicialización de sesión — solo si NO estamos en modo recuperación
   useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
+    if (!isResettingPassword) {
+      checkAuth();
+    }
+  }, [checkAuth, isResettingPassword]);
 
   // Reset de navegación al cerrar sesión para evitar "residuos" de vista
   useEffect(() => {
@@ -125,7 +121,22 @@ function App() {
 
   const toggleDarkMode = () => setDarkMode(!darkMode);
 
-  // Solo mostramos pantalla de carga global durante la inicialización del sistema
+  // ═══════════════════════════════════════════════════════════
+  // ORDEN DE RENDERIZADO CRÍTICO
+  // 1. Recovery PRIMERO — antes de cualquier carga de perfil
+  // 2. Splash de carga
+  // 3. Login si no hay usuario
+  // ═══════════════════════════════════════════════════════════
+
+  if (isResettingPassword) {
+    return (
+      <>
+        <ResetPasswordForm />
+        <Toaster position="top-right" richColors />
+      </>
+    );
+  }
+
   if (loading && !isInitialized) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -137,14 +148,12 @@ function App() {
     );
   }
 
-  if (!user || isResettingPassword) {
+  if (!user) {
     return (
       <>
         <AuthForm 
-          key={isResettingPassword ? 'reset-view' : 'auth-view'}
           darkMode={darkMode} 
           toggleDarkMode={toggleDarkMode} 
-          initialMode={isResettingPassword ? 'reset-password' : 'login'}
         />
         <Toaster position="top-right" richColors />
       </>
