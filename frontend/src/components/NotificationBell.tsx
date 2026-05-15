@@ -30,6 +30,20 @@ interface SystemNotification {
   metadata: any;
 }
 
+// Color config por tipo de notificación
+const TYPE_COLORS: Record<string, { bg: string; border: string; icon: string; dot: string }> = {
+  HIGH_VALUE_SALE: { bg: 'rgba(34,197,94,0.08)', border: 'rgba(34,197,94,0.15)', icon: '#22c55e', dot: '#22c55e' },
+  NEW_USER:        { bg: 'rgba(59,130,246,0.08)', border: 'rgba(59,130,246,0.15)', icon: '#3b82f6', dot: '#3b82f6' },
+  ORG_CREATED:     { bg: 'rgba(34,197,94,0.08)', border: 'rgba(34,197,94,0.15)', icon: '#22c55e', dot: '#22c55e' },
+  SYSTEM_ERROR:    { bg: 'rgba(239,68,68,0.08)',  border: 'rgba(239,68,68,0.15)',  icon: '#ef4444', dot: '#ef4444' },
+  ORG_DELETED:     { bg: 'rgba(239,68,68,0.08)',  border: 'rgba(239,68,68,0.15)',  icon: '#ef4444', dot: '#ef4444' },
+  PLAN_LIMIT:      { bg: 'rgba(249,115,22,0.08)', border: 'rgba(249,115,22,0.15)', icon: '#f97316', dot: '#f97316' },
+  ORG_STATUS:      { bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.15)', icon: '#f59e0b', dot: '#f59e0b' },
+  DEFAULT:         { bg: 'rgba(99,102,241,0.08)', border: 'rgba(99,102,241,0.15)', icon: '#6366f1', dot: '#6366f1' },
+};
+
+const getTypeColor = (type: string) => TYPE_COLORS[type] || TYPE_COLORS.DEFAULT;
+
 export const NotificationBell = () => {
   const { profile } = useAuthStore();
   const [notifications, setNotifications] = useState<SystemNotification[]>([]);
@@ -38,8 +52,21 @@ export const NotificationBell = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isConnected, setIsConnected] = useState(true);
   const channelRef = useRef<any>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
 
   const isSuperAdmin = profile?.role === 'super_admin';
+
+  // Cierre automático al hacer clic fuera
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isOpen]);
 
   const fetchNotifications = async (silent = false) => {
     if (!silent) setIsRefreshing(true);
@@ -135,141 +162,228 @@ export const NotificationBell = () => {
 
   const getIcon = (type: string) => {
     switch (type) {
-      case 'NEW_USER': return <UserPlus size={16} className="text-brand-500" />;
-      case 'HIGH_VALUE_SALE': return <TrendingUp size={16} className="text-emerald-500" />;
-      case 'ORG_STATUS': return <ZapOff size={16} className="text-amber-500" />;
-      case 'PLAN_LIMIT': return <AlertTriangle size={16} className="text-orange-500" />;
-      case 'SYSTEM_ERROR': return <AlertCircle size={16} className="text-red-500" />;
-      case 'ORG_CREATED': return <CheckCircle2 size={16} className="text-emerald-500" />;
-      case 'ORG_DELETED': return <Trash2 size={16} className="text-red-500" />;
-      default: return <ShieldAlert size={16} className="text-brand-500" />;
-    }
-  };
-
-  const getLabel = (type: string) => {
-    switch (type) {
-      case 'NEW_USER': return 'Nuevo Registro';
-      case 'HIGH_VALUE_SALE': return 'Venta VIP';
-      case 'ORG_STATUS': return 'Infraestructura';
-      case 'PLAN_LIMIT': return 'Límite de Plan';
-      case 'SYSTEM_ERROR': return 'Fallo Crítico';
-      case 'ORG_CREATED': return 'Nueva Empresa';
-      case 'ORG_DELETED': return 'Baja de Empresa';
-      default: return 'Alerta';
+      case 'NEW_USER': return <UserPlus size={14} />;
+      case 'HIGH_VALUE_SALE': return <TrendingUp size={14} />;
+      case 'ORG_STATUS': return <ZapOff size={14} />;
+      case 'PLAN_LIMIT': return <AlertTriangle size={14} />;
+      case 'SYSTEM_ERROR': return <AlertCircle size={14} />;
+      case 'ORG_CREATED': return <CheckCircle2 size={14} />;
+      case 'ORG_DELETED': return <Trash2 size={14} />;
+      default: return <ShieldAlert size={14} />;
     }
   };
 
   if (!isSuperAdmin) return null;
 
   return (
-    <div className="relative">
+    <div className="relative" ref={panelRef}>
       <button 
         onClick={() => {
           const nextState = !isOpen;
           setIsOpen(nextState);
           if (nextState) markAllAsRead();
         }}
-        className={`relative p-2.5 bg-muted/50 backdrop-blur-md text-muted-foreground hover:text-brand-500 hover:bg-card border border-border/50 rounded-xl transition-all shadow-sm group ${isOpen ? 'ring-2 ring-brand-500/20 bg-card text-brand-500' : ''}`}
+        style={{
+          position: 'relative',
+          padding: '10px',
+          background: isOpen ? '#1a1a1a' : 'transparent',
+          border: isOpen ? '1px solid #2a2a2a' : '1px solid transparent',
+          borderRadius: '12px',
+          cursor: 'pointer',
+          transition: 'all 0.15s',
+          color: isOpen ? 'var(--brand-primary)' : '#888',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+        onMouseEnter={(e) => { if (!isOpen) { e.currentTarget.style.background = '#1a1a1a'; e.currentTarget.style.color = 'var(--brand-primary)'; }}}
+        onMouseLeave={(e) => { if (!isOpen) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#888'; }}}
         title="Centro de Control Global"
       >
-        <Bell size={18} className={`${unreadCount > 0 ? "animate-pulse text-brand-500" : ""} group-hover:scale-110 transition-transform`} />
+        <Bell size={18} />
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-background shadow-lg shadow-red-500/50 animate-bounce">
+          <span
+            style={{
+              position: 'absolute',
+              top: '-2px',
+              right: '-2px',
+              height: '16px',
+              width: '16px',
+              background: '#ef4444',
+              color: '#fff',
+              fontSize: '9px',
+              fontWeight: 900,
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              border: '2px solid #0f0f0f',
+              boxShadow: '0 2px 8px rgba(239,68,68,0.5)',
+            }}
+          >
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
       </button>
 
       {isOpen && (
-        <div className="absolute top-full right-0 mt-4 w-85 bg-card/95 backdrop-blur-xl border border-border shadow-[0_20px_50px_rgba(0,0,0,0.3)] rounded-[2rem] overflow-hidden z-[100] animate-in slide-in-from-top-4 duration-300 origin-top-right">
-          <div className="p-6 border-b border-border bg-muted/30 flex items-center justify-between">
+        <div
+          style={{
+            position: 'absolute',
+            top: 'calc(100% + 8px)',
+            right: 0,
+            width: '340px',
+            background: '#0a0a0a',
+            border: '0.5px solid #1e1e1e',
+            borderRadius: '14px',
+            overflow: 'hidden',
+            zIndex: 100,
+            boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
+          }}
+        >
+          {/* Header */}
+          <div style={{ padding: '16px 18px', borderBottom: '0.5px solid #1e1e1e', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
-              <h4 className="font-black text-xs uppercase tracking-[0.2em] flex items-center gap-2 text-foreground">
-                <ShieldAlert size={14} className="text-brand-500" />
-                GKAD SIGNAL CENTER
+              <h4 style={{ fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#fff', display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
+                <ShieldAlert size={13} style={{ color: 'var(--brand-primary)' }} />
+                Signal Center
               </h4>
-              <div className="flex items-center gap-1.5 mt-1">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
                 {isConnected ? (
-                  <div className="flex items-center gap-1">
-                    <Wifi size={8} className="text-emerald-500" />
-                    <span className="text-[7px] font-black text-emerald-500 uppercase tracking-widest">En Línea</span>
-                  </div>
+                  <>
+                    <Wifi size={8} style={{ color: '#22c55e' }} />
+                    <span style={{ fontSize: '7px', fontWeight: 900, color: '#22c55e', textTransform: 'uppercase', letterSpacing: '0.15em' }}>En Línea</span>
+                  </>
                 ) : (
-                  <div className="flex items-center gap-1">
-                    <WifiOff size={8} className="text-red-500" />
-                    <span className="text-[7px] font-black text-red-500 uppercase tracking-widest">Desconectado</span>
-                  </div>
+                  <>
+                    <WifiOff size={8} style={{ color: '#ef4444' }} />
+                    <span style={{ fontSize: '7px', fontWeight: 900, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.15em' }}>Desconectado</span>
+                  </>
                 )}
               </div>
             </div>
-            <button 
+            <button
               onClick={(e) => { e.stopPropagation(); fetchNotifications(); }}
               disabled={isRefreshing}
-              className="p-2 hover:bg-brand-500/10 rounded-lg text-muted-foreground hover:text-brand-500 transition-all active:rotate-180 duration-500"
+              style={{
+                padding: '6px',
+                background: 'transparent',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                color: '#555',
+                transition: 'all 0.15s',
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = '#1a1a1a'; e.currentTarget.style.color = 'var(--brand-primary)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#555'; }}
             >
-              <RefreshCw size={14} className={isRefreshing ? "animate-spin" : ""} />
+              <RefreshCw size={14} className={isRefreshing ? 'animate-spin' : ''} />
             </button>
           </div>
           
-          <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
+          {/* Notification list */}
+          <div style={{ maxHeight: '400px', overflowY: 'auto' }} className="custom-scrollbar">
             {notifications.length === 0 ? (
-              <div className="p-12 text-center text-muted-foreground flex flex-col items-center">
-                <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-4 opacity-50">
-                  <CheckCircle2 size={32} className="text-emerald-500" />
+              <div style={{ padding: '48px 16px', textAlign: 'center' }}>
+                <div style={{ height: '48px', width: '48px', borderRadius: '50%', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', opacity: 0.5 }}>
+                  <CheckCircle2 size={24} style={{ color: '#22c55e' }} />
                 </div>
-                <p className="text-[10px] uppercase font-black tracking-[0.3em]">Sistema Sincronizado</p>
-                <p className="text-[8px] uppercase font-bold tracking-widest mt-1 opacity-40">No hay alertas pendientes</p>
+                <p style={{ fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.2em', color: '#555', margin: 0 }}>Sistema Sincronizado</p>
+                <p style={{ fontSize: '9px', color: '#333', marginTop: '4px' }}>No hay alertas pendientes</p>
               </div>
             ) : (
-              <div className="divide-y divide-border/30">
-                {notifications.map((notif) => (
-                  <div 
-                    key={notif.id} 
-                    className={`p-5 hover:bg-brand-500/[0.03] transition-all cursor-pointer group relative ${!notif.read ? 'bg-brand-500/[0.01]' : ''}`}
-                  >
-                    {!notif.read && (
-                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-brand-500 shadow-[2px_0_15px_rgba(var(--brand-primary-rgb),0.6)]" />
-                    )}
-                    <div className="flex gap-4">
-                      <div className={`h-10 w-10 rounded-2xl flex items-center justify-center shrink-0 border transition-all group-hover:scale-110 shadow-sm ${
-                        !notif.read ? 'bg-brand-500/10 border-brand-500/20' : 'bg-muted border-border/50'
-                      }`}>
-                        {getIcon(notif.type)}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-1">
-                          <p className={`text-[8px] font-black uppercase tracking-[0.2em] ${
-                            notif.type === 'SYSTEM_ERROR' ? 'text-red-500' :
-                            notif.type === 'HIGH_VALUE_SALE' ? 'text-emerald-500' :
-                            'text-brand-500'
-                          }`}>
-                            {getLabel(notif.type)}
-                          </p>
-                          <div className="flex items-center gap-1 text-[8px] text-muted-foreground font-bold">
-                            <Clock size={8} />
-                            {formatDistanceToNow(new Date(notif.created_at), { addSuffix: true, locale: es })}
-                          </div>
+              <div style={{ padding: '8px' }}>
+                {notifications.map((notif) => {
+                  const colors = getTypeColor(notif.type);
+                  return (
+                    <div
+                      key={notif.id}
+                      style={{
+                        position: 'relative',
+                        background: '#0f0f0f',
+                        border: '0.5px solid #1a1a1a',
+                        borderRadius: '10px',
+                        padding: '12px',
+                        marginBottom: '6px',
+                        cursor: 'pointer',
+                        transition: 'border-color 0.15s',
+                      }}
+                      onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#2a2a2a'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#1a1a1a'; }}
+                    >
+                      {/* Unread dot */}
+                      {!notif.read && (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            top: '8px',
+                            right: '8px',
+                            width: '6px',
+                            height: '6px',
+                            borderRadius: '50%',
+                            background: colors.dot,
+                            boxShadow: `0 0 6px ${colors.dot}`,
+                          }}
+                        />
+                      )}
+
+                      <div style={{ display: 'flex', gap: '10px' }}>
+                        {/* Icon box */}
+                        <div
+                          style={{
+                            height: '32px',
+                            width: '32px',
+                            borderRadius: '8px',
+                            background: colors.bg,
+                            border: `1px solid ${colors.border}`,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexShrink: 0,
+                            color: colors.icon,
+                          }}
+                        >
+                          {getIcon(notif.type)}
                         </div>
-                        <p className={`text-xs font-black tracking-tight mb-1 truncate ${notif.read ? 'text-foreground/60' : 'text-foreground'}`}>
-                          {notif.title}
-                        </p>
-                        <p className="text-[10px] text-muted-foreground leading-relaxed line-clamp-2 font-medium">
-                          {notif.message}
-                        </p>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{ color: '#fff', fontSize: '12px', fontWeight: 500, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {notif.title}
+                          </p>
+                          <p style={{ color: '#555', fontSize: '11px', margin: '3px 0 0', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                            {notif.message}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Timestamp */}
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '6px' }}>
+                        <span style={{ fontSize: '10px', color: '#333', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                          <Clock size={8} />
+                          {formatDistanceToNow(new Date(notif.created_at), { addSuffix: true, locale: es })}
+                        </span>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
           
-          <div 
-            className="p-4 border-t border-border bg-muted/50 text-center hover:bg-brand-500 hover:text-white transition-all cursor-pointer group" 
+          {/* Footer */}
+          <div
+            style={{
+              padding: '12px',
+              borderTop: '0.5px solid #1e1e1e',
+              textAlign: 'center',
+              cursor: 'pointer',
+              transition: 'background 0.15s',
+            }}
             onClick={() => setIsOpen(false)}
+            onMouseEnter={(e) => { e.currentTarget.style.background = '#1a1a1a'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
           >
-            <span className="text-[9px] font-black uppercase tracking-[0.4em] group-hover:tracking-[0.6em] transition-all">
-              CERRAR RADAR
+            <span style={{ fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.3em', color: '#555', transition: 'color 0.15s' }}>
+              Cerrar
             </span>
           </div>
         </div>

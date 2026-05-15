@@ -1,4 +1,4 @@
-import { type ReactNode, useState, useEffect } from 'react';
+import { type ReactNode, useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
  RefreshCw,
@@ -23,7 +23,9 @@ import {
  ChevronLeft,
  CreditCard,
  Palette,
- X
+ X,
+ User,
+ SlidersHorizontal
 } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
 import { useShopStore } from '../store/useShopStore';
@@ -50,12 +52,26 @@ export const DashboardLayout = ({
 }: LayoutProps) => {
  const [sidebarOpen, setSidebarOpen] = useState(false);
  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+ const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
  const [isSyncing, setIsSyncing] = useState(false);
  const [isCollapsed, setIsCollapsed] = useState(() => {
  const saved = localStorage.getItem('sidebar_state');
  return saved === 'collapsed';
  });
  const { profile, signOut } = useAuthStore();
+ const dropdownRef = useRef<HTMLDivElement>(null);
+
+ // Cerrar dropdown al hacer clic fuera
+ useEffect(() => {
+   if (!isProfileDropdownOpen) return;
+   const handleClickOutside = (e: MouseEvent) => {
+     if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+       setIsProfileDropdownOpen(false);
+     }
+   };
+   document.addEventListener('mousedown', handleClickOutside);
+   return () => document.removeEventListener('mousedown', handleClickOutside);
+ }, [isProfileDropdownOpen]);
 
  const handleGlobalSync = async () => {
  if (!profile?.organization_id) return;
@@ -106,6 +122,21 @@ export const DashboardLayout = ({
  ];
 
  const menuItems = profile?.role === 'super_admin' ? saasMenuItems : standardMenuItems;
+
+ const orgStore = useOrganizationStore();
+ const currentPlan = orgStore.organization?.plan || profile?.organizations?.plan;
+ const companyName = orgStore.organization?.company_name || profile?.organizations?.name || 'Gestión Stock';
+
+ const getPlanBadgeStyle = (plan: string | undefined) => {
+   if (!plan) return {};
+   switch (plan) {
+     case 'Esencial': return { background: '#1a1a1a', color: '#888', border: '1px solid #2a2a2a' };
+     case 'Avanzado': return { background: '#3b82f6', color: '#fff', border: '1px solid #60a5fa', boxShadow: '0 2px 8px rgba(59,130,246,0.2)' };
+     case 'Emprendedor': return { background: '#6366f1', color: '#fff', border: '1px solid #818cf8', boxShadow: '0 2px 8px rgba(99,102,241,0.2)' };
+     case 'Premium': return { background: '#FFD700', color: '#000', border: '1px solid #fbbf24', boxShadow: '0 2px 12px rgba(251,191,36,0.4)' };
+     default: return { background: '#1a1a1a', color: '#888', border: '1px solid #2a2a2a' };
+   }
+ };
 
  return (
  <div className="min-h-screen bg-background flex transition-colors duration-500 font-sans">
@@ -253,21 +284,14 @@ export const DashboardLayout = ({
  <RefreshCw size={18} className={isSyncing ? 'animate-spin text-brand-500' : ''} />
  </button>
 
- <button 
- onClick={toggleDarkMode}
- title="Modo Oscuro"
- className="p-2.5 bg-muted text-muted-foreground hover:text-brand-600 hover:bg-card hover:border-border border border-transparent rounded-xl transition-all"
- >
- {darkMode ? <Sun size={18} /> : <Moon size={18} />}
- </button>
-
  <NotificationBell />
 
  <div className="h-8 w-[1px] bg-border"/>
 
- <div className="flex items-center gap-3">
+ {/* PROFILE DROPDOWN */}
+ <div className="relative" ref={dropdownRef}>
  <button 
- onClick={() => setIsProfileModalOpen(true)}
+ onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
  className="flex items-center gap-3 hover:bg-muted p-1.5 rounded-2xl transition-all group border border-transparent hover:border-border"
  >
  <div className="flex flex-col items-end hidden md:flex text-right">
@@ -275,34 +299,239 @@ export const DashboardLayout = ({
  {profile?.full_name || 'Usuario'}
  </span>
  <span className="text-[10px] font-bold text-muted-foreground mt-1 flex items-center gap-2">
- {useOrganizationStore().organization?.company_name || profile?.organizations?.name || 'Gestión Stock'}
- {(useOrganizationStore().organization?.plan || profile?.organizations?.plan) && (
- <span 
- title={`Su licencia vence el: ${(useOrganizationStore().organization?.next_billing_date || profile?.organizations?.next_billing_date) ? new Date(useOrganizationStore().organization?.next_billing_date || profile?.organizations?.next_billing_date).toLocaleDateString() : 'N/A'}`}
- className={`px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest border transition-all
- ${(useOrganizationStore().organization?.plan || profile?.organizations?.plan) === 'Esencial' ? 'bg-muted text-muted-foreground border-border' : ''}
- ${(useOrganizationStore().organization?.plan || profile?.organizations?.plan) === 'Avanzado' ? 'bg-blue-500 text-white border-blue-400 shadow-md shadow-blue-500/20' : ''}
- ${(useOrganizationStore().organization?.plan || profile?.organizations?.plan) === 'Emprendedor' ? 'bg-indigo-600 text-white border-indigo-500 shadow-md shadow-indigo-600/20' : ''}
- ${(useOrganizationStore().organization?.plan || profile?.organizations?.plan) === 'Premium' ? 'bg-[#FFD700] text-black border-amber-400 font-black shadow-lg shadow-amber-500/40' : ''}
- `}
+ {companyName}
+ {currentPlan && (
+ <span
+ style={{
+   ...getPlanBadgeStyle(currentPlan),
+   fontSize: '8px',
+   fontWeight: 900,
+   textTransform: 'uppercase',
+   letterSpacing: '0.1em',
+   padding: '2px 6px',
+   borderRadius: '5px',
+ }}
  >
- {useOrganizationStore().organization?.plan || profile?.organizations?.plan}
+ {currentPlan}
  </span>
  )}
  </span>
  </div>
- <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-brand-600 to-brand-700 flex items-center justify-center text-white font-black text-sm shadow-md border border-white/20 group-hover:scale-105 group-hover:shadow-brand-500/30 transition-all">
+ <div
+   className="h-10 w-10 rounded-xl flex items-center justify-center text-white font-black text-sm shadow-md border border-white/20 group-hover:scale-105 transition-all"
+   style={{ background: 'linear-gradient(135deg, var(--brand-primary), color-mix(in srgb, var(--brand-primary), #000 20%))' }}
+ >
  {profile?.full_name?.charAt(0) || 'U'}
  </div>
  </button>
- 
- <button 
- onClick={signOut}
- className="p-2.5 text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-all"
- title="Cerrar Sesión"
- >
- <LogOut size={18} />
- </button>
+
+ {/* DROPDOWN PANEL */}
+ {isProfileDropdownOpen && (
+   <div
+     style={{
+       position: 'absolute',
+       right: 0,
+       top: 'calc(100% + 8px)',
+       zIndex: 50,
+       width: '260px',
+       background: '#0f0f0f',
+       border: '0.5px solid #1e1e1e',
+       borderRadius: '14px',
+       overflow: 'hidden',
+       boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
+     }}
+   >
+     {/* User info section */}
+     <div style={{ padding: '16px', borderBottom: '0.5px solid #1e1e1e' }}>
+       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+         <div
+           style={{
+             height: '40px',
+             width: '40px',
+             borderRadius: '10px',
+             background: 'linear-gradient(135deg, var(--brand-primary), color-mix(in srgb, var(--brand-primary), #000 20%))',
+             display: 'flex',
+             alignItems: 'center',
+             justifyContent: 'center',
+             color: '#fff',
+             fontWeight: 900,
+             fontSize: '14px',
+             flexShrink: 0,
+           }}
+         >
+           {profile?.full_name?.charAt(0) || 'U'}
+         </div>
+         <div style={{ minWidth: 0, flex: 1 }}>
+           <p style={{ color: '#fff', fontSize: '13px', fontWeight: 700, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+             {profile?.full_name || 'Usuario'}
+           </p>
+           <p style={{ color: '#555', fontSize: '11px', margin: '2px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+             {profile?.email || ''}
+           </p>
+           {currentPlan && (
+             <span
+               style={{
+                 ...getPlanBadgeStyle(currentPlan),
+                 display: 'inline-block',
+                 fontSize: '8px',
+                 fontWeight: 900,
+                 textTransform: 'uppercase',
+                 letterSpacing: '0.1em',
+                 padding: '2px 6px',
+                 borderRadius: '5px',
+                 marginTop: '4px',
+               }}
+             >
+               {currentPlan}
+             </span>
+           )}
+         </div>
+       </div>
+     </div>
+
+     {/* Menu options */}
+     <div style={{ padding: '6px' }}>
+       {/* Mi perfil */}
+       <button
+         onClick={() => { setActiveTab('settings'); setIsProfileDropdownOpen(false); }}
+         style={{
+           width: '100%',
+           display: 'flex',
+           alignItems: 'center',
+           gap: '10px',
+           padding: '10px 10px',
+           background: 'transparent',
+           border: 'none',
+           borderRadius: '8px',
+           cursor: 'pointer',
+           transition: 'background 0.15s',
+           color: '#ccc',
+           fontSize: '13px',
+           fontWeight: 500,
+         }}
+         onMouseEnter={(e) => { e.currentTarget.style.background = '#1a1a1a'; }}
+         onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+       >
+         <div style={{ height: '30px', width: '30px', background: '#1a1a1a', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+           <User size={14} style={{ color: '#888' }} />
+         </div>
+         Mi perfil
+       </button>
+
+       {/* Ajustes de cuenta */}
+       <button
+         onClick={() => { setActiveTab('settings'); setIsProfileDropdownOpen(false); setIsProfileModalOpen(true); }}
+         style={{
+           width: '100%',
+           display: 'flex',
+           alignItems: 'center',
+           gap: '10px',
+           padding: '10px 10px',
+           background: 'transparent',
+           border: 'none',
+           borderRadius: '8px',
+           cursor: 'pointer',
+           transition: 'background 0.15s',
+           color: '#ccc',
+           fontSize: '13px',
+           fontWeight: 500,
+         }}
+         onMouseEnter={(e) => { e.currentTarget.style.background = '#1a1a1a'; }}
+         onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+       >
+         <div style={{ height: '30px', width: '30px', background: '#1a1a1a', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+           <SlidersHorizontal size={14} style={{ color: '#888' }} />
+         </div>
+         Ajustes de cuenta
+       </button>
+
+       {/* Dark Mode Toggle */}
+       <button
+         onClick={() => { toggleDarkMode(); }}
+         style={{
+           width: '100%',
+           display: 'flex',
+           alignItems: 'center',
+           justifyContent: 'space-between',
+           gap: '10px',
+           padding: '10px 10px',
+           background: 'transparent',
+           border: 'none',
+           borderRadius: '8px',
+           cursor: 'pointer',
+           transition: 'background 0.15s',
+           color: '#ccc',
+           fontSize: '13px',
+           fontWeight: 500,
+         }}
+         onMouseEnter={(e) => { e.currentTarget.style.background = '#1a1a1a'; }}
+         onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+       >
+         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+           <div style={{ height: '30px', width: '30px', background: '#1a1a1a', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+             {darkMode ? <Sun size={14} style={{ color: '#f59e0b' }} /> : <Moon size={14} style={{ color: '#8b5cf6' }} />}
+           </div>
+           Tema oscuro
+         </div>
+         {/* Switch visual */}
+         <div
+           style={{
+             width: '36px',
+             height: '20px',
+             borderRadius: '10px',
+             background: darkMode ? 'var(--brand-primary)' : '#2a2a2a',
+             position: 'relative',
+             transition: 'background 0.2s',
+             flexShrink: 0,
+           }}
+         >
+           <div
+             style={{
+               width: '16px',
+               height: '16px',
+               borderRadius: '50%',
+               background: '#fff',
+               position: 'absolute',
+               top: '2px',
+               left: darkMode ? '18px' : '2px',
+               transition: 'left 0.2s',
+               boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+             }}
+           />
+         </div>
+       </button>
+     </div>
+
+     {/* Cerrar sesión */}
+     <div style={{ borderTop: '0.5px solid #1e1e1e', padding: '6px' }}>
+       <button
+         onClick={() => { setIsProfileDropdownOpen(false); signOut(); }}
+         style={{
+           width: '100%',
+           display: 'flex',
+           alignItems: 'center',
+           gap: '10px',
+           padding: '10px 10px',
+           background: 'transparent',
+           border: 'none',
+           borderRadius: '8px',
+           cursor: 'pointer',
+           transition: 'background 0.15s',
+           color: '#ef4444',
+           fontSize: '13px',
+           fontWeight: 600,
+         }}
+         onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)'; }}
+         onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+       >
+         <div style={{ height: '30px', width: '30px', background: 'rgba(239,68,68,0.1)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+           <LogOut size={14} style={{ color: '#ef4444' }} />
+         </div>
+         Cerrar sesión
+       </button>
+     </div>
+   </div>
+ )}
  </div>
  </div>
  </header>
