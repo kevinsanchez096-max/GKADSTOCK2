@@ -24,10 +24,16 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { GlobalPlatformSettings } from './components/GlobalPlatformSettings';
 import { supabase } from './lib/supabase';
 
+const INITIAL_HREF = window.location.href;
+
 function App() {
   const { user, profile, loading, isInitialized, checkAuth } = useAuthStore();
   const [activeTab, setActiveTab] = useState('home');
-  const [isResettingPassword, setIsResettingPassword] = useState(false);
+  const [isResettingPassword, setIsResettingPassword] = useState(() => {
+    return INITIAL_HREF.includes('type=recovery') || 
+           INITIAL_HREF.includes('recovery_token=') ||
+           (INITIAL_HREF.includes('access_token=') && INITIAL_HREF.includes('type=recovery'));
+  });
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('gkad_theme');
     return saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
@@ -35,16 +41,14 @@ function App() {
 
   useEffect(() => {
     console.log('🌐 App Mount URL:', window.location.href);
-    // Verificación exhaustiva: Hash y Search (Query Params)
-    const hash = window.location.hash;
-    const params = new URLSearchParams(window.location.search);
-    const isRecovery = hash.includes('type=recovery') || 
-                       params.get('type') === 'recovery' || 
-                       hash.includes('access_token=') ||
-                       hash.includes('recovery_token=');
+    // Verificación exhaustiva: Hash, Search y URL completa
+    const fullUrl = window.location.href;
+    const isRecovery = fullUrl.includes('type=recovery') || 
+                       fullUrl.includes('recovery_token=') ||
+                       fullUrl.includes('access_token=') && fullUrl.includes('type=recovery');
     
     if (isRecovery) {
-      console.log('🎯 Recuperación detectada en URL');
+      console.log('🎯 Recuperación detectada en URL:', fullUrl);
       setIsResettingPassword(true);
     }
 
@@ -134,6 +138,7 @@ function App() {
     return (
       <>
         <AuthForm 
+          key={isResettingPassword ? 'reset-view' : 'auth-view'}
           darkMode={darkMode} 
           toggleDarkMode={toggleDarkMode} 
           initialMode={isResettingPassword ? 'reset-password' : 'login'}
