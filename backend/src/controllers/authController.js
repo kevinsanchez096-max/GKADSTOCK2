@@ -204,44 +204,21 @@ const authController = {
     // 3. Obtener Sesión Actual (Me)
     getMe: async (req, res) => {
         try {
-            // A. Verificación de Identidad con Supabase (Bypass Middleware Data)
-            const authHeader = req.headers.authorization;
-            const token = authHeader?.split(' ')[1];
+            console.log(`🔍 [GET_ME] Solicitud para usuario: ${req.user?.id}`);
+            const userId = req.user.id;
             
-            if (!token) return res.status(401).json({ error: 'Falta token de acceso' });
+            if (!supabaseAdmin) throw new Error('Cliente Admin no inicializado.');
 
-            const { data: { user }, error: authErr } = await supabaseAdmin.auth.getUser(token);
-            if (authErr || !user) return res.status(401).json({ error: 'Token inválido' });
-
-            // Si el usuario viene de un flujo de recuperación, dejarlo pasar 
-            // Esto evita el error 500 si el perfil aún no está sincronizado
-            if (user.aud === 'authenticated' && user.recovery_sent_at) {
-                console.log('🔄 [GET_ME] Usuario en flujo de recuperación detectado.');
-                // Retornamos un objeto mínimo para que el frontend no rompa
-                return res.status(200).json({ 
-                    id: user.id, 
-                    email: user.email, 
-                    is_recovery: true 
-                });
-            }
-
-            console.log(`🔍 [GET_ME] Solicitud para usuario: ${user.id}`);
-            const userId = user.id;
-            
-            // B. Recuperar Perfil y Organización
+            // A. Recuperar Perfil y Organización
             const { data: profile, error: dbError } = await supabaseAdmin
                 .from('profiles')
                 .select('*, organizations(*)')
                 .eq('id', userId)
                 .maybeSingle();
 
-            if (dbError) {
-                console.error('❌ [GET_ME] Error DB:', dbError.message);
-                throw dbError;
-            }
+            if (dbError) throw dbError;
 
             if (!profile) {
-                console.warn('⚠️ [GET_ME] Perfil no encontrado');
                 return res.status(404).json({ error: 'Perfil no encontrado' });
             }
 
@@ -265,7 +242,7 @@ const authController = {
 
             return res.status(200).json({ ...profile, organizations: organization });
         } catch (error) {
-            console.error('🔥 [GET_ME] Fallo Crítico:', error.message);
+            console.error('🔥 [GET_ME] Fallo:', error.message);
             return res.status(500).json({ 
                 error: 'Fallo interno al recuperar identidad',
                 details: error.message 
