@@ -30,7 +30,7 @@ import {
 import { useAuthStore } from '../store/useAuthStore';
 import { useShopStore } from '../store/useShopStore';
 import { useOrganizationStore } from '../store/useOrganizationStore';
-import { ProfileSettingsModal } from './ProfileSettingsModal';
+
 import { NotificationBell } from './NotificationBell';
 import { GkadLogo } from './GkadLogo';
 import { toast } from 'sonner';
@@ -51,7 +51,7 @@ export const DashboardLayout = ({
  toggleDarkMode 
 }: LayoutProps) => {
  const [sidebarOpen, setSidebarOpen] = useState(false);
- const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+
  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
  const [isSyncing, setIsSyncing] = useState(false);
  const [isCollapsed, setIsCollapsed] = useState(() => {
@@ -420,7 +420,7 @@ export const DashboardLayout = ({
 
        {/* Ajustes de cuenta */}
        <button
-         onClick={() => { setActiveTab('settings'); setIsProfileDropdownOpen(false); setIsProfileModalOpen(true); }}
+         onClick={() => { setActiveTab('settings'); setIsProfileDropdownOpen(false); }}
          style={{
            width: '100%',
            display: 'flex',
@@ -545,11 +545,7 @@ export const DashboardLayout = ({
  </main>
  </div>
 
- {/* MODAL DE AJUSTES DE PERFIL (MODO DIOS) */}
- <ProfileSettingsModal 
- isOpen={isProfileModalOpen} 
- onClose={() => setIsProfileModalOpen(false)} 
- />
+
 
  </div>
  );
