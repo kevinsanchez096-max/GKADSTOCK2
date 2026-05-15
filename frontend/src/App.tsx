@@ -55,7 +55,10 @@ function App() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('🛡️ Auth Event:', event);
       if (event === 'PASSWORD_RECOVERY') {
+        console.log('🔑 Modo recuperación de contraseña activado.');
         setIsResettingPassword(true);
+        // Evitamos intentar cargar el perfil mientras el usuario resetea su clave
+        return;
       }
     });
     return () => subscription.unsubscribe();

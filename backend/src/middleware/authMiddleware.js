@@ -23,8 +23,15 @@ const authMiddleware = async (req, res, next) => {
             return res.status(401).json({ error: 'Sesión expirada o token inválido' });
         }
 
+        // --- BYPASS DE RECUPERACIÓN ---
+        // Si el usuario está en flujo de recuperación, permitimos el paso con contexto mínimo
+        if (user.aud === 'authenticated' && user.recovery_sent_at) {
+            req.user = { id: user.id, email: user.email, is_recovery: true };
+            return next();
+        }
+
         // B. Obtener Perfil (Auditado con Autoreparación)
-        console.log(`[AUTH-DEBUG] Buscando perfil para user.id: ${user.id}`);
+        console.log(`[AUTH-DEBUG] Buscando perfil for user.id: ${user.id}`);
         let { data: profile, error: profileError } = await supabaseAdmin
             .from('profiles')
             .select('role, organization_id')
