@@ -10,12 +10,11 @@ const { supabaseAdmin } = require('../config/supabase');
 const sendSystemNotification = async (type, title, message, metadata = {}) => {
   try {
     const { error } = await supabaseAdmin
-      .from('system_notifications')
+      .from('system_logs')
       .insert([{
-        type,
-        title,
-        message,
-        metadata
+        level: 'error',
+        module: 'NOTIFICATION_SERVICE',
+        message: `[${type}] ${title}: ${message} | Metadata: ${JSON.stringify(metadata)}`
       }]);
 
     if (error) {

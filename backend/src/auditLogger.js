@@ -10,12 +10,11 @@ const { supabaseAdmin } = require('./config/supabase');
 const logAuditEvent = async (level, origin, event, metadata = {}) => {
   try {
     const { error } = await supabaseAdmin
-      .from('system_audit_logs')
+      .from('system_logs')
       .insert([{
-        level,
-        origin,
-        event,
-        metadata
+        level: level.toLowerCase(), // Normalización para el enum/check de la DB
+        module: origin,
+        message: `${event}: ${JSON.stringify(metadata)}`
       }]);
 
     if (error) {
