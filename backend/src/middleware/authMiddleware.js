@@ -105,7 +105,11 @@ const authMiddleware = async (req, res, next) => {
 
     } catch (error) {
         console.error('🔥 [AUTH CRITICAL] Fallo interno:', error.message);
-        return res.status(500).json({ error: 'Fallo crítico de identidad en el servidor.' });
+        return res.status(500).json({ 
+            error: 'Fallo crítico de identidad en el servidor.',
+            details: error.message,
+            tip: 'Verifique que las variables SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY estén configuradas en el panel de Vercel.'
+        });
     }
 };
 
