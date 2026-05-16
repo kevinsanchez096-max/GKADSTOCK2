@@ -283,7 +283,7 @@ export const Settings = () => {
             className={`h-14 px-10 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all shadow-2xl border-none ${
               showSaved 
                 ? 'bg-emerald-600 text-white shadow-emerald-500/20' 
-                : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-blue-500/20'
+                : 'bg-brand-500 text-white shadow-brand-500/20 hover:bg-brand-600'
             }`}
           >
             {showSaved ? 'Sincronizado' : 'Guardar Cambios'}
@@ -670,7 +670,7 @@ const TabButton = ({ active, onClick, icon: Icon, label }: any) => (
  onClick={onClick}
  className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 group
  ${active 
- ? 'bg-brand-600 text-white shadow-2xl shadow-brand-500/40 relative z-10 border border-brand-400/20' 
+ ? 'bg-brand-500 text-white shadow-2xl shadow-brand-500/40 relative z-10 border border-brand-500/20' 
  : 'text-muted-foreground hover:bg-card hover:text-foreground border border-transparent'
  }`}
  >
