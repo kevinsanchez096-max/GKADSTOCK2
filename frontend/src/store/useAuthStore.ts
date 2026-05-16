@@ -64,6 +64,11 @@ export const useAuthStore = create<AuthState>((set) => ({
       // 3. Hidratar perfil desde el backend
       const profileData = await api.get('/auth/me');
 
+      // 4. Guardar ID de organización para el script del index.html
+      if (profileData?.organization_id) {
+        localStorage.setItem('gkad_last_org_id', profileData.organization_id);
+      }
+
       set({
         user: session.user,
         profile: profileData,
@@ -99,11 +104,14 @@ export const useAuthStore = create<AuthState>((set) => ({
       localStorage.setItem('gkad_token', session.access_token);
 
       // ── PASO 2: Hidratar perfil desde el backend (Stateless) ──
-      // El backend usa el token del header Authorization (inyectado por api.ts)
-      // para identificar al usuario. NUNCA ejecuta signIn internamente.
       const profileData = await api.get('/auth/me?is_login=true');
 
-      // ── PASO 3: Validar bloqueos SaaS ──
+      // ── PASO 3: Guardar ID de organización para carga instantánea ──
+      if (profileData?.organization_id) {
+        localStorage.setItem('gkad_last_org_id', profileData.organization_id);
+      }
+
+      // ── PASO 4: Validar bloqueos SaaS ──
       const organization = profileData?.organizations;
       if (organization && (organization.is_active === false || organization.billing_status === 'suspendido')) {
         // Cerrar sesión local si la org está bloqueada
@@ -252,6 +260,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
     // ── PASO 4: Limpiar persistencia local ──
     localStorage.removeItem('gkad_token');
+    localStorage.removeItem('gkad_last_org_id');
     document.documentElement.style.removeProperty('--brand-primary');
     document.documentElement.style.removeProperty('--brand-secondary');
     document.body.classList.remove('theme-gradient');
@@ -293,6 +302,10 @@ export const useAuthStore = create<AuthState>((set) => ({
 
       localStorage.setItem('gkad_token', data.session.access_token);
       const profileData = await api.get('/auth/me');
+
+      if (profileData?.organization_id) {
+        localStorage.setItem('gkad_last_org_id', profileData.organization_id);
+      }
 
       set({
         user: data.user,

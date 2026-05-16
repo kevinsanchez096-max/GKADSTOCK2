@@ -155,23 +155,34 @@ export const useOrganizationStore = create<OrganizationState>((set, get) => ({
   // PURGA TOTAL: Reset completo para cambio de sesión
   resetStore: () => set({ organization: null, organizations: [], isLoading: false, error: null, hydrated: false, isRealtimeActive: false }),
 
- applyBranding: (org) => {
- if (!org) return;
- 
- try {
- const root = document.documentElement;
- if (org.theme_color) root.style.setProperty('--brand-primary', org.theme_color);
- if (org.theme_secondary_color) root.style.setProperty('--brand-secondary', org.theme_secondary_color);
- if (org.theme_style === 'gradient') {
-   document.body.classList.add('theme-gradient');
- } else {
-   document.body.classList.remove('theme-gradient');
- }
- 
- // Inyectar logo en el DOM para acceso global si es necesario
- (window as any).__GKAD_LOGO__ = org.logo_url;
- } catch(e) {
- console.warn('[ORG] Fallo al aplicar branding, continuando...', e);
- }
- }
+  applyBranding: (org) => {
+    if (!org) return;
+    
+    try {
+      const root = document.documentElement;
+      const orgId = org.id;
+
+      // 1. Aplicar al DOM para feedback inmediato
+      if (org.theme_color) root.style.setProperty('--brand-primary', org.theme_color);
+      if (org.theme_secondary_color) root.style.setProperty('--brand-secondary', org.theme_secondary_color);
+      
+      if (org.theme_style === 'gradient') {
+        document.body.classList.add('theme-gradient');
+      } else {
+        document.body.classList.remove('theme-gradient');
+      }
+
+      // 2. Persistencia por organización para evitar el "flash" (leído por index.html)
+      localStorage.setItem(`gkad_brand_color_${orgId}`, org.theme_color || '#10b981');
+      // Supongamos que el tema (oscuro/claro) también se guarda por organización
+      // Si el objeto org tiene un campo theme (dark/light), usarlo. Si no, por ahora asumimos dark o leemos del profile
+      const currentTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+      localStorage.setItem(`gkad_theme_${orgId}`, currentTheme);
+
+      // Inyectar logo en el DOM para acceso global
+      (window as any).__GKAD_LOGO__ = org.logo_url;
+    } catch(e) {
+      console.warn('[ORG] Fallo al aplicar branding, continuando...', e);
+    }
+  }
 }));

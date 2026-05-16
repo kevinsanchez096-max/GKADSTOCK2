@@ -8,14 +8,20 @@
     <script>
       (function() {
         try {
-          var localTheme = localStorage.getItem('theme');
-          var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-          if (localTheme === 'dark' || (!localTheme && systemDark)) {
+          const orgId = localStorage.getItem('gkad_last_org_id');
+          const themeKey = orgId ? 'gkad_theme_' + orgId : 'gkad_theme';
+          const colorKey = orgId ? 'gkad_brand_color_' + orgId : 'gkad_brand_color';
+          
+          const theme = localStorage.getItem(themeKey) || localStorage.getItem('gkad_theme') || 'dark';
+          const color = localStorage.getItem(colorKey) || localStorage.getItem('gkad_brand_color') || '#10b981';
+          
+          if (theme === 'dark') {
             document.documentElement.classList.add('dark');
           } else {
             document.documentElement.classList.remove('dark');
           }
-        } catch (e) {}
+          document.documentElement.style.setProperty('--brand-primary', color);
+        } catch(e) {}
       })();
     </script>
   </head>
