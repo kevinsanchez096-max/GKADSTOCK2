@@ -64,13 +64,13 @@ export const AdminWelcome = ({ setActiveTab }: { setActiveTab: (tab: string) => 
           
           <div className="max-w-2xl space-y-8 relative z-10">
             <div className="flex items-center gap-3">
-              <div className="h-2 w-2 rounded-full bg-brand-500 animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.8)]" />
-              <span className="text-[10px] font-black uppercase tracking-[0.5em] text-brand-500">Núcleo de Mando GKAD</span>
+              <div className="h-3 w-3 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_15px_rgba(16,185,129,0.5)]" />
+              <span className="text-[10px] font-black uppercase tracking-[0.5em] text-emerald-500">Núcleo de Mando GKAD</span>
             </div>
             
             <div className="space-y-4">
               <h1 className="text-5xl md:text-7xl font-black text-foreground font-heading tracking-tighter leading-[0.9]">
-                Protocolo <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-500 to-purple-500">Maestro</span> Activo.
+                Protocolo <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-500">Maestro</span> Activo.
               </h1>
               <p className="text-lg md:text-xl text-muted-foreground font-medium max-w-lg leading-relaxed">
                 Bienvenido, <span className="text-foreground font-black">{profile?.full_name?.split(' ')[0]}</span>. El ecosistema global se encuentra bajo supervisión operativa.
@@ -78,11 +78,11 @@ export const AdminWelcome = ({ setActiveTab }: { setActiveTab: (tab: string) => 
             </div>
 
             <div className="flex flex-wrap items-center gap-6 pt-4">
-              <div className="flex items-center gap-3 px-6 py-3 bg-white/5 rounded-2xl border border-white/5">
+              <div className="flex items-center gap-3 px-6 py-3 bg-muted rounded-2xl border border-border">
                 <Globe size={16} className="text-brand-500" />
                 <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{getFormattedDate()}</span>
               </div>
-              <div className="flex items-center gap-3 px-6 py-3 bg-white/5 rounded-2xl border border-white/5">
+              <div className="flex items-center gap-3 px-6 py-3 bg-muted rounded-2xl border border-border">
                 <Lock size={16} className="text-emerald-500" />
                 <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500">Acceso Nivel 5</span>
               </div>
@@ -151,7 +151,7 @@ export const AdminWelcome = ({ setActiveTab }: { setActiveTab: (tab: string) => 
           </button>
         </Card>
 
-        <Card className="p-10 border-border/50 bg-black/20 flex flex-col justify-center gap-6">
+        <Card className="p-10 border-border/50 bg-muted/30 flex flex-col justify-center gap-6">
           <div className="flex items-center gap-4">
             <div className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground">
               <ShieldCheck size={20} />

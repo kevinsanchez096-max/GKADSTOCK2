@@ -48,18 +48,39 @@ export const CategoryManager = () => {
  return (
  <div className="max-w-5xl mx-auto space-y-10 animate-slide-up flex-1 min-h-full flex flex-col">
  
- {/* HEADER */}
- <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
- <div className="space-y-1">
- <h2 className="text-3xl font-black text-foreground flex items-center gap-3 font-outfit uppercase tracking-tight">
- <div className="p-2 bg-brand-500/10 rounded-lg border border-brand-500/20 text-brand-500">
- <Layers className="h-6 w-6"/>
- </div>
- ARQUITECTURA DE INVENTARIO
- </h2>
- <p className="text-muted-foreground font-bold uppercase tracking-[0.3em] text-[10px] ml-1">Clasificación Lógica y Jerarquía de Productos</p>
- </div>
- </div>
+    {/* 1. MISSION CONTROL HEADER */}
+    <Card className="bg-card/30 p-10 rounded-[2.5rem] border border-border/50 backdrop-blur-xl relative overflow-hidden mb-12">
+      {/* Decorative elements */}
+      <div className="absolute top-[-20%] right-[-10%] w-64 h-64 bg-brand-500/10 blur-[80px] rounded-full pointer-events-none"/>
+      <div className="absolute bottom-[-10%] left-[-5%] w-48 h-48 bg-emerald-500/5 blur-[60px] rounded-full pointer-events-none"/>
+
+      <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-10">
+        <div className="space-y-2">
+          <div className="flex items-center gap-3">
+            <div className="h-2 w-2 rounded-full bg-brand-500 animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.5)]"/>
+            <Layers size={18} className="text-brand-500" />
+            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-brand-500">Arquitectura de Datos</span>
+          </div>
+          <h1 className="text-4xl font-black text-foreground font-heading tracking-tighter uppercase leading-none">
+            Gestión de <span className="bg-gradient-to-r from-blue-400 to-emerald-500 bg-clip-text text-transparent">Categorías</span>
+          </h1>
+          <p className="text-muted-foreground font-bold text-[11px] uppercase tracking-widest opacity-70 ml-1">Clasificación Lógica y Estructura Global de Productos</p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-6">
+          <div className="relative group min-w-[320px]">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-brand-500 transition-colors z-10"/>
+            <input 
+              type="text"
+              placeholder="Rastrear categoría..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full h-14 pl-12 pr-6 bg-muted/40 border border-border/50 rounded-2xl text-[11px] font-bold text-foreground outline-none focus:ring-2 focus:ring-brand-500/20 transition-all placeholder:text-muted-foreground shadow-inner"
+            />
+          </div>
+        </div>
+      </div>
+    </Card>
 
  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
  

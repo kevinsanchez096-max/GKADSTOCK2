@@ -228,24 +228,14 @@ export const NotificationBell = () => {
 
       {isOpen && (
         <div
-          style={{
-            position: 'absolute',
-            top: 'calc(100% + 8px)',
-            right: 0,
-            width: '340px',
-            background: '#0a0a0a',
-            border: '0.5px solid #1e1e1e',
-            borderRadius: '14px',
-            overflow: 'hidden',
-            zIndex: 100,
-            boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
-          }}
+          className="absolute right-0 w-[340px] bg-card border border-border/50 rounded-2xl overflow-hidden z-[100] shadow-2xl backdrop-blur-xl"
+          style={{ top: 'calc(100% + 8px)' }}
         >
           {/* Header */}
-          <div style={{ padding: '16px 18px', borderBottom: '0.5px solid #1e1e1e', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div className="px-5 py-4 border-b border-border/50 flex items-center justify-between bg-muted/20">
             <div>
-              <h4 style={{ fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#fff', display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
-                <ShieldAlert size={13} style={{ color: 'var(--brand-primary)' }} />
+              <h4 className="text-[11px] font-black uppercase tracking-[0.15em] text-foreground flex items-center gap-1.5 m-0">
+                <ShieldAlert size={13} className="text-brand-500" />
                 Signal Center
               </h4>
               <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
@@ -265,17 +255,7 @@ export const NotificationBell = () => {
             <button
               onClick={(e) => { e.stopPropagation(); fetchNotifications(); }}
               disabled={isRefreshing}
-              style={{
-                padding: '6px',
-                background: 'transparent',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                color: '#555',
-                transition: 'all 0.15s',
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = '#1a1a1a'; e.currentTarget.style.color = 'var(--brand-primary)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#555'; }}
+              className="p-1.5 bg-transparent border-none rounded-lg cursor-pointer text-muted-foreground hover:bg-muted/50 hover:text-brand-500 transition-all duration-150"
             >
               <RefreshCw size={14} className={isRefreshing ? 'animate-spin' : ''} />
             </button>
@@ -284,12 +264,12 @@ export const NotificationBell = () => {
           {/* Notification list */}
           <div style={{ maxHeight: '400px', overflowY: 'auto' }} className="custom-scrollbar">
             {notifications.length === 0 ? (
-              <div style={{ padding: '48px 16px', textAlign: 'center' }}>
-                <div style={{ height: '48px', width: '48px', borderRadius: '50%', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', opacity: 0.5 }}>
-                  <CheckCircle2 size={24} style={{ color: '#22c55e' }} />
+              <div className="py-12 px-4 text-center">
+                <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-3 opacity-50">
+                  <CheckCircle2 size={24} className="text-emerald-500" />
                 </div>
-                <p style={{ fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.2em', color: '#555', margin: 0 }}>Sistema Sincronizado</p>
-                <p style={{ fontSize: '9px', color: '#333', marginTop: '4px' }}>No hay alertas pendientes</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground m-0">Sistema Sincronizado</p>
+                <p className="text-[9px] text-muted-foreground/60 mt-1">No hay alertas pendientes</p>
               </div>
             ) : (
               <div style={{ padding: '8px' }}>
@@ -298,18 +278,7 @@ export const NotificationBell = () => {
                   return (
                     <div
                       key={notif.id}
-                      style={{
-                        position: 'relative',
-                        background: '#0f0f0f',
-                        border: '0.5px solid #1a1a1a',
-                        borderRadius: '10px',
-                        padding: '12px',
-                        marginBottom: '6px',
-                        cursor: 'pointer',
-                        transition: 'border-color 0.15s',
-                      }}
-                      onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#2a2a2a'; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#1a1a1a'; }}
+                      className="relative bg-card/50 border border-border/50 rounded-xl p-3 mb-1.5 cursor-pointer transition-colors hover:border-brand-500/30 hover:bg-muted/30"
                     >
                       {/* Unread dot */}
                       {!notif.read && (
@@ -346,18 +315,18 @@ export const NotificationBell = () => {
                           {getIcon(notif.type)}
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <p style={{ color: '#fff', fontSize: '12px', fontWeight: 500, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          <p className="text-foreground text-xs font-medium m-0 truncate">
                             {notif.title}
                           </p>
-                          <p style={{ color: '#555', fontSize: '11px', margin: '3px 0 0', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                          <p className="text-muted-foreground text-[11px] mt-1 mb-0 leading-tight line-clamp-2">
                             {notif.message}
                           </p>
                         </div>
                       </div>
 
                       {/* Timestamp */}
-                      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '6px' }}>
-                        <span style={{ fontSize: '10px', color: '#333', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                      <div className="flex justify-end mt-1.5">
+                        <span className="text-[10px] text-muted-foreground/60 flex items-center gap-1">
                           <Clock size={8} />
                           {formatDistanceToNow(new Date(notif.created_at), { addSuffix: true, locale: es })}
                         </span>
@@ -371,18 +340,10 @@ export const NotificationBell = () => {
           
           {/* Footer */}
           <div
-            style={{
-              padding: '12px',
-              borderTop: '0.5px solid #1e1e1e',
-              textAlign: 'center',
-              cursor: 'pointer',
-              transition: 'background 0.15s',
-            }}
+            className="p-3 border-t border-border/50 text-center cursor-pointer transition-colors hover:bg-muted/50"
             onClick={() => setIsOpen(false)}
-            onMouseEnter={(e) => { e.currentTarget.style.background = '#1a1a1a'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
           >
-            <span style={{ fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.3em', color: '#555', transition: 'color 0.15s' }}>
+            <span className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground transition-colors hover:text-foreground">
               Cerrar
             </span>
           </div>

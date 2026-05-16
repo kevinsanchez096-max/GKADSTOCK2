@@ -15,7 +15,7 @@ import { supabase } from '../lib/supabase';
 import { toast } from 'sonner';
 import { SaaSOrgRow } from './SaaSOrgRow';
 import { CreateOrganizationModal } from './CreateOrganizationModal';
-import { Button } from './ui-components';
+import { Button, Card } from './ui-components';
 
 interface Org {
  id: string;
@@ -159,41 +159,55 @@ export const PlatformOrganizations = () => {
   onSuccess={fetchOrganizations}
  />
 
- <div className="flex items-center justify-between">
- <div className="flex items-center gap-4">
- <button 
- onClick={fetchOrganizations}
- className="h-11 w-11 flex items-center justify-center bg-card hover:bg-muted text-muted-foreground hover:text-blue-500 rounded-xl transition-all border border-border shadow-sm"
- >
- <RefreshCcw className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
- </button>
- <div className="flex flex-col">
-  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em]">Directorio Maestro de Inquilinos</p>
-  <p className="text-[8px] text-brand-500 font-bold uppercase tracking-widest">Sincronizado con Nodo Central</p>
- </div>
- </div>
+  <Card className="bg-card/30 p-10 rounded-[2.5rem] border border-border/50 backdrop-blur-xl relative overflow-hidden mb-12">
+    {/* Decorative elements */}
+    <div className="absolute top-[-20%] right-[-10%] w-64 h-64 bg-emerald-500/10 blur-[80px] rounded-full pointer-events-none"/>
+    <div className="absolute bottom-[-10%] left-[-5%] w-48 h-48 bg-blue-500/5 blur-[60px] rounded-full pointer-events-none"/>
 
- <div className="flex items-center gap-4">
-  <div className="w-96 relative group">
-  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-blue-500 transition-colors"/>
-  <input 
-  type="text"
-  placeholder="Filtrar por nombre o ID..."
-  className="w-full h-11 pl-12 pr-4 bg-card border border-border rounded-xl text-[11px] font-bold text-foreground outline-none focus:ring-2 focus:ring-blue-500/30 transition-all placeholder:text-muted-foreground"
-  value={localSearchTerm}
-  onChange={(e) => setLocalSearchTerm(e.target.value)}
-  />
-  </div>
+    <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-10">
+      <div className="space-y-2">
+        <div className="flex items-center gap-3">
+          <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]"/>
+          <Building2 size={18} className="text-emerald-500" />
+          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-500">Nodo Central SaaS</span>
+        </div>
+        <h1 className="text-4xl font-black text-foreground font-heading tracking-tighter uppercase leading-none">
+          Directorio <span className="bg-gradient-to-r from-emerald-400 to-blue-500 bg-clip-text text-transparent">de Inquilinos</span>
+        </h1>
+        <p className="text-muted-foreground font-bold text-[11px] uppercase tracking-widest opacity-70 ml-1">Sincronización en tiempo real con nodos globales</p>
+      </div>
 
-  <Button 
-    onClick={() => setIsModalOpen(true)}
-    icon={Plus}
-    className="h-11 rounded-xl bg-brand-500 text-white shadow-lg shadow-brand-500/20"
-  >
-    Añadir Inquilino
-  </Button>
- </div>
- </div>
+      <div className="flex flex-wrap items-center gap-6">
+        <div className="relative group min-w-[320px]">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-emerald-500 transition-colors z-10"/>
+          <input 
+            type="text"
+            placeholder="Filtrar por nombre o ID..."
+            value={localSearchTerm}
+            onChange={(e) => setLocalSearchTerm(e.target.value)}
+            className="w-full h-14 pl-12 pr-6 bg-muted/40 border border-border/50 rounded-2xl text-[11px] font-bold text-foreground outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all placeholder:text-muted-foreground shadow-inner"
+          />
+        </div>
+
+        <Button 
+          variant="outline" 
+          onClick={fetchOrganizations}
+          className="h-14 w-14 rounded-2xl border-border/50 hover:bg-muted p-0 flex items-center justify-center transition-all active:scale-95"
+        >
+          <RefreshCcw className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
+        </Button>
+
+        <Button 
+          onClick={() => setIsModalOpen(true)}
+          icon={Plus}
+          className="h-14 px-10 rounded-2xl bg-gradient-to-r from-emerald-500 to-blue-600 text-white font-black uppercase text-[10px] tracking-widest hover:scale-105 transition-all shadow-2xl shadow-emerald-500/20 border-none"
+        >
+          Añadir Inquilino
+        </Button>
+      </div>
+    </div>
+  </Card>
+  
 
  {/* KPI Summary Cards - WITH INTERACTIVITY */}
  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

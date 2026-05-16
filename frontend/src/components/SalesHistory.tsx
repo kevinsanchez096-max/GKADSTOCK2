@@ -240,63 +240,81 @@ export const SalesHistory = () => {
  window.print();
  };
 
- return (
- <div className="space-y-8 animate-slide-up pb-20">
- 
- {/* 🟢 CONTENEDOR NO-PRINT: Todo lo que ves en pantalla pero NO en la impresora */}
- <div className="no-print space-y-8">
- <div className="flex flex-col xl:flex-row xl:items-center justify-between mb-6 gap-4">
- <div className="flex items-start space-x-3">
- <div className="space-y-1">
- <h2 className="text-3xl font-black text-foreground flex items-center gap-3 font-outfit uppercase tracking-tight">
- <div className="p-2 bg-brand-500/10 rounded-lg border border-brand-500/20 text-brand-500">
- <FileText className="h-6 w-6"/>
- </div>
- AUDITORÍA DE VENTAS
- </h2>
- <p className="text-muted-foreground font-bold uppercase tracking-[0.3em] text-[10px] ml-1">Registro Centralizado de Transacciones</p>
- </div>
- </div>
+  return (
+    <div className="space-y-8 animate-slide-up pb-20">
+      
+      {/* 🟢 CONTENEDOR NO-PRINT */}
+      <div className="no-print space-y-12">
+        {/* 1. MISSION CONTROL HEADER */}
+        <Card className="bg-card/30 p-10 rounded-[2.5rem] border border-border/50 backdrop-blur-xl relative overflow-hidden mb-12">
+          {/* Decorative elements */}
+          <div className="absolute top-[-20%] right-[-10%] w-64 h-64 bg-brand-500/10 blur-[80px] rounded-full pointer-events-none"/>
+          <div className="absolute bottom-[-10%] left-[-5%] w-48 h-48 bg-purple-500/5 blur-[60px] rounded-full pointer-events-none"/>
 
- <div className="flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:space-x-4">
- {/* Selector de Periodo de Tiempo */}
- <div className="flex items-center space-x-1 p-1 rounded-full transition-colors duration-300 bg-muted border border-border">
- {(['day', 'week', 'month', 'year'] as FilterRange[]).map((range) => (
- <button
- key={range}
- onClick={() => setTimeFilter(range)}
- className={`px-4 py-1.5 text-xs font-extrabold uppercase tracking-wider transition-all rounded-full shadow-sm ${
- timeFilter === range 
- ? 'bg-brand-500 text-white shadow-md shadow-brand-500/30' 
- : 'text-muted-foreground hover:text-foreground '
- }`}
- >
- {range === 'day' ? 'Hoy' : range === 'week' ? 'Semana' : range === 'month' ? 'Mes' : 'Año'}
- </button>
- ))}
- </div>
+          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 items-center gap-10">
+            {/* IZQUIERDA: Identidad */}
+            <div className="lg:col-span-4 space-y-2">
+              <div className="flex items-center gap-3">
+                <div className="h-2 w-2 rounded-full bg-brand-500 animate-pulse shadow-[0_0_10px_rgba(var(--brand-primary-rgb),0.5)]"/>
+                <FileText size={18} className="text-brand-500" />
+                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-brand-500">Protocolo de Auditoría</span>
+              </div>
+              <h1 className="text-4xl font-black text-foreground font-heading tracking-tighter uppercase leading-none">
+                Historial de <span className="bg-gradient-to-r from-brand-500 to-brand-600 bg-clip-text text-transparent">Ventas</span>
+              </h1>
+              <p className="text-muted-foreground font-bold text-[11px] uppercase tracking-widest opacity-70 ml-1">Auditoría centralizada de transacciones</p>
+            </div>
 
- {/* Botones de Acción Existentes */}
- <div className="flex items-center space-x-3">
- <Button 
- variant="outline"
- className="px-4 h-14 rounded-2xl border-border bg-muted text-muted-foreground hover:text-foreground transition-all active:scale-95"
- onClick={handleRefresh}
- loading={refreshing}
- >
- <RefreshCw className={`h-5 w-5 ${refreshing ? 'animate-spin' : ''}`} />
- </Button>
- <Button 
- className="px-8 h-14 text-[10px] font-black uppercase tracking-widest rounded-2xl glow-blue transition-all active:scale-95"
- onClick={fetchArqueo}
- loading={loadingArqueo}
- >
- <DollarSign className="h-4 w-4 mr-2"/>
- GENERAR ARQUEO DIARIO
- </Button>
- </div>
- </div>
- </div>
+            {/* CENTRO: Búsqueda y Filtros */}
+            <div className="lg:col-span-4 flex flex-col gap-4">
+              <div className="relative group w-full">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-brand-500 transition-colors z-10"/>
+                <input 
+                  type="text"
+                  placeholder="Rastrear por ID, cliente o total..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full h-14 pl-12 pr-6 bg-muted/40 border border-border/50 rounded-2xl text-[11px] font-bold text-foreground outline-none focus:ring-2 focus:ring-brand-500/20 transition-all placeholder:text-muted-foreground shadow-inner"
+                />
+              </div>
+
+              <div className="flex bg-muted/40 p-1 rounded-2xl border border-border/50 shadow-inner w-fit">
+                {(['day', 'week', 'month', 'year'] as FilterRange[]).map((range) => (
+                  <button
+                    key={range}
+                    onClick={() => setTimeFilter(range)}
+                    className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all duration-300 ${
+                      timeFilter === range 
+                        ? 'bg-gradient-to-r from-brand-500 to-brand-600 text-white shadow-lg shadow-brand-500/20' 
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    {range === 'day' ? 'Hoy' : range === 'week' ? 'Sem' : range === 'month' ? 'Mes' : 'Año'}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* DERECHA: Acciones */}
+            <div className="lg:col-span-4 flex items-center justify-end gap-3">
+              <Button 
+                onClick={handleRefresh}
+                className="h-12 w-12 rounded-xl bg-muted/40 border border-border/50 text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-all p-0 flex items-center justify-center shadow-inner"
+              >
+                <RefreshCw size={16} className={refreshing ? 'animate-spin' : ''} />
+              </Button>
+              
+              <Button 
+                className="px-6 h-12 text-[10px] font-black uppercase tracking-widest rounded-xl bg-gradient-to-r from-brand-500 to-brand-600 text-white shadow-2xl shadow-brand-500/20 border-none transition-all active:scale-95"
+                onClick={fetchArqueo}
+                loading={loadingArqueo}
+              >
+                <DollarSign className="h-4 w-4 mr-2"/>
+                Arqueo
+              </Button>
+            </div>
+          </div>
+        </Card>
 
  {/* MÉTRICAS INTELIGENTES (NEW: Calculadora de Utilidad) */}
  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

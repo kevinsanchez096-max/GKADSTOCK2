@@ -128,7 +128,7 @@ const authController = {
             const finalProfile = { ...profileData, organizations: organization };
             
             // Registro de Auditoría: Login Exitoso
-            await logAuditEvent('SEC', 'AuthAPI', 'AUTH_SUCCESS', { 
+            await logAuditEvent('SEC', 'AuthAPI', organization?.id || null, 'AUTH_SUCCESS', { 
                 user_id: authData.user.id, 
                 email: authData.user.email,
                 role: profileData.role 
@@ -230,7 +230,7 @@ const authController = {
             // C. Registro de Auditoría (No bloqueante)
             if (req.query.is_login === 'true') {
                 try {
-                    await logAuditEvent('SEC', 'AuthAPI', 'AUTH_SUCCESS', { 
+                    await logAuditEvent('SEC', 'AuthAPI', organization?.id || null, 'AUTH_SUCCESS', { 
                         user_id: userId, 
                         email: profile.email || req.user.email,
                         role: profile.role 
@@ -510,7 +510,7 @@ const authController = {
 
             // E. Registrar Auditoría de Acceso
             const { logAuditEvent } = require('../auditLogger');
-            logAuditEvent('INFO', 'AuthAPI', 'AUTH_SUCCESS', { 
+            logAuditEvent('INFO', 'AuthAPI', finalProfile.organization_id || null, 'AUTH_SUCCESS', { 
                 user_id: userId, 
                 email: finalProfile.email,
                 organization_id: finalProfile.organization_id 

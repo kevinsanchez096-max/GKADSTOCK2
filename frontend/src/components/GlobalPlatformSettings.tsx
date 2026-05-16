@@ -98,23 +98,68 @@ export const GlobalPlatformSettings = () => {
   };
 
   const formatTime = (dateStr: string) => {
-    return new Date(dateStr).toLocaleTimeString('es-CO', { hour12: false });
+    const d = new Date(dateStr);
+    const date = d.toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const time = d.toLocaleTimeString('es-CO', { hour12: false });
+    return `${date} ${time}`;
+  };
+
+  const traducirEvento = (event: string) => {
+    const traducciones: Record<string, string> = {
+      'AUTH_SUCCESS': 'Acceso exitoso',
+      'ORG_CREATED': 'Organización creada',
+      'ORG_ACTIVATED': 'Organización activada',
+      'ORG_SUSPENDED': 'Organización suspendida',
+      'BOOT_CHECK': 'Verificación de arranque',
+      'NEW_USER': 'Nuevo usuario registrado',
+      'HIGH_VALUE_SALE': 'Venta de alto valor',
+      'PLAN_LIMIT': 'Límite de plan alcanzado',
+    };
+    return traducciones[event] || event.replace(/_/g, ' ');
   };
 
   return (
     <div className="space-y-12 animate-in fade-in duration-700 pb-20">
       
       {/* 1. HEADER ESTRATÉGICO */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-border pb-10">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-light text-foreground font-heading tracking-tight uppercase italic">Infraestructura <span className="font-black text-brand-500 not-italic">& Control</span></h1>
-          <p className="text-muted-foreground font-bold text-[10px] uppercase tracking-[0.4em]">Núcleo de Operaciones Globales</p>
+      <Card className="bg-card/30 p-10 rounded-[2.5rem] border border-border/50 backdrop-blur-xl relative overflow-hidden mb-12">
+        {/* Decorative elements */}
+        <div className="absolute top-[-20%] right-[-10%] w-64 h-64 bg-brand-500/10 blur-[80px] rounded-full pointer-events-none"/>
+        <div className="absolute bottom-[-10%] left-[-5%] w-48 h-48 bg-emerald-500/5 blur-[60px] rounded-full pointer-events-none"/>
+
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-10">
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <div className="h-2 w-2 rounded-full bg-brand-500 animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.5)]"/>
+              <Terminal size={18} className="text-brand-500" />
+              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-brand-500">Core Infrastructure</span>
+            </div>
+            <h1 className="text-4xl font-black text-foreground font-heading tracking-tighter uppercase leading-none">
+              Infraestructura <span className="bg-gradient-to-r from-blue-400 to-emerald-500 bg-clip-text text-transparent">& Control</span>
+            </h1>
+            <p className="text-muted-foreground font-bold text-[11px] uppercase tracking-widest opacity-70 ml-1">Núcleo de operaciones globales y gestión de nodos críticos</p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-6">
+            <Button 
+              variant="outline" 
+              icon={BellRing} 
+              className="h-14 px-8 rounded-2xl border-border/50 hover:bg-muted font-black uppercase text-[10px] tracking-widest transition-all"
+            >
+              Alertas
+            </Button>
+            
+            <Button 
+              onClick={triggerBackup} 
+              loading={backupLoading} 
+              icon={CloudUpload} 
+              className="h-14 px-10 rounded-2xl bg-gradient-to-r from-blue-600 to-emerald-600 text-white font-black uppercase text-[10px] tracking-widest hover:scale-105 transition-all shadow-2xl shadow-blue-500/20 border-none"
+            >
+              Backup Maestro
+            </Button>
+          </div>
         </div>
-        <div className="flex gap-3">
-          <Button variant="outline" icon={BellRing} className="h-12 px-6 rounded-2xl text-[9px] font-black uppercase tracking-widest border-border">Alertas</Button>
-          <Button onClick={triggerBackup} loading={backupLoading} icon={CloudUpload} className="h-12 px-8 rounded-2xl text-[9px] font-black uppercase tracking-widest bg-brand-600 shadow-xl shadow-brand-600/20 text-white border-none">Backup Maestro</Button>
-        </div>
-      </div>
+      </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
@@ -241,7 +286,7 @@ export const GlobalPlatformSettings = () => {
                   'text-zinc-500'
                 }`}>[{log.level}]</span>
                 <span className="font-black text-brand-500/80">[{log.origin}]</span>
-                <span className="uppercase tracking-tight font-bold">{log.event}</span>
+                <span className="uppercase tracking-tight font-bold">{traducirEvento(log.event)}</span>
                 <span className="ml-auto text-[8px] opacity-0 group-hover:opacity-40 transition-opacity uppercase truncate max-w-[200px]">
                   {JSON.stringify(log.metadata)}
                 </span>

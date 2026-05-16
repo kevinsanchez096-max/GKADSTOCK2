@@ -28,8 +28,9 @@ const ACCENT_COLORS = [
 ];
 
 const FONTS = [
+  { name: 'Inter', value: 'Inter', desc: 'Preciso & Corporativo' },
   { name: 'Jakarta Sans', value: 'Plus Jakarta Sans', desc: 'Moderno & Geométrico' },
-  { name: 'Inter Tight', value: 'Inter Tight', desc: 'Refinado & Corporativo' },
+  { name: 'Inter Tight', value: 'Inter Tight', desc: 'Refinado & Elegante' },
   { name: 'Outfit', value: 'Outfit', desc: 'Suave & Amigable' },
 ];
 
@@ -41,7 +42,7 @@ export const AdminAppearance = () => {
   const [secondaryColor, setSecondaryColor] = useState(organization?.theme_secondary_color || '#8b5cf6');
   const [borderRadius, setBorderRadius] = useState(localStorage.getItem('admin_border_radius') || '1.5rem');
   const [uiStyle, setUiStyle] = useState(localStorage.getItem('admin_ui_style') || 'glass');
-  const [activeFont, setActiveFont] = useState(localStorage.getItem('admin_font') || 'Plus Jakarta Sans');
+  const [activeFont, setActiveFont] = useState(localStorage.getItem('admin_font') || 'Inter');
   const [sidebarStyle, setSidebarStyle] = useState(localStorage.getItem('admin_sidebar') || 'expanded');
   const [isSaving, setIsSaving] = useState(false);
 
@@ -120,16 +121,45 @@ export const AdminAppearance = () => {
     <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
       
       {/* 1. HEADER INTEGRADO */}
-      <div className="flex items-end justify-between border-b border-border pb-10">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-light text-foreground font-heading tracking-tight uppercase italic">Estética <span className="font-black text-brand-500 not-italic">Visual</span></h1>
-          <p className="text-muted-foreground font-bold text-[10px] uppercase tracking-[0.4em]">Personalización de la Experiencia Maestro</p>
+      <Card className="bg-card/30 p-10 rounded-[2.5rem] border border-border/50 backdrop-blur-xl relative overflow-hidden mb-12">
+        {/* Decorative elements */}
+        <div className="absolute top-[-20%] right-[-10%] w-64 h-64 bg-brand-500/10 blur-[80px] rounded-full pointer-events-none"/>
+        <div className="absolute bottom-[-10%] left-[-5%] w-48 h-48 bg-emerald-500/5 blur-[60px] rounded-full pointer-events-none"/>
+
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-10">
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <div className="h-2 w-2 rounded-full bg-brand-500 animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.5)]"/>
+              <Palette size={18} className="text-brand-500" />
+              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-brand-500">Global Brand Engine</span>
+            </div>
+            <h1 className="text-4xl font-black text-foreground font-heading tracking-tighter uppercase leading-none">
+              Estética <span className="bg-gradient-to-r from-blue-400 to-emerald-500 bg-clip-text text-transparent">Visual</span>
+            </h1>
+            <p className="text-muted-foreground font-bold text-[11px] uppercase tracking-widest opacity-70 ml-1">Personalización de la experiencia maestro y multi-tenant</p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-6">
+            <Button 
+              variant="ghost" 
+              icon={Undo} 
+              onClick={() => window.location.reload()} 
+              className="h-14 px-8 rounded-2xl text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:bg-muted/50"
+            >
+              Resetear
+            </Button>
+            
+            <Button 
+              onClick={handleSave} 
+              loading={isSaving} 
+              icon={Save} 
+              className="h-14 px-10 rounded-2xl bg-gradient-to-r from-blue-600 to-emerald-600 text-white font-black uppercase text-[10px] tracking-widest hover:scale-105 transition-all shadow-2xl shadow-blue-500/20 border-none"
+            >
+              Aplicar Cambios
+            </Button>
+          </div>
         </div>
-        <div className="flex gap-3">
-          <Button variant="ghost" icon={Undo} onClick={() => window.location.reload()} className="h-12 px-6 rounded-2xl text-[9px] font-black uppercase tracking-widest text-muted-foreground">Resetear</Button>
-          <Button onClick={handleSave} loading={isSaving} icon={Save} className="h-12 px-8 rounded-2xl text-[9px] font-black uppercase tracking-widest bg-brand-600 shadow-xl shadow-brand-600/20 text-white border-none">Aplicar Cambios</Button>
-        </div>
-      </div>
+      </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
         
@@ -137,7 +167,7 @@ export const AdminAppearance = () => {
         <div className="lg:col-span-7 space-y-10">
           
           {/* Accent Color Selection */}
-          <div className="space-y-8">
+          <Card className="p-8 space-y-8 bg-card border-border/50">
             <div className="flex items-center gap-3">
               <Palette size={16} className="text-brand-500" />
               <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-foreground">Paleta de Identidad</h3>
@@ -222,10 +252,10 @@ export const AdminAppearance = () => {
                 </div>
               )}
             </div>
-          </div>
+          </Card>
 
           {/* Typography Selection */}
-          <div className="space-y-6">
+          <Card className="p-8 space-y-6 bg-card border-border/50">
             <div className="flex items-center gap-3">
               <Type size={16} className="text-brand-500" />
               <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-foreground">Sistemas Tipográficos</h3>
@@ -245,10 +275,10 @@ export const AdminAppearance = () => {
                 </button>
               ))}
             </div>
-          </div>
+          </Card>
 
           {/* Interface Style */}
-          <div className="space-y-6">
+          <Card className="p-8 space-y-6 bg-card border-border/50">
             <div className="flex items-center gap-3">
               <Layout size={16} className="text-brand-500" />
               <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-foreground">Geometría Atómica (Bordes)</h3>
@@ -270,9 +300,9 @@ export const AdminAppearance = () => {
                 </button>
               ))}
             </div>
-          </div>
+          </Card>
 
-          <div className="space-y-6">
+          <Card className="p-8 space-y-6 bg-card border-border/50">
             <div className="flex items-center gap-3">
               <Layers size={16} className="text-brand-500" />
               <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-foreground">Estilo de Componentes</h3>
@@ -299,7 +329,7 @@ export const AdminAppearance = () => {
                 </button>
               ))}
             </div>
-          </div>
+          </Card>
         </div>
 
         {/* PREVIEW COLUMN */}
@@ -307,7 +337,7 @@ export const AdminAppearance = () => {
           <div className="sticky top-10">
             <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] mb-6 text-center">Simulador de Experiencia</p>
             
-            <Card className={`p-0 overflow-hidden border-border shadow-2xl relative ${uiStyle === 'glass' ? 'backdrop-blur-2xl bg-white/40' : 'bg-card'}`} style={{fontFamily: activeFont, borderRadius}}>
+            <Card className={`p-0 overflow-hidden border-border shadow-2xl relative ${uiStyle === 'glass' ? 'glass' : 'bg-card'}`} style={{fontFamily: activeFont, borderRadius}}>
               <div className="h-12 bg-muted/30 border-b border-border flex items-center px-6 justify-between">
                 <div className="flex gap-1.5">
                   <div className="h-2.5 w-2.5 rounded-full bg-red-400/50" />
@@ -322,7 +352,7 @@ export const AdminAppearance = () => {
 
               <div className="flex h-[400px]">
                 {/* Sidebar Preview */}
-                <div className={`w-16 border-r border-border flex flex-col items-center py-6 gap-6 ${uiStyle === 'glass' ? 'bg-white/10' : 'bg-muted/10'}`}>
+                <div className={`w-16 border-r border-border flex flex-col items-center py-6 gap-6 ${uiStyle === 'glass' ? 'bg-muted/30' : 'bg-muted/10'}`}>
                   <div className="h-8 w-8 rounded-xl shadow-lg" style={getPreviewBrandBg()} />
                   <div className="space-y-4">
                     {[1,2,3,4].map(i => <div key={i} className="h-6 w-6 rounded-lg bg-muted-foreground/10" />)}

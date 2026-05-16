@@ -325,59 +325,30 @@ export const DashboardLayout = ({
 
  {/* DROPDOWN PANEL */}
  {isProfileDropdownOpen && (
-   <div
-     style={{
-       position: 'absolute',
-       right: 0,
-       top: 'calc(100% + 8px)',
-       zIndex: 50,
-       width: '260px',
-       background: '#0f0f0f',
-       border: '0.5px solid #1e1e1e',
-       borderRadius: '14px',
-       overflow: 'hidden',
-       boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
-     }}
-   >
+   <div className="absolute right-0 top-[calc(100%+8px)] z-50 w-[260px] bg-card border border-border/50 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-xl">
      {/* User info section */}
-     <div style={{ padding: '16px', borderBottom: '0.5px solid #1e1e1e' }}>
-       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+     <div className="p-4 border-b border-border/50">
+       <div className="flex items-center gap-3">
          <div
+           className="h-10 w-10 rounded-xl flex items-center justify-center text-white font-black text-sm flex-shrink-0"
            style={{
-             height: '40px',
-             width: '40px',
-             borderRadius: '10px',
              background: 'linear-gradient(135deg, var(--brand-primary), color-mix(in srgb, var(--brand-primary), #000 20%))',
-             display: 'flex',
-             alignItems: 'center',
-             justifyContent: 'center',
-             color: '#fff',
-             fontWeight: 900,
-             fontSize: '14px',
-             flexShrink: 0,
            }}
          >
            {profile?.full_name?.charAt(0) || 'U'}
          </div>
-         <div style={{ minWidth: 0, flex: 1 }}>
-           <p style={{ color: '#fff', fontSize: '13px', fontWeight: 700, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+         <div className="min-w-0 flex-1">
+           <p className="text-foreground text-[13px] font-bold m-0 overflow-hidden text-ellipsis whitespace-nowrap">
              {profile?.full_name || 'Usuario'}
            </p>
-           <p style={{ color: '#555', fontSize: '11px', margin: '2px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+           <p className="text-muted-foreground text-[11px] m-0.5 overflow-hidden text-ellipsis whitespace-nowrap">
              {profile?.email || ''}
            </p>
            {currentPlan && (
              <span
+               className="inline-block text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-md mt-1"
                style={{
                  ...getPlanBadgeStyle(currentPlan),
-                 display: 'inline-block',
-                 fontSize: '8px',
-                 fontWeight: 900,
-                 textTransform: 'uppercase',
-                 letterSpacing: '0.1em',
-                 padding: '2px 6px',
-                 borderRadius: '5px',
-                 marginTop: '4px',
                }}
              >
                {currentPlan}
@@ -388,30 +359,14 @@ export const DashboardLayout = ({
      </div>
 
      {/* Menu options */}
-     <div style={{ padding: '6px' }}>
+     <div className="p-1.5 space-y-0.5">
        {/* Mi perfil */}
        <button
          onClick={() => { setActiveTab('settings'); setIsProfileDropdownOpen(false); }}
-         style={{
-           width: '100%',
-           display: 'flex',
-           alignItems: 'center',
-           gap: '10px',
-           padding: '10px 10px',
-           background: 'transparent',
-           border: 'none',
-           borderRadius: '8px',
-           cursor: 'pointer',
-           transition: 'background 0.15s',
-           color: '#ccc',
-           fontSize: '13px',
-           fontWeight: 500,
-         }}
-         onMouseEnter={(e) => { e.currentTarget.style.background = '#1a1a1a'; }}
-         onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+         className="w-full flex items-center gap-2.5 p-2.5 bg-transparent border-none rounded-xl cursor-pointer transition-colors text-muted-foreground hover:text-foreground hover:bg-muted font-medium text-[13px]"
        >
-         <div style={{ height: '30px', width: '30px', background: '#1a1a1a', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-           <User size={14} style={{ color: '#888' }} />
+         <div className="h-8 w-8 bg-muted rounded-lg flex items-center justify-center flex-shrink-0">
+           <User size={14} className="text-muted-foreground" />
          </div>
          Mi perfil
        </button>
@@ -419,115 +374,45 @@ export const DashboardLayout = ({
        {/* Ajustes de cuenta */}
        <button
          onClick={() => { setActiveTab('settings'); setIsProfileDropdownOpen(false); }}
-         style={{
-           width: '100%',
-           display: 'flex',
-           alignItems: 'center',
-           gap: '10px',
-           padding: '10px 10px',
-           background: 'transparent',
-           border: 'none',
-           borderRadius: '8px',
-           cursor: 'pointer',
-           transition: 'background 0.15s',
-           color: '#ccc',
-           fontSize: '13px',
-           fontWeight: 500,
-         }}
-         onMouseEnter={(e) => { e.currentTarget.style.background = '#1a1a1a'; }}
-         onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+         className="w-full flex items-center gap-2.5 p-2.5 bg-transparent border-none rounded-xl cursor-pointer transition-colors text-muted-foreground hover:text-foreground hover:bg-muted font-medium text-[13px]"
        >
-         <div style={{ height: '30px', width: '30px', background: '#1a1a1a', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-           <SlidersHorizontal size={14} style={{ color: '#888' }} />
+         <div className="h-8 w-8 bg-muted rounded-lg flex items-center justify-center flex-shrink-0">
+           <SlidersHorizontal size={14} className="text-muted-foreground" />
          </div>
          Ajustes de cuenta
        </button>
 
-       {/* Dark Mode Toggle */}
-       <button
-         onClick={() => { toggleDarkMode(); }}
-         style={{
-           width: '100%',
-           display: 'flex',
-           alignItems: 'center',
-           justifyContent: 'space-between',
-           gap: '10px',
-           padding: '10px 10px',
-           background: 'transparent',
-           border: 'none',
-           borderRadius: '8px',
-           cursor: 'pointer',
-           transition: 'background 0.15s',
-           color: '#ccc',
-           fontSize: '13px',
-           fontWeight: 500,
-         }}
-         onMouseEnter={(e) => { e.currentTarget.style.background = '#1a1a1a'; }}
-         onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
-       >
-         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-           <div style={{ height: '30px', width: '30px', background: '#1a1a1a', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-             {darkMode ? <Sun size={14} style={{ color: '#f59e0b' }} /> : <Moon size={14} style={{ color: '#8b5cf6' }} />}
-           </div>
-           Tema oscuro
-         </div>
-         {/* Switch visual */}
-         <div
-           style={{
-             width: '36px',
-             height: '20px',
-             borderRadius: '10px',
-             background: darkMode ? 'var(--brand-primary)' : '#2a2a2a',
-             position: 'relative',
-             transition: 'background 0.2s',
-             flexShrink: 0,
-           }}
-         >
-           <div
-             style={{
-               width: '16px',
-               height: '16px',
-               borderRadius: '50%',
-               background: '#fff',
-               position: 'absolute',
-               top: '2px',
-               left: darkMode ? '18px' : '2px',
-               transition: 'left 0.2s',
-               boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
-             }}
-           />
-         </div>
-       </button>
-     </div>
+        {/* Dark Mode Toggle */}
+        <button
+          onClick={() => toggleDarkMode()}
+          className="w-full flex items-center justify-between gap-2.5 p-2.5 bg-transparent border-none rounded-xl cursor-pointer transition-colors text-muted-foreground hover:text-foreground hover:bg-muted font-medium text-[13px]"
+        >
+          <div className="flex items-center gap-2.5">
+            <div className="h-8 w-8 bg-muted rounded-lg flex items-center justify-center flex-shrink-0">
+              {darkMode ? <Moon size={14} className="text-brand-500" /> : <Sun size={14} className="text-amber-500" />}
+            </div>
+            {darkMode ? 'Modo Oscuro' : 'Modo Claro'}
+          </div>
+          <div className={`w-9 h-5 rounded-full relative transition-colors ${darkMode ? 'bg-brand-500' : 'bg-muted-foreground/30'}`}>
+            <div 
+              className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-all ${darkMode ? 'left-[18px]' : 'left-0.5'}`} 
+            />
+          </div>
+        </button>
+      </div>
 
-     {/* Cerrar sesión */}
-     <div style={{ borderTop: '0.5px solid #1e1e1e', padding: '6px' }}>
-       <button
-         onClick={() => { setIsProfileDropdownOpen(false); signOut(); }}
-         style={{
-           width: '100%',
-           display: 'flex',
-           alignItems: 'center',
-           gap: '10px',
-           padding: '10px 10px',
-           background: 'transparent',
-           border: 'none',
-           borderRadius: '8px',
-           cursor: 'pointer',
-           transition: 'background 0.15s',
-           color: '#ef4444',
-           fontSize: '13px',
-           fontWeight: 600,
-         }}
-         onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)'; }}
-         onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
-       >
-         <div style={{ height: '30px', width: '30px', background: 'rgba(239,68,68,0.1)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-           <LogOut size={14} style={{ color: '#ef4444' }} />
-         </div>
-         Cerrar sesión
-       </button>
-     </div>
+      {/* Cerrar sesión */}
+      <div className="p-1.5 border-t border-border/50">
+        <button
+          onClick={() => { setIsProfileDropdownOpen(false); signOut(); }}
+          className="w-full flex items-center gap-2.5 p-2.5 bg-transparent border-none rounded-xl cursor-pointer transition-colors text-red-500 hover:bg-red-500/10 font-bold text-[13px]"
+        >
+          <div className="h-8 w-8 bg-red-500/10 rounded-lg flex items-center justify-center flex-shrink-0">
+            <LogOut size={14} className="text-red-500" />
+          </div>
+          Cerrar sesión
+        </button>
+      </div>
    </div>
  )}
  </div>

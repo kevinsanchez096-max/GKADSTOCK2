@@ -191,38 +191,42 @@ export const Dashboard = () => {
   <div className="relative space-y-10 md:space-y-12 animate-slide-up pb-10 min-h-screen -m-6 p-10 bg-background transition-colors duration-500">
   <div className="relative z-10">
  
- {/* HEADER DE LA SECCIÓN */}
- <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-4 md:pb-8">
-  <div className="flex items-center gap-6">
- <div className="p-4 rounded-2xl flex items-center justify-center transition-all duration-300" style={{ backgroundColor: 'color-mix(in srgb, var(--brand-primary), transparent 90%)', border: '0.5px solid color-mix(in srgb, var(--brand-primary), transparent 70%)' }}>
- <BarChart3 size={32} strokeWidth={2.5} style={{ color: 'var(--brand-primary)' }} />
- </div>
-  <div className="flex flex-col">
-  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[4px] mb-2">
-  GKAD STOCK · MONITORIZACIÓN EN TIEMPO REAL
-  </p>
-  <h1 className="text-[42px] font-[900] text-foreground tracking-[-2px] uppercase leading-none">
-  ANÁLISIS <span style={{ color: 'var(--brand-primary)' }}>FINANCIERO</span>
-  </h1>
-  </div>
- </div>
+  {/* 1. MISSION CONTROL HEADER */}
+  <Card className="bg-card/30 p-10 rounded-[2.5rem] border border-border/50 backdrop-blur-xl relative overflow-hidden mb-12">
+    {/* Decorative elements */}
+    <div className="absolute top-[-20%] right-[-10%] w-64 h-64 bg-brand-500/10 blur-[80px] rounded-full pointer-events-none"/>
+    <div className="absolute bottom-[-10%] left-[-5%] w-48 h-48 bg-brand-600/5 blur-[60px] rounded-full pointer-events-none"/>
 
-  {/* BOTONES DE FILTRO (PÍLDORA) */}
-  <div className="flex items-center p-1.5 rounded-[50px] transition-colors duration-300 bg-card border border-border shadow-sm">
- {(['day', 'week', 'month', 'year'] as FilterRange[]).map((range) => (
- <button
- key={range}
- onClick={() => setTimeFilter(range)}
- className={`px-8 py-2.5 text-[11px] font-black uppercase tracking-[2px] transition-all duration-300 rounded-[50px] ${
- timeFilter === range  ? 'bg-brand-500 text-white shadow-xl border-none'
-  : 'text-muted-foreground hover:text-foreground bg-transparent border-transparent'
-  }`}
- >
- {range === 'day' ? 'Hoy' : range === 'week' ? 'Semana' : range === 'month' ? 'Mes' : 'Año'}
- </button>
- ))}
- </div>
- </div>
+    <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-10">
+      <div className="space-y-2">
+        <div className="flex items-center gap-3">
+          <div className="h-2 w-2 rounded-full bg-brand-500 animate-pulse shadow-[0_0_10px_rgba(var(--brand-primary-rgb),0.5)]"/>
+          <BarChart3 size={18} className="text-brand-500" />
+          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-brand-500">Monitorización en Tiempo Real</span>
+        </div>
+        <h1 className="text-4xl font-black text-foreground font-heading tracking-tighter uppercase leading-none">
+          Análisis <span className="bg-gradient-to-r from-brand-500 to-brand-600 bg-clip-text text-transparent">Financiero</span>
+        </h1>
+        <p className="text-muted-foreground font-bold text-[11px] uppercase tracking-widest opacity-70 ml-1">Ecosistema operativo GKAD STOCK</p>
+      </div>
+
+      <div className="flex items-center p-1.5 rounded-2xl bg-muted/40 border border-border/50 shadow-inner">
+        {(['day', 'week', 'month', 'year'] as FilterRange[]).map((range) => (
+          <button
+            key={range}
+            onClick={() => setTimeFilter(range)}
+            className={`px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${
+              timeFilter === range 
+                ? 'bg-gradient-to-r from-brand-500 to-brand-600 text-white shadow-lg shadow-brand-500/20' 
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            {range === 'day' ? 'Hoy' : range === 'week' ? 'Semana' : range === 'month' ? 'Mes' : 'Año'}
+          </button>
+        ))}
+      </div>
+    </div>
+  </Card>
  
  {/* GRILLA SUPERIOR (3 COLUMNAS GRANDES) */}
  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">

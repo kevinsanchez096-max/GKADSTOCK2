@@ -160,6 +160,54 @@ const usersController = {
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
+    },
+
+    // 4. Actualizar Rol (Cambiar Rol)
+    updateRole: async (req, res) => {
+        try {
+            const { userId } = req.params;
+            const { role } = req.body;
+            const orgId = usersController.getOrgId(req);
+            const creatorRole = req.user.role;
+
+            if (creatorRole !== 'super_admin') {
+                return res.status(403).json({ error: 'Solo el Súper Administrador puede cambiar roles.' });
+            }
+
+            const { error: updateError } = await supabase
+                .from('profiles')
+                .update({ role })
+                .eq('id', userId);
+
+            if (updateError) throw updateError;
+            res.status(200).json({ message: 'Rol actualizado correctamente.' });
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    },
+
+    // 5. Cambiar Estado (Suspender/Activar)
+    updateStatus: async (req, res) => {
+        try {
+            const { userId } = req.params;
+            const { status } = req.body;
+            const orgId = usersController.getOrgId(req);
+            const creatorRole = req.user.role;
+
+            if (creatorRole !== 'super_admin') {
+                return res.status(403).json({ error: 'Solo el Súper Administrador puede suspender usuarios.' });
+            }
+
+            const { error: updateError } = await supabase
+                .from('profiles')
+                .update({ status })
+                .eq('id', userId);
+
+            if (updateError) throw updateError;
+            res.status(200).json({ message: 'Estado actualizado correctamente.' });
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
     }
 };
 

@@ -112,7 +112,7 @@ const superAdminController = {
 
             // Registro de Auditoría: Cambio de Estado de Org
             const { logAuditEvent } = require('../auditLogger');
-            logAuditEvent('MOD', 'SaaSManager', is_active ? 'ORG_ACTIVATED' : 'ORG_SUSPENDED', { 
+            logAuditEvent('MOD', 'SaaSManager', orgId, is_active ? 'ORG_ACTIVATED' : 'ORG_SUSPENDED', { 
                 org_id: orgId, 
                 executor: req.user.id 
             });
@@ -357,7 +357,7 @@ const superAdminController = {
             
             // Registro de Auditoría de Pérdida Financiera antes de borrar el nodo
             const { logAuditEvent } = require('../auditLogger');
-            logAuditEvent('MOD', 'SaaSManager', 'ORG_DELETED', { 
+            logAuditEvent('MOD', 'SaaSManager', orgId, 'ORG_DELETED', { 
                 org_id: orgId, 
                 org_name: orgData?.name,
                 lost_mrr: orgData?.license_price || 0,
@@ -653,7 +653,7 @@ const superAdminController = {
 
             // Registro de Auditoría: Creación de Organización
             const { logAuditEvent } = require('../auditLogger');
-            logAuditEvent('MOD', 'SaaSManager', 'ORG_CREATED', { 
+            logAuditEvent('MOD', 'SaaSManager', createdOrgId, 'ORG_CREATED', { 
                 org_id: createdOrgId, 
                 org_name: name,
                 admin_email: adminEmail,

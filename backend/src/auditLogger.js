@@ -4,16 +4,18 @@ const { supabaseAdmin } = require('./config/supabase');
  * Registra un evento de auditoría en la base de datos
  * @param {string} level - Nivel del log (INFO, SEC, MOD, SYS, FIN)
  * @param {string} origin - Origen del evento (e.g. 'AuthAPI', 'SaaSManager')
+ * @param {string} organization_id - ID de la organización
  * @param {string} event - Nombre del evento (e.g. 'AUTH_SUCCESS', 'ORG_CREATED')
  * @param {object} metadata - Datos adicionales en formato JSON
  */
-const logAuditEvent = async (level, origin, event, metadata = {}) => {
+const logAuditEvent = async (level, origin, organization_id, event, metadata = {}) => {
   try {
     const { error } = await supabaseAdmin
-      .from('system_logs')
+      .from('system_audit_logs')
       .insert([{
         level: level.toLowerCase(), // Normalización para el enum/check de la DB
         module: origin,
+        organization_id: organization_id,
         message: `${event}: ${JSON.stringify(metadata)}`
       }]);
 

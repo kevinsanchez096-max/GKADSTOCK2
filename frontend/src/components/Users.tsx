@@ -113,32 +113,43 @@ export const Users = () => {
  return (
  <div className="space-y-8 animate-slide-up flex-1 min-h-full">
  
- {/* HEADER */}
- <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
- <div className="space-y-1">
- <h2 className="text-3xl font-black text-foreground flex items-center gap-3 font-outfit uppercase tracking-tight">
- <div className="p-2 bg-brand-500/10 rounded-xl border border-brand-500/20 text-brand-500 shadow-sm">
- <UsersIcon className="h-6 w-6"/>
- </div>
- ESTRUCTURA DE EQUIPO
- </h2>
- <p className="text-muted-foreground font-bold uppercase tracking-[0.3em] text-[10px] ml-1">Control de Accesos y Jerarquía Operativa</p>
- </div>
- {(profile?.role === 'super_admin' || profile?.role === 'admin') && (
- <Button 
- className={`h-14 px-8 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 border ${
- isLimitReached 
- ? 'bg-muted text-muted-foreground border-border cursor-not-allowed' 
- : 'glow-blue border-brand-400/30'
- }`}
- icon={isLimitReached ? AlertCircle : UserPlus} 
- onClick={() => !isLimitReached && setIsModalOpen(true)}
- disabled={isLimitReached}
- >
- {isLimitReached ? 'LÍMITE ALCANZADO' : 'VINCULAR COLABORADOR'}
- </Button>
- )}
- </div>
+    {/* 1. MISSION CONTROL HEADER */}
+    <Card className="bg-card/30 p-10 rounded-[2.5rem] border border-border/50 backdrop-blur-xl relative overflow-hidden mb-12">
+      {/* Decorative elements */}
+      <div className="absolute top-[-20%] right-[-10%] w-64 h-64 bg-brand-500/10 blur-[80px] rounded-full pointer-events-none"/>
+      <div className="absolute bottom-[-10%] left-[-5%] w-48 h-48 bg-blue-500/5 blur-[60px] rounded-full pointer-events-none"/>
+
+      <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-10">
+        <div className="space-y-2">
+          <div className="flex items-center gap-3">
+            <div className="h-2 w-2 rounded-full bg-brand-500 animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.5)]"/>
+            <UsersIcon size={18} className="text-brand-500" />
+            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-brand-500">Gestión de Talento</span>
+          </div>
+          <h1 className="text-4xl font-black text-foreground font-heading tracking-tighter uppercase leading-none">
+            Estructura de <span className="bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent">Equipo</span>
+          </h1>
+          <p className="text-muted-foreground font-bold text-[11px] uppercase tracking-widest opacity-70 ml-1">Control de Accesos y Jerarquía Operativa Global</p>
+        </div>
+
+        <div className="flex items-center gap-6">
+          {(profile?.role === 'super_admin' || profile?.role === 'admin') && (
+            <Button 
+              onClick={() => !isLimitReached && setIsModalOpen(true)}
+              icon={isLimitReached ? AlertCircle : UserPlus}
+              disabled={isLimitReached}
+              className={`h-14 px-10 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all shadow-2xl border-none ${
+                isLimitReached 
+                  ? 'bg-muted text-muted-foreground' 
+                  : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-blue-500/20'
+              }`}
+            >
+              {isLimitReached ? 'Límite de Plan Alcanzado' : 'Vincular Colaborador'}
+            </Button>
+          )}
+        </div>
+      </div>
+    </Card>
 
  {isLimitReached && (
  <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl flex items-center justify-between group animate-in slide-in-from-top-2">

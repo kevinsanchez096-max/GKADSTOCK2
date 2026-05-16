@@ -112,19 +112,29 @@ export const SubscriptionPlans = () => {
   const currentPlan = orgStore.organization?.plan || profile?.organizations?.plan || 'Starter';
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [showContactModal, setShowContactModal] = useState(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
 
   const handleSelectPlan = (planId: string) => {
     if (planId === currentPlan) return;
     setSelectedPlan(planId);
+    setPaymentSuccess(false);
+    setIsProcessingPayment(false);
     setShowContactModal(true);
   };
 
-  const handleContactSales = () => {
-    const subject = encodeURIComponent(`Solicitud de upgrade al plan ${selectedPlan} - ${orgStore.organization?.company_name || 'Mi Organización'}`);
-    const body = encodeURIComponent(`Hola equipo GKAD,\n\nMe gustaría actualizar mi plan actual (${currentPlan}) al plan ${selectedPlan}.\n\nOrganización: ${orgStore.organization?.company_name || ''}\nCorreo: ${profile?.email || ''}\n\nQuedo atento a los pasos a seguir.\n\nGracias.`);
-    window.open(`mailto:soporte@gkadstock.com?subject=${subject}&body=${body}`, '_blank');
-    toast.success('Se abrió tu cliente de correo. ¡Te contactaremos pronto!');
-    setShowContactModal(false);
+  const handleSimulatedPayment = () => {
+    setIsProcessingPayment(true);
+    setTimeout(() => {
+      setIsProcessingPayment(false);
+      setPaymentSuccess(true);
+      toast.success('Pago confirmado. Plan actualizado con éxito.', {
+        style: { background: '#10b981', color: '#fff', border: 'none' }
+      });
+      setTimeout(() => {
+        setShowContactModal(false);
+      }, 1500);
+    }, 3000);
   };
 
   return (
@@ -351,31 +361,54 @@ export const SubscriptionPlans = () => {
 
               <div className="space-y-2">
                 <h3 className="text-lg font-black text-foreground uppercase tracking-wider">
-                  Upgrade al plan {selectedPlan}
+                  {paymentSuccess ? '¡Pago Exitoso!' : `Upgrade al plan ${selectedPlan}`}
                 </h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  ¿Listo para desbloquear todo el potencial de tu negocio? 
-                  Contáctanos y activamos tu plan en minutos.
+                  {paymentSuccess 
+                    ? 'Tu suscripción ha sido actualizada. Disfruta de tus nuevos beneficios.' 
+                    : 'Ingresa tu método de pago para activar tu nuevo plan de forma inmediata y segura.'}
                 </p>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-3 pt-2">
                 <button
-                  onClick={handleContactSales}
-                  className="w-full h-14 rounded-2xl text-white font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 shadow-lg transition-all hover:brightness-110 active:scale-[0.98]"
-                  style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)' }}
+                  onClick={handleSimulatedPayment}
+                  disabled={isProcessingPayment || paymentSuccess}
+                  className={`w-full h-14 rounded-2xl text-white font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 shadow-lg transition-all ${
+                    paymentSuccess 
+                      ? 'bg-emerald-500' 
+                      : isProcessingPayment 
+                        ? 'bg-amber-500/80 cursor-wait'
+                        : 'hover:brightness-110 active:scale-[0.98]'
+                  }`}
+                  style={!paymentSuccess && !isProcessingPayment ? { background: 'linear-gradient(135deg, #f59e0b, #d97706)' } : {}}
                 >
-                  <Headphones size={16} />
-                  Contactar al equipo de ventas
+                  {isProcessingPayment ? (
+                    <>
+                      <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Procesando pago...
+                    </>
+                  ) : paymentSuccess ? (
+                    <>
+                      <Check size={18} />
+                      Plan Activado
+                    </>
+                  ) : (
+                    <>
+                      <Crown size={16} />
+                      Pagar y Activar Plan
+                    </>
+                  )}
                 </button>
-                <a
-                  href="https://wa.me/573001234567?text=Hola,%20quiero%20actualizar%20mi%20plan%20a%20" 
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full h-12 rounded-2xl border border-emerald-500/30 text-emerald-500 font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-emerald-500/5 transition-all"
-                >
-                  Escribir por WhatsApp
-                </a>
+                
+                {!isProcessingPayment && !paymentSuccess && (
+                  <button
+                    onClick={() => setShowContactModal(false)}
+                    className="w-full h-12 rounded-2xl border border-border text-muted-foreground font-bold text-xs uppercase tracking-widest hover:text-foreground hover:bg-muted transition-all"
+                  >
+                    Cancelar
+                  </button>
+                )}
               </div>
             </motion.div>
           </motion.div>

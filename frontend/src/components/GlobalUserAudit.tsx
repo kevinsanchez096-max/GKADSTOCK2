@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { api } from '../lib/api';
 import { toast } from 'sonner';
-import { Card } from './ui-components';
+import { Card, Button } from './ui-components';
 
 interface GlobalUser {
  id: string;
@@ -85,6 +85,49 @@ export const GlobalUserAudit = () => {
  }
  };
 
+ const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+ const handleUpdateRole = async (userId: string, newRole: string) => {
+ try {
+ setActionLoading(`role-${userId}`);
+ await api.put(`/users/${userId}/role`, { role: newRole });
+ toast.success('Rol actualizado con éxito');
+ fetchData();
+ } catch (error: any) {
+ toast.error(error.response?.data?.error || 'Error al cambiar rol');
+ } finally {
+ setActionLoading(null);
+ }
+ };
+
+ const handleUpdateStatus = async (userId: string, currentStatus: string) => {
+ try {
+ setActionLoading(`status-${userId}`);
+ const newStatus = currentStatus === 'active' ? 'suspended' : 'active';
+ await api.put(`/users/${userId}/status`, { status: newStatus });
+ toast.success(`Usuario ${newStatus === 'active' ? 'activado' : 'suspendido'} con éxito`);
+ fetchData();
+ } catch (error: any) {
+ toast.error(error.response?.data?.error || 'Error al cambiar estado');
+ } finally {
+ setActionLoading(null);
+ }
+ };
+
+ const handleDeleteUser = async (userId: string) => {
+ if (!window.confirm('¿Está seguro de eliminar este usuario globalmente? Esta acción es irreversible.')) return;
+ try {
+ setActionLoading(`delete-${userId}`);
+ await api.delete(`/users/${userId}`);
+ toast.success('Usuario purgado del sistema');
+ fetchData();
+ } catch (error: any) {
+ toast.error(error.response?.data?.error || 'Error al eliminar usuario');
+ } finally {
+ setActionLoading(null);
+ }
+ };
+
  useEffect(() => {
  fetchData();
  }, [viewMode]);
@@ -122,7 +165,7 @@ export const GlobalUserAudit = () => {
  );
  } else {
  return (
- <span className="flex items-center gap-2 px-3 py-1 rounded-xl bg-muted text-gray-300 text-[9px] font-black border border-border uppercase tracking-widest">
+ <span className="flex items-center gap-2 px-3 py-1 rounded-xl bg-muted text-muted-foreground text-[9px] font-black border border-border uppercase tracking-widest">
  <Users className="h-3 w-3"strokeWidth={2.5} />
  OPERADOR
  </span>
@@ -132,58 +175,69 @@ export const GlobalUserAudit = () => {
 
  return (
  <div className="space-y-8 animate-slide-up pb-32">
- 
- {/* HEADER */}
- <Card className="bg-card border border-border p-8 shadow-2xl relative overflow-hidden rounded-[2.5rem] backdrop-blur-xl">
- <div className="absolute top-[-10%] right-[-5%] w-48 h-48 bg-brand-500/5 blur-[60px] rounded-full pointer-events-none"/>
- <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 relative z-10">
- <div className="flex items-center gap-4">
- <div className="h-14 w-14 bg-brand-500/10 rounded-2xl flex items-center justify-center text-brand-500 border border-brand-500/20 shadow-2xl shadow-brand-500/5">
- <GitGraph className="h-7 w-7"strokeWidth={2.5} />
- </div>
- <div>
- <h3 className="text-2xl font-black text-foreground uppercase tracking-tight font-outfit leading-none">
- TRAZABILIDAD <br/>SaaS
- </h3>
- <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-[0.3em] mt-2">Auditoría Global de Personal</p>
- </div>
- </div>
+  <Card className="bg-card/30 p-10 rounded-[2.5rem] border border-border/50 backdrop-blur-xl relative overflow-hidden mb-12">
+    {/* Decorative elements */}
+    <div className="absolute top-[-20%] right-[-10%] w-64 h-64 bg-emerald-500/10 blur-[80px] rounded-full pointer-events-none"/>
+    <div className="absolute bottom-[-10%] left-[-5%] w-48 h-48 bg-blue-500/5 blur-[60px] rounded-full pointer-events-none"/>
 
- <div className="flex flex-wrap items-center gap-4">
- <div className="flex bg-muted/40 p-1.5 rounded-2xl border border-border shadow-inner">
- <button 
- onClick={() => setViewMode('flat')}
- className={`px-6 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${viewMode === 'flat' ? 'bg-brand-500 shadow-xl shadow-brand-500/20 text-white' : 'text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground'}`}
- >
- VISTA PLANA
- </button>
- <button 
- onClick={() => setViewMode('trace')}
- className={`px-6 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${viewMode === 'trace' ? 'bg-brand-500 shadow-xl shadow-brand-500/20 text-white' : 'text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground'}`}
- >
- JERARQUÍA
- </button>
- </div>
+    <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-10">
+      <div className="space-y-2">
+        <div className="flex items-center gap-3">
+          <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]"/>
+          <Users size={18} className="text-emerald-500" />
+          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-500">Auditoría Global de Personal</span>
+        </div>
+        <h1 className="text-4xl font-black text-foreground font-heading tracking-tighter uppercase leading-none">
+          Trazabilidad <span className="bg-gradient-to-r from-emerald-400 to-blue-500 bg-clip-text text-transparent">SAAS</span>
+        </h1>
+        <p className="text-muted-foreground font-bold text-[11px] uppercase tracking-widest opacity-70 ml-1">Monitoreo de accesos y jerarquía operativa</p>
+      </div>
 
- {viewMode === 'flat' && (
- <div className="relative group">
- <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-brand-500 transition-colors"/>
- <input 
- type="text"
- placeholder="BUSCAR USUARIO..."
- value={searchTerm}
- onChange={(e) => setSearchTerm(e.target.value)}
- className="h-11 pl-12 pr-6 bg-muted/40 border border-border rounded-xl text-[10px] font-black tracking-widest w-full sm:w-56 focus:ring-2 focus:ring-brand-500 transition-all outline-none"
- />
- </div>
- )}
+      <div className="flex flex-wrap items-center gap-6">
+        <div className="flex bg-muted/40 p-1.5 rounded-2xl border border-border/50 shadow-inner">
+          <button 
+            onClick={() => setViewMode('flat')}
+            className={`px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${
+              viewMode === 'flat' 
+                ? 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white shadow-lg shadow-emerald-500/20' 
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            VISTA PLANA
+          </button>
+          <button 
+            onClick={() => setViewMode('trace')}
+            className={`px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${
+              viewMode === 'trace' 
+                ? 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white shadow-lg shadow-emerald-500/20' 
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            JERARQUÍA
+          </button>
+        </div>
 
- <button onClick={fetchData} className="h-11 w-11 flex items-center justify-center bg-muted hover:bg-muted/10 text-muted-foreground hover:text-brand-500 rounded-xl transition-all border border-border">
- <RefreshCcw className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
- </button>
- </div>
- </div>
- </Card>
+        <div className="relative group min-w-[320px]">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-emerald-500 transition-colors z-10"/>
+          <input 
+            type="text"
+            placeholder="Buscar usuario por nombre o ID..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full h-14 pl-12 pr-6 bg-muted/40 border border-border/50 rounded-2xl text-[11px] font-bold text-foreground outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all placeholder:text-muted-foreground shadow-inner"
+          />
+        </div>
+
+        <Button 
+          variant="outline" 
+          onClick={fetchData}
+          className="h-14 w-14 rounded-2xl border-border/50 hover:bg-muted p-0 flex items-center justify-center transition-all active:scale-95"
+        >
+          <RefreshCcw className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
+        </Button>
+      </div>
+    </div>
+  </Card>
 
  {/* KPI CARDS - VISIBILIDAD FORZADA */}
  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -219,6 +273,7 @@ export const GlobalUserAudit = () => {
  <th className="px-8 py-6">ORGANIZACIÓN</th>
  <th className="px-8 py-6">ALTA</th>
  <th className="px-8 py-6 text-right">ID</th>
+ <th className="px-8 py-6 text-right">ACCIONES</th>
  </tr>
  </thead>
  <tbody className="divide-y divide-border">
@@ -253,6 +308,34 @@ export const GlobalUserAudit = () => {
  </td>
  <td className="px-8 py-5 text-right font-mono text-[9px] text-muted-foreground font-black">
  {user.id.toUpperCase().slice(0, 8)}
+ </td>
+ <td className="px-8 py-5 text-right">
+ <div className="flex items-center justify-end gap-2">
+ <select 
+ value={user.role}
+ onChange={(e) => handleUpdateRole(user.id, e.target.value)}
+ disabled={actionLoading !== null}
+ className="bg-muted text-[9px] font-black uppercase text-foreground px-2 py-1 rounded-lg border border-border"
+ >
+ <option value="super_admin">Súper Admin</option>
+ <option value="admin">Admin</option>
+ <option value="vendedor">Vendedor</option>
+ </select>
+ <button 
+ onClick={() => handleUpdateStatus(user.id, user.status)}
+ disabled={actionLoading !== null}
+ className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase border transition-colors ${user.status === 'active' ? 'border-rose-500/20 text-rose-500 hover:bg-rose-500/10' : 'border-emerald-500/20 text-emerald-500 hover:bg-emerald-500/10'}`}
+ >
+ {user.status === 'active' ? 'Suspender' : 'Activar'}
+ </button>
+ <button 
+ onClick={() => handleDeleteUser(user.id)}
+ disabled={actionLoading !== null}
+ className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-500/10 transition-colors"
+ >
+ <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+ </button>
+ </div>
  </td>
  </tr>
  ))}
@@ -294,7 +377,7 @@ const TreeNode = ({ node, depth, expandedNodes, toggleNode, getRoleBadge }: any)
  <div className={`h-12 w-12 rounded-2xl flex items-center justify-center font-black text-lg border-2 shadow-2xl ${
  (node.role || '').toLowerCase().includes('super') ? 'bg-purple-500/10 text-purple-400 border-purple-500/30' : 
  (node.role || '').toLowerCase().includes('admin') ? 'bg-brand-500/10 text-blue-400 border-brand-500/30' : 
- 'bg-muted text-gray-300 border-border'
+ 'bg-muted text-muted-foreground border-border'
  }`}>
  {node.full_name?.charAt(0).toUpperCase()}
  </div>

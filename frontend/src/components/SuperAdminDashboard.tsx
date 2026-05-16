@@ -160,24 +160,32 @@ export const SuperAdminDashboard = ({ setActiveTab }: { setActiveTab?: (tab: str
     <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-1000 pb-20">
       
       {/* 1. MISSION CONTROL HEADER */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 bg-card/30 p-8 rounded-[2rem] border border-border/50 backdrop-blur-xl">
-        <div className="space-y-2">
+      <Card className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 bg-card/30 p-10 rounded-[2.5rem] border border-border/50 backdrop-blur-xl relative overflow-hidden">
+        {/* Decorative elements */}
+        <div className="absolute top-[-20%] right-[-10%] w-64 h-64 bg-brand-500/10 blur-[80px] rounded-full pointer-events-none"/>
+        <div className="absolute bottom-[-10%] left-[-5%] w-48 h-48 bg-emerald-500/5 blur-[60px] rounded-full pointer-events-none"/>
+
+        <div className="relative z-10 space-y-2">
           <div className="flex items-center gap-3">
             <div className="h-3 w-3 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_15px_rgba(16,185,129,0.5)]"/>
             <span className="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-500">Sistema Operativo</span>
           </div>
-          <h1 className="text-4xl font-black text-foreground font-heading tracking-tighter uppercase leading-none">Control <span className="text-brand-500">Maestro</span></h1>
-          <p className="text-muted-foreground font-bold text-[11px] uppercase tracking-widest opacity-70">Monitor de Infraestructura y Negocios Globales</p>
+          <h1 className="text-4xl font-black text-foreground font-heading tracking-tighter uppercase leading-none">
+            Control <span className="bg-gradient-to-r from-emerald-400 to-blue-500 bg-clip-text text-transparent">Maestro</span>
+          </h1>
+          <p className="text-muted-foreground font-bold text-[11px] uppercase tracking-widest opacity-70 ml-1">Monitor de Infraestructura y Negocios Globales</p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-4">
-          <div className="flex items-center gap-1 bg-black/40 p-1.5 rounded-2xl border border-white/5">
+        <div className="relative z-10 flex flex-wrap items-center gap-6">
+          <div className="flex items-center gap-1 bg-muted/40 p-1.5 rounded-2xl border border-border/50 shadow-inner">
             {['Hoy', 'Semana', 'Mes', 'Año'].map((f) => (
               <button
                 key={f}
                 onClick={() => setTimeFilter(f)}
-                className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${
-                  timeFilter === f ? 'bg-brand-500 text-white shadow-xl shadow-brand-500/30' : 'text-muted-foreground hover:text-foreground'
+                className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${
+                  timeFilter === f 
+                    ? 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white shadow-lg shadow-emerald-500/20' 
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 {f}
@@ -188,12 +196,12 @@ export const SuperAdminDashboard = ({ setActiveTab }: { setActiveTab?: (tab: str
           <Button 
             onClick={() => setIsModalOpen(true)}
             icon={Plus}
-            className="h-12 px-8 rounded-2xl bg-brand-500 text-white font-black uppercase text-[10px] tracking-widest hover:scale-105 transition-transform shadow-2xl shadow-brand-500/20"
+            className="h-14 px-10 rounded-2xl bg-gradient-to-r from-emerald-500 to-blue-600 text-white font-black uppercase text-[10px] tracking-widest hover:scale-105 transition-all shadow-2xl shadow-emerald-500/20 border-none"
           >
             Nuevo Nodo
           </Button>
         </div>
-      </div>
+      </Card>
 
       {/* 2. EXECUTIVE KPI GRID */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -230,7 +238,7 @@ export const SuperAdminDashboard = ({ setActiveTab }: { setActiveTab?: (tab: str
               <h3 className="text-sm font-black uppercase tracking-[0.3em] text-foreground">Crecimiento del Ecosistema</h3>
               <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-widest opacity-60">Datos históricos reales de MRR y Bajas</p>
             </div>
-            <div className="flex gap-6 bg-black/20 p-3 rounded-2xl border border-white/5">
+            <div className="flex gap-6 bg-muted/20 p-3 rounded-2xl border border-border/50">
               <div className="flex items-center gap-2"><div className="h-2 w-2 rounded-full bg-brand-500"/><span className="text-[9px] font-black uppercase text-muted-foreground">Suscripciones</span></div>
               <div className="flex items-center gap-2"><div className="h-2 w-2 rounded-full bg-rose-500"/><span className="text-[9px] font-black uppercase text-muted-foreground">Pérdidas</span></div>
             </div>
@@ -266,7 +274,7 @@ export const SuperAdminDashboard = ({ setActiveTab }: { setActiveTab?: (tab: str
 
         {/* Platform Health & Strategy */}
         <div className="space-y-8">
-          <Card className="p-8 border-border/50 bg-black/40 relative overflow-hidden">
+          <Card className="p-8 border-border/50 bg-muted/40 relative overflow-hidden">
             <div className="absolute -right-4 -top-4 opacity-5 rotate-12">
               <Server size={120} />
             </div>
@@ -277,7 +285,7 @@ export const SuperAdminDashboard = ({ setActiveTab }: { setActiveTab?: (tab: str
                 { label: 'Latencia Global', value: health?.latency || '-- ms', color: 'text-brand-500' },
                 { label: 'Base de Datos', value: health?.database === 'connected' ? 'En Línea' : 'Error', color: health?.database === 'connected' ? 'text-emerald-500' : 'text-rose-500' },
               ].map((item, i) => (
-                <div key={i} className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
+                <div key={i} className="flex items-center justify-between p-4 bg-card rounded-2xl border border-border/50">
                   <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{item.label}</span>
                   <span className={`text-[11px] font-black uppercase ${item.color}`}>{item.value}</span>
                 </div>
@@ -293,7 +301,7 @@ export const SuperAdminDashboard = ({ setActiveTab }: { setActiveTab?: (tab: str
                   <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Eficiencia Operativa</p>
                   <span className="text-brand-500 font-black text-xs">{stats?.businessHealth?.efficiency || 0}%</span>
                 </div>
-                <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                <div className="h-1.5 w-full bg-card rounded-full overflow-hidden">
                   <div 
                     className="h-full bg-brand-500 rounded-full shadow-[0_0_10px_rgba(59,130,246,0.5)] transition-all duration-1000"
                     style={{ width: `${stats?.businessHealth?.efficiency || 0}%` }}
@@ -329,7 +337,7 @@ export const SuperAdminDashboard = ({ setActiveTab }: { setActiveTab?: (tab: str
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left">
-            <thead className="bg-black/20">
+            <thead className="bg-muted/20">
               <tr>
                 {['Organización', 'Plan', 'Usuarios', 'Ingresos', 'Estado', ''].map((h) => (
                   <th key={h} className="px-10 py-6 text-[10px] font-black text-muted-foreground uppercase tracking-widest">{h}</th>
@@ -397,14 +405,14 @@ export const SuperAdminDashboard = ({ setActiveTab }: { setActiveTab?: (tab: str
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
         {/* Real-time Activity Pulse */}
-        <Card className="lg:col-span-2 p-10 space-y-10 border-border/50 bg-black/20">
+        <Card className="lg:col-span-2 p-10 space-y-10 border-border/50 bg-muted/20">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
             <div className="space-y-1">
               <h3 className="text-sm font-black uppercase tracking-[0.4em] text-foreground leading-none">Pulso de Actividad Real</h3>
               <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest opacity-60">Tráfico global basado en accesos verificados</p>
             </div>
             
-            <div className="flex items-center gap-1 bg-black/40 p-1 rounded-xl border border-white/5">
+            <div className="flex items-center gap-1 bg-muted/40 p-1 rounded-xl border border-border/50">
               {['Hoy', 'Semana', 'Mes', 'Año'].map((f) => (
                 <button
                   key={f}
@@ -469,7 +477,7 @@ export const SuperAdminDashboard = ({ setActiveTab }: { setActiveTab?: (tab: str
                     {log.action || 'Operación de Sistema'}
                   </p>
                   <p className="text-[8px] font-black text-muted-foreground/40 mt-1 uppercase">
-                    {log.created_at ? new Date(log.created_at).toLocaleTimeString() : 'Hace un momento'}
+                    {log.created_at ? new Date(log.created_at).toLocaleString('es-ES', { dateStyle: 'medium', timeStyle: 'short' }) : 'Hace un momento'}
                   </p>
                 </div>
               </div>

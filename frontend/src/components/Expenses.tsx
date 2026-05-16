@@ -77,31 +77,43 @@ export const Expenses = () => {
  <PlanGuard restrictedPlans={['Esencial']} moduleName="Gestión de Gastos">
  <div className="space-y-8 animate-slide-up flex-1 min-h-full flex flex-col">
  
- {/* HEADER ESTRATÉGICO */}
- <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
- <div className="space-y-1">
- <h2 className="text-3xl font-black text-foreground flex items-center gap-3 font-outfit uppercase tracking-tight">
- <div className="p-2 bg-red-500/10 rounded-xl border border-red-500/20 text-red-500 shadow-sm">
- <TrendingDown className="h-6 w-6"/>
- </div>
- FLUJO DE EGRESOS
- </h2>
- <p className="text-muted-foreground font-bold uppercase tracking-[0.3em] text-[10px] ml-1">Control de Gastos y Salidas Operativas</p>
- </div>
+    {/* 1. MISSION CONTROL HEADER */}
+    <Card className="bg-card/30 p-10 rounded-[2.5rem] border border-border/50 backdrop-blur-xl relative overflow-hidden mb-12">
+      {/* Decorative elements */}
+      <div className="absolute top-[-20%] right-[-10%] w-64 h-64 bg-red-500/10 blur-[80px] rounded-full pointer-events-none"/>
+      <div className="absolute bottom-[-10%] left-[-5%] w-48 h-48 bg-orange-500/5 blur-[60px] rounded-full pointer-events-none"/>
 
- <div className="flex items-center gap-4">
- <div className="bg-card border border-border px-6 py-3 rounded-2xl flex flex-col items-end shadow-md dark:shadow-none backdrop-blur-xl">
- <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-1">TOTAL EGRESOS ACUMULADOS</span>
- <span className="text-2xl font-black text-red-500 font-outfit tracking-tighter">-${totalExpensesValue.toLocaleString()}</span>
- </div>
- <button 
- onClick={() => setIsFormOpen(!isFormOpen)}
- className="h-14 px-8 bg-red-500 hover:bg-red-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 shadow-xl shadow-red-500/20"
- >
- {isFormOpen ? 'CANCELAR' : 'REGISTRAR SALIDA'}
- </button>
- </div>
- </div>
+      <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 items-center gap-10">
+        <div className="lg:col-span-4 space-y-2">
+          <div className="flex items-center gap-3">
+            <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.5)]"/>
+            <TrendingDown size={18} className="text-red-500" />
+            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-red-500">Control de Egresos</span>
+          </div>
+          <h1 className="text-4xl font-black text-foreground font-heading tracking-tighter uppercase leading-none">
+            Flujo de <span className="bg-gradient-to-r from-brand-500 to-brand-600 bg-clip-text text-transparent">Gastos</span>
+          </h1>
+          <p className="text-muted-foreground font-bold text-[11px] uppercase tracking-widest opacity-70 ml-1">Caja y Operaciones</p>
+        </div>
+
+        <div className="lg:col-span-4 flex justify-center">
+          <div className="bg-muted/40 border border-border/50 px-10 py-4 rounded-[2rem] flex flex-col items-center shadow-inner backdrop-blur-md min-w-[240px]">
+            <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-1 opacity-60">Salidas del Periodo</span>
+            <span className="text-3xl font-black text-red-500 font-outfit tracking-tighter">-${totalExpensesValue.toLocaleString()}</span>
+          </div>
+        </div>
+
+        <div className="lg:col-span-4 flex justify-end">
+          <Button 
+            onClick={() => setIsFormOpen(!isFormOpen)}
+            icon={Plus}
+            className="h-14 px-10 rounded-2xl bg-gradient-to-r from-brand-500 to-brand-600 text-white font-black uppercase text-[10px] tracking-widest hover:scale-105 transition-all shadow-2xl shadow-brand-500/20 border-none"
+          >
+            {isFormOpen ? 'Cerrar Registro' : 'Registrar Gasto'}
+          </Button>
+        </div>
+      </div>
+    </Card>
 
  {isFormOpen && (
  <Card className="p-10 bg-card border border-border shadow-2xl rounded-[3rem] relative overflow-hidden animate-in fade-in zoom-in duration-300">

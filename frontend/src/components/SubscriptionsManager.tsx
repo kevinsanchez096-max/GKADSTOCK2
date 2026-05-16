@@ -133,29 +133,45 @@ export const SubscriptionsManager = () => {
  return (
  <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
  
- {/* HEADER */}
-  <div className="flex items-center justify-between">
-    <div className="space-y-1">
-      <h1 className="text-3xl font-light text-foreground font-outfit tracking-tight uppercase">Suscripciones <span className="font-black text-purple-500">&</span> Licencias</h1>
-      <p className="text-muted-foreground font-bold text-[10px] uppercase tracking-[0.3em]">Matriz de Precios y Control de Capacidades</p>
+  {/* HEADER */}
+  <Card className="bg-card/30 p-10 rounded-[2.5rem] border border-border/50 backdrop-blur-xl relative overflow-hidden mb-12">
+    {/* Decorative elements */}
+    <div className="absolute top-[-20%] right-[-10%] w-64 h-64 bg-purple-500/10 blur-[80px] rounded-full pointer-events-none"/>
+    <div className="absolute bottom-[-10%] left-[-5%] w-48 h-48 bg-blue-500/5 blur-[60px] rounded-full pointer-events-none"/>
+
+    <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-10">
+      <div className="space-y-2">
+        <div className="flex items-center gap-3">
+          <div className="h-2 w-2 rounded-full bg-purple-500 animate-pulse shadow-[0_0_10px_rgba(168,85,247,0.5)]"/>
+          <CreditCard size={18} className="text-purple-500" />
+          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-purple-500">Revenue Management</span>
+        </div>
+        <h1 className="text-4xl font-black text-foreground font-heading tracking-tighter uppercase leading-none">
+          Suscripciones <span className="bg-gradient-to-r from-purple-400 to-blue-500 bg-clip-text text-transparent">& Licencias</span>
+        </h1>
+        <p className="text-muted-foreground font-bold text-[11px] uppercase tracking-widest opacity-70 ml-1">Matriz de precios y control de capacidades globales</p>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-6">
+        <Button 
+          variant="outline"
+          onClick={() => setIsAddModalOpen(true)}
+          className="h-14 px-8 rounded-2xl border-border/50 hover:bg-muted font-black uppercase text-[10px] tracking-widest transition-all"
+        >
+          <Plus size={18} className="mr-2" /> Añadir Nuevo Plan
+        </Button>
+        
+        <Button 
+          onClick={handleSave}
+          loading={isSaving}
+          className="h-14 px-10 rounded-2xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-black uppercase text-[10px] tracking-widest hover:scale-105 transition-all shadow-2xl shadow-purple-500/20 border-none"
+        >
+          <Save size={18} className="mr-2" /> Guardar Cambios
+        </Button>
+      </div>
     </div>
-    <div className="flex items-center gap-4">
-      <Button 
-        variant="outline"
-        onClick={() => setIsAddModalOpen(true)}
-        className="flex items-center gap-3 px-6 rounded-2xl h-14 font-black uppercase tracking-widest border-border hover:bg-muted"
-      >
-        <Plus size={18} /> Añadir Nuevo Plan
-      </Button>
-      <Button 
-        onClick={handleSave}
-        loading={isSaving}
-        className="bg-purple-600 hover:bg-purple-700 text-white flex items-center gap-3 px-8 rounded-2xl h-14 font-black uppercase tracking-widest shadow-xl shadow-purple-900/20"
-      >
-        <Save size={18} /> Guardar Cambios
-      </Button>
-    </div>
-  </div>
+  </Card>
+   
 
  {/* PRICING MATRIX */}
   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">

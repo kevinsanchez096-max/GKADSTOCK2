@@ -256,22 +256,41 @@ export const Settings = () => {
  return (
  <div className="max-w-6xl mx-auto space-y-10 animate-slide-up">
  
- <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
- <div>
- <h2 className="text-3xl font-black text-foreground font-outfit tracking-tighter">CONFIGURACIÓN</h2>
- <p className="text-muted-foreground font-bold uppercase tracking-[0.2em] text-[10px] mt-1">Personalización de experiencia y datos comerciales</p>
- <div className="h-1 w-12 bg-brand-500 mt-4 rounded-full"/>
- </div>
- <Button 
- icon={showSaved ? CheckCircle2 : Save} 
- onClick={handleSave} 
- loading={isSaving}
- size="lg"
- className={showSaved ? 'bg-green-600 hover:bg-green-700' : ''}
- >
- {showSaved ? 'Sincronizado' : 'Guardar Parámetros'}
- </Button>
- </div>
+    {/* 1. MISSION CONTROL HEADER */}
+    <Card className="bg-card/30 p-10 rounded-[2.5rem] border border-border/50 backdrop-blur-xl relative overflow-hidden mb-12">
+      {/* Decorative elements */}
+      <div className="absolute top-[-20%] right-[-10%] w-64 h-64 bg-brand-500/10 blur-[80px] rounded-full pointer-events-none"/>
+      <div className="absolute bottom-[-10%] left-[-5%] w-48 h-48 bg-blue-500/5 blur-[60px] rounded-full pointer-events-none"/>
+
+      <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-10">
+        <div className="space-y-2">
+          <div className="flex items-center gap-3">
+            <div className="h-2 w-2 rounded-full bg-brand-500 animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.5)]"/>
+            <Building2 size={18} className="text-brand-500" />
+            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-brand-500">Configuración del Sistema</span>
+          </div>
+          <h1 className="text-4xl font-black text-foreground font-heading tracking-tighter uppercase leading-none">
+            Panel de <span className="bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent">Control</span>
+          </h1>
+          <p className="text-muted-foreground font-bold text-[11px] uppercase tracking-widest opacity-70 ml-1">Personalización de Experiencia y Datos Operativos</p>
+        </div>
+
+        <div className="flex items-center gap-6">
+          <Button 
+            onClick={handleSave}
+            icon={showSaved ? CheckCircle2 : Save}
+            loading={isSaving}
+            className={`h-14 px-10 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all shadow-2xl border-none ${
+              showSaved 
+                ? 'bg-emerald-600 text-white shadow-emerald-500/20' 
+                : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-blue-500/20'
+            }`}
+          >
+            {showSaved ? 'Sincronizado' : 'Guardar Cambios'}
+          </Button>
+        </div>
+      </div>
+    </Card>
 
  <div className="flex flex-col lg:flex-row gap-10">
  

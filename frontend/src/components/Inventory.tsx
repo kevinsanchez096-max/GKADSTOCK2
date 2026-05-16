@@ -360,7 +360,7 @@ export const Inventory = () => {
     { bg: 'bg-rose-500/15', text: 'text-rose-600 dark:text-rose-400', border: 'border-rose-500/30', shadow: 'shadow-rose-500/10' },
     { bg: 'bg-cyan-500/15', text: 'text-cyan-600 dark:text-cyan-400', border: 'border-cyan-500/30', shadow: 'shadow-cyan-500/10' },
     { bg: 'bg-orange-500/15', text: 'text-orange-600 dark:text-orange-400', border: 'border-orange-500/30', shadow: 'shadow-orange-500/10' },
-    { bg: 'bg-indigo-500/15', text: 'text-indigo-600 dark:text-indigo-400', border: 'border-indigo-500/30', shadow: 'shadow-indigo-500/10' },
+    { bg: 'bg-indigo-500/15', text: 'text-indigo-600 dark:text-indigo-400', border: 'border-indigo-500/30', shadow: 'shadow-indigo-500/10' }
   ];
 
   const getCategoryStyle = (categoryId: string) => {
@@ -370,138 +370,139 @@ export const Inventory = () => {
   };
 
  return (
- <div className="space-y-8 animate-slide-up">
- 
- {/* HEADER DE LA SECCIÓN */}
- <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
- <div className="space-y-1">
- <h2 className="text-3xl font-black text-foreground flex items-center gap-3 font-outfit uppercase tracking-tight">
- <div className="p-2 bg-brand-500/10 rounded-lg border border-brand-500/20 text-brand-500">
- <Package className="h-6 w-6"/>
- </div>
- CONTROL DE EXISTENCIAS
- </h2>
- <p className="text-muted-foreground font-bold uppercase tracking-[0.3em] text-[10px] ml-1">Gestión centralizada de stock y trazabilidad</p>
- </div>
- </div>
+  <div className="space-y-12 animate-slide-up pb-32">
+    
+    {/* 1. MISSION CONTROL HEADER */}
+    <Card className="bg-card/30 p-10 rounded-[2.5rem] border border-border/50 backdrop-blur-xl relative overflow-hidden mb-8">
+      {/* Decorative elements */}
+      <div className="absolute top-[-20%] right-[-10%] w-64 h-64 bg-brand-500/10 blur-[80px] rounded-full pointer-events-none"/>
+      <div className="absolute bottom-[-10%] left-[-5%] w-48 h-48 bg-emerald-500/5 blur-[60px] rounded-full pointer-events-none"/>
 
- {/* PANEL DE MÉTRICAS DINÁMICAS (MODO DIOS) */}
- <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
- {/* Card: Capital Invertido */}
- <div className="relative group overflow-hidden bg-muted/40 backdrop-blur-2xl border border-border rounded-[2rem] p-8 transition-all hover:border-emerald-500/50 shadow-2xl">
- <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-150 transition-all duration-700">
- <TrendingUp size={80} className="text-emerald-500"/>
- </div>
- <div className="relative z-10">
- <div className="h-12 w-12 bg-emerald-500/10 rounded-2xl flex items-center justify-center mb-4 border border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
- <DollarSign className="text-emerald-500"size={24} />
- </div>
- <p className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.3em] mb-1">Capital en Existencias</p>
- <h3 className="text-3xl font-black text-foreground font-outfit tracking-tighter leading-none">
- ${metrics.totalCapital.toLocaleString()}
- </h3>
- <div className="mt-4 flex items-center gap-2">
- <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-500 text-[8px] font-black rounded-lg border border-emerald-500/20 uppercase tracking-widest">Capital Invertido</span>
- </div>
- </div>
- <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"/>
- </div>
+      <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 items-center gap-10">
+        <div className="lg:col-span-4 space-y-2">
+          <div className="flex items-center gap-3">
+            <div className="h-2 w-2 rounded-full bg-brand-500 animate-pulse shadow-[0_0_10px_rgba(var(--brand-primary-rgb),0.5)]"/>
+            <Package size={18} className="text-brand-500" />
+            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-brand-500">Gestión de Existencias</span>
+          </div>
+          <h1 className="text-4xl font-black text-foreground font-heading tracking-tighter uppercase leading-none">
+            Control de <span className="bg-gradient-to-r from-brand-500 to-brand-600 bg-clip-text text-transparent">Existencias</span>
+          </h1>
+          <p className="text-muted-foreground font-bold text-[11px] uppercase tracking-widest opacity-70 ml-1">Monitoreo de inventario global</p>
+        </div>
 
- {/* Card: SKUs Activos */}
- <div className="relative group overflow-hidden bg-muted/40 backdrop-blur-2xl border border-border rounded-[2rem] p-8 transition-all hover:border-brand-500/50 shadow-2xl">
- <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-150 transition-all duration-700">
- <Package size={80} className="text-blue-500"/>
- </div>
- <div className="relative z-10">
- <div className="h-12 w-12 bg-brand-500/10 rounded-2xl flex items-center justify-center mb-4 border border-brand-500/20 shadow-lg shadow-brand-500/10">
- <LayoutGrid className="text-brand-500"size={24} />
- </div>
- <p className="text-[10px] font-black text-brand-500 uppercase tracking-[0.3em] mb-1">Entidades en Radar</p>
- <h3 className="text-3xl font-black text-foreground font-outfit tracking-tighter leading-none">
- {metrics.skusCount} <span className="text-sm text-muted-foreground uppercase tracking-widest">SKUs</span>
- </h3>
- <div className="mt-4 flex items-center gap-2">
- <span className="px-2 py-0.5 bg-brand-500/10 text-brand-500 text-[8px] font-black rounded-lg border border-brand-500/20 uppercase tracking-widest">Catálogo Activo</span>
- </div>
- </div>
- <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-transparent via-brand-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"/>
- </div>
+        <div className="lg:col-span-4 flex flex-col gap-4">
+          <div className="relative group w-full">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-brand-500 transition-colors z-10"/>
+            <input 
+              type="text"
+              placeholder="Rastrear producto, SKU o tag..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full h-14 pl-12 pr-6 bg-muted/40 border border-border/50 rounded-2xl text-[11px] font-bold text-foreground outline-none focus:ring-2 focus:ring-brand-500/20 transition-all placeholder:text-muted-foreground shadow-inner"
+            />
+          </div>
+          
+          <div className="flex bg-muted/40 p-1 rounded-2xl border border-border/50 shadow-inner w-fit">
+            <button 
+              onClick={() => setViewMode('list')} 
+              className={`px-8 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all duration-300 ${
+                viewMode === 'list' 
+                  ? 'bg-gradient-to-r from-brand-500 to-brand-600 text-white shadow-lg shadow-brand-500/20' 
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Lista
+            </button>
+            <button 
+              onClick={() => setViewMode('grid')} 
+              className={`px-8 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all duration-300 ${
+                viewMode === 'grid' 
+                  ? 'bg-gradient-to-r from-brand-500 to-brand-600 text-white shadow-lg shadow-brand-500/20' 
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Mosaico
+            </button>
+          </div>
+        </div>
 
- {/* Card: Stock Crítico */}
- <div className="relative group overflow-hidden bg-muted/40 backdrop-blur-2xl border border-border rounded-[2rem] p-8 transition-all hover:border-red-500/50 shadow-2xl">
- <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-150 transition-all duration-700">
- <AlertTriangle size={80} className="text-red-500"/>
- </div>
- <div className="relative z-10">
- <div className="h-12 w-12 bg-red-500/10 rounded-2xl flex items-center justify-center mb-4 border border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.2)]">
- <ArrowUpRight className="text-red-500"size={24} />
- </div>
- <p className="text-[10px] font-black text-red-500 uppercase tracking-[0.3em] mb-1">Riesgo de Quiebre</p>
- <h3 className="text-3xl font-black text-foreground font-outfit tracking-tighter leading-none">
- {metrics.criticalStock} <span className="text-sm text-muted-foreground uppercase tracking-widest">Alertas</span>
- </h3>
- <div className="mt-4 flex items-center gap-2">
- <span className={`px-2 py-0.5 text-[8px] font-black rounded-lg border uppercase tracking-widest ${metrics.criticalStock > 0 ? 'bg-red-500/10 text-red-500 border-red-500/20' : 'bg-muted/10 text-muted-foreground border-border'}`}>
- {metrics.criticalStock > 0 ? 'Reposición Urgente' : 'Stock Saludable'}
- </span>
- </div>
- </div>
- <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-transparent via-red-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"/>
- </div>
- </div>
- 
- {/* HEADER ACCIONES */}
- <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-2">
- <div className="space-y-4 flex-1">
- <div className="relative group max-w-2xl">
- <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
- <Search className="h-5 w-5 text-muted-foreground group-focus-within:text-brand-500 transition-colors"/>
- </div>
- <input
- type="text"
- placeholder="Rastrear producto por nombre, SKU o tag..."
- className="w-full pl-12 pr-4 h-14 rounded-2xl border border-border bg-card text-sm font-bold focus:ring-2 focus:ring-brand-500 transition-all text-foreground outline-none shadow-sm placeholder:text-muted-foreground"
- value={searchTerm}
- onChange={(e) => setSearchTerm(e.target.value)}
- />
- </div>
- <div className="flex items-center gap-2">
- <div className="bg-muted p-1 rounded-xl flex border border-border shadow-sm">
- <button onClick={() => setViewMode('list')} className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${viewMode === 'list' ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/30' : 'text-muted-foreground hover:text-foreground '}`}>Lista</button>
- <button onClick={() => setViewMode('grid')} className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${viewMode === 'grid' ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/30' : 'text-muted-foreground hover:text-foreground '}`}>Mosaico</button>
- </div>
- <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-2 italic opacity-60">Visualizando {filteredProducts?.length || 0} Entidades</p>
- </div>
- </div>
+        <div className="lg:col-span-4 flex justify-end">
+          <Button 
+            onClick={() => setIsAddModalOpen(true)}
+            icon={Plus}
+            className="h-14 px-10 rounded-2xl bg-gradient-to-r from-brand-500 to-brand-600 text-white font-black uppercase text-[10px] tracking-widest hover:scale-105 transition-all shadow-2xl shadow-brand-500/20 border-none"
+          >
+            Nuevo Producto
+          </Button>
+        </div>
+      </div>
+    </Card>
 
- <div className="flex items-center gap-3">
- <div className="flex items-center bg-muted p-1 rounded-2xl border border-border shadow-sm">
- <button 
- onClick={() => setIsHistoryModalOpen(true)} 
- className="flex items-center gap-2 px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-amber-500 transition-all hover:bg-card"
- >
- <History size={14} /> VER INGRESOS
- </button>
- <div className="w-px h-6 bg-muted mx-1"/>
- <button 
- onClick={handleExportExcel} 
- className="flex items-center gap-2 px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-brand-500 transition-all hover:bg-card"
- >
- <Download size={14} /> EXCEL
- </button>
- <div className="w-px h-6 bg-muted mx-1"/>
- <button 
- onClick={() => setIsImportModalOpen(true)} 
- className="flex items-center gap-2 px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-brand-500 transition-all hover:bg-card"
- >
- <Upload size={14} /> IMPORTAR
- </button>
- </div>
- <Button icon={Plus} onClick={() => setIsAddModalOpen(true)} size="lg"className="px-8 shadow-2xl shadow-brand-500/20 glow-blue">
- AÑADIR PRODUCTO
- </Button>
- </div>
- </div>
+    {/* PANEL DE MÉTRICAS DINÁMICAS (MODO DIOS) */}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Card: Capital Invertido */}
+      <div className="relative group overflow-hidden bg-muted/40 backdrop-blur-2xl border border-border rounded-[2rem] p-8 transition-all hover:border-emerald-500/50 shadow-2xl">
+        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-150 transition-all duration-700">
+          <TrendingUp size={80} className="text-emerald-500"/>
+        </div>
+        <div className="relative z-10">
+          <div className="h-12 w-12 bg-emerald-500/10 rounded-2xl flex items-center justify-center mb-4 border border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
+            <DollarSign className="text-emerald-500" size={24} />
+          </div>
+          <p className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.3em] mb-1">Capital en Existencias</p>
+          <h3 className="text-3xl font-black text-foreground font-outfit tracking-tighter leading-none">
+            ${metrics.totalCapital.toLocaleString()}
+          </h3>
+          <div className="mt-4 flex items-center gap-2">
+            <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-500 text-[8px] font-black rounded-lg border border-emerald-500/20 uppercase tracking-widest">Capital Invertido</span>
+          </div>
+        </div>
+        <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"/>
+      </div>
+
+      {/* Card: SKUs Activos */}
+      <div className="relative group overflow-hidden bg-muted/40 backdrop-blur-2xl border border-border rounded-[2rem] p-8 transition-all hover:border-brand-500/50 shadow-2xl">
+        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-150 transition-all duration-700">
+          <Package size={80} className="text-blue-500"/>
+        </div>
+        <div className="relative z-10">
+          <div className="h-12 w-12 bg-brand-500/10 rounded-2xl flex items-center justify-center mb-4 border border-brand-500/20 shadow-lg shadow-brand-500/10">
+            <LayoutGrid className="text-brand-500" size={24} />
+          </div>
+          <p className="text-[10px] font-black text-brand-500 uppercase tracking-[0.3em] mb-1">Entidades en Radar</p>
+          <h3 className="text-3xl font-black text-foreground font-outfit tracking-tighter leading-none">
+            {metrics.skusCount} <span className="text-sm text-muted-foreground uppercase tracking-widest">SKUs</span>
+          </h3>
+          <div className="mt-4 flex items-center gap-2">
+            <span className="px-2 py-0.5 bg-brand-500/10 text-brand-500 text-[8px] font-black rounded-lg border border-brand-500/20 uppercase tracking-widest">Catálogo Activo</span>
+          </div>
+        </div>
+        <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-transparent via-brand-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"/>
+      </div>
+
+      {/* Card: Stock Crítico */}
+      <div className="relative group overflow-hidden bg-muted/40 backdrop-blur-2xl border border-border rounded-[2rem] p-8 transition-all hover:border-red-500/50 shadow-2xl">
+        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-150 transition-all duration-700">
+          <AlertTriangle size={80} className="text-red-500"/>
+        </div>
+        <div className="relative z-10">
+          <div className="h-12 w-12 bg-red-500/10 rounded-2xl flex items-center justify-center mb-4 border border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.2)]">
+            <ArrowUpRight className="text-red-500" size={24} />
+          </div>
+          <p className="text-[10px] font-black text-red-500 uppercase tracking-[0.3em] mb-1">Riesgo de Quiebre</p>
+          <h3 className="text-3xl font-black text-foreground font-outfit tracking-tighter leading-none">
+            {metrics.criticalStock} <span className="text-sm text-muted-foreground uppercase tracking-widest">Alertas</span>
+          </h3>
+          <div className="mt-4 flex items-center gap-2">
+            <span className={`px-2 py-0.5 text-[8px] font-black rounded-lg border uppercase tracking-widest ${metrics.criticalStock > 0 ? 'bg-red-500/10 text-red-500 border-red-500/20' : 'bg-muted/10 text-muted-foreground border-border'}`}>
+              {metrics.criticalStock > 0 ? 'Reposición Urgente' : 'Stock Saludable'}
+            </span>
+          </div>
+        </div>
+        <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-transparent via-red-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"/>
+      </div>
+    </div>
 
  {/* MODALS */}
  {isImportModalOpen && (
