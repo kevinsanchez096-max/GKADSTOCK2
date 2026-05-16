@@ -839,27 +839,27 @@ export const POSTerminal = () => {
  </div>
 
  {/* PIE DE CONSOLA */}
- <div className="p-4 bg-muted border-t border-border space-y-3 flex-none">
+ <div className="p-6 bg-muted/30 border-t border-border space-y-4 flex-none">
  {activeStep === 'cart' ? (
- <div className="space-y-3">
- <div className="flex justify-between items-end mb-1">
- <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Total Actual</span>
- <span className="text-xl font-black text-foreground tracking-tighter font-outfit">${total.toLocaleString()}</span>
+ <div className="space-y-4">
+ <div className="flex justify-between items-end">
+ <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">Total Actual</span>
+ <span className="text-2xl font-black text-foreground tracking-tighter font-outfit transition-all">${total.toLocaleString()}</span>
  </div>
  <button 
  onClick={() => setActiveStep('payment')}
  disabled={cart.length === 0}
- className="w-full h-12 bg-background text-foreground dark:text-black rounded-[1.25rem] text-[10px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-slate-800 disabled:bg-border dark:disabled:bg-card disabled:text-muted-foreground dark:disabled:text-foreground transition-all shadow-xl active:scale-[0.98]"
+ className="w-full h-14 bg-brand-500 text-white rounded-[1.5rem] text-[10px] font-black uppercase tracking-[0.25em] flex items-center justify-center gap-3 hover:bg-brand-600 disabled:bg-muted disabled:text-muted-foreground transition-all shadow-xl shadow-brand-500/20 active:scale-[0.98] border-none"
  >
  IR A PAGAR
  <ArrowRight size={18} />
  </button>
  </div>
  ) : (
- <div className="space-y-3">
+ <div className="space-y-4">
  <Button 
  onClick={handleFinalizeSale}
- className="w-full h-12 text-[10px] font-black uppercase tracking-[0.2em] rounded-[1rem] bg-brand-600 hover:bg-brand-700 text-white shadow-2xl shadow-brand-500/10 border-none transition-all active:scale-[0.98]"
+ className="w-full h-14 text-[10px] font-black uppercase tracking-[0.25em] rounded-[1.5rem] bg-brand-600 hover:bg-brand-700 text-white shadow-2xl shadow-brand-500/20 border-none transition-all active:scale-[0.98]"
  disabled={!canFinalize || loading}
  loading={loading}
  >
@@ -882,20 +882,26 @@ export const POSTerminal = () => {
  <motion.div 
  initial={{ scale: 0.8, opacity: 0 }}
  animate={{ scale: 1, opacity: 1 }}
- className="h-16 w-16 bg-brand-500 text-white flex items-center justify-center rounded-2xl mb-6 shadow-2xl shadow-brand-500/20"
+ className="h-20 w-20 bg-brand-500 text-white flex items-center justify-center rounded-[2rem] mb-6 shadow-2xl shadow-brand-500/20"
  >
- <CheckCircle size={32} strokeWidth={2.5} />
+ <CheckCircle size={36} strokeWidth={2.5} />
  </motion.div>
  <h3 className="text-4xl font-black tracking-tighter mb-1 italic text-foreground uppercase font-outfit">FACTURADO</h3>
- <p className="text-muted-foreground font-bold uppercase tracking-[0.4em] text-[9px] mb-8">CIERRE DE CAJA EXITOSO</p>
+ <p className="text-muted-foreground font-bold uppercase tracking-[0.4em] text-[9px] mb-10">OPERACIÓN COMPLETADA CON ÉXITO</p>
  
  <div className="flex flex-col md:flex-row gap-4 w-full max-w-sm">
- <button onClick={() => window.print()} className="flex-1 h-12 bg-background text-foreground dark:text-black rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-slate-800 flex items-center justify-center gap-3 shadow-xl transform active:scale-95 transition-all">
- <Printer size={16} />
+ <button 
+ onClick={() => window.print()} 
+ className="flex-1 h-14 bg-brand-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-brand-600 flex items-center justify-center gap-3 shadow-xl transform active:scale-95 transition-all border-none"
+ >
+ <Printer size={18} />
  TICKET
  </button>
- <button onClick={() => setShowSuccess(false)} className="flex-1 h-12 bg-muted text-foreground rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-border flex items-center justify-center gap-3 transform active:scale-95 transition-all">
- <RotateCcw size={16} />
+ <button 
+ onClick={() => setShowSuccess(false)} 
+ className="flex-1 h-14 bg-muted text-foreground rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-border flex items-center justify-center gap-3 transform active:scale-95 transition-all border border-border/50"
+ >
+ <RotateCcw size={18} />
  SIGUIENTE
  </button>
  </div>
