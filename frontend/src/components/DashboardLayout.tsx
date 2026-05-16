@@ -172,13 +172,12 @@ export const DashboardLayout = ({
   setSidebarOpen(false);
   }}
   className={`
-  w-full flex items-center gap-3 px-3 py-2 rounded-[50px] text-sm font-bold transition-all duration-300 group relative min-h-[52px]
+  w-full flex items-center gap-3 px-3 py-2 rounded-[50px] text-sm font-bold transition-all duration-300 group relative min-h-[52px] border-transparent border
   ${isActive && !isCollapsed 
-  ? 'text-white shadow-lg shadow-brand-500/20' 
+  ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' 
   : 'text-muted-foreground hover:text-foreground'}
   ${isCollapsed ? 'justify-center px-0 bg-transparent' : ''}
   `}
-  style={isActive && !isCollapsed ? { backgroundColor: 'var(--brand-primary)' } : {}}
   title={isCollapsed ? item.label : undefined}
   >
   {/* Icon Circle */}
@@ -186,13 +185,10 @@ export const DashboardLayout = ({
   className={`
   h-10 w-10 shrink-0 rounded-full flex items-center justify-center transition-all duration-300
   ${isActive 
-  ? (isCollapsed ? '' : 'bg-white/15') 
+  ? (isCollapsed ? 'bg-brand-500' : 'bg-white/15') 
   : 'bg-[#1a1a1a]'}
   `}
   style={{
-  backgroundColor: isActive 
-  ? (isCollapsed ? 'var(--brand-primary)' : 'rgba(255,255,255,0.15)') 
-  : undefined,
   '--hover-bg': 'color-mix(in srgb, var(--brand-primary), transparent 80%)'
   } as any}
   onMouseEnter={(e) => {

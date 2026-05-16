@@ -214,10 +214,9 @@ export const Dashboard = () => {
  key={range}
  onClick={() => setTimeFilter(range)}
  className={`px-8 py-2.5 text-[11px] font-black uppercase tracking-[2px] transition-all duration-300 rounded-[50px] ${
- timeFilter === range  ? 'text-white shadow-xl'
-  : 'text-muted-foreground hover:text-foreground'
+ timeFilter === range  ? 'bg-brand-500 text-white shadow-xl border-none'
+  : 'text-muted-foreground hover:text-foreground bg-transparent border-transparent'
   }`}
- style={timeFilter === range ? { backgroundColor: 'var(--brand-primary)' } : {}}
  >
  {range === 'day' ? 'Hoy' : range === 'week' ? 'Semana' : range === 'month' ? 'Mes' : 'Año'}
  </button>
@@ -346,8 +345,7 @@ const KPICard = ({ title, value, icon: Icon, trend, trendUp, description, alert,
 
   return (
    <Card className={`group relative p-12 h-[260px] rounded-[35px] border border-border flex flex-col justify-between overflow-hidden shadow-lg transition-all
-  ${isUtilidadReal ? 'text-white' : 'bg-card text-foreground'}`}
-  style={isUtilidadReal ? { background: 'var(--brand-primary)' } : {}}
+  ${isUtilidadReal ? 'bg-brand-500 text-white' : 'bg-card text-foreground'}`}
   >
   {/* Círculo Decorativo */}
  {isUtilidadReal && (
