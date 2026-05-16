@@ -164,7 +164,10 @@ export const useOrganizationStore = create<OrganizationState>((set, get) => ({
 
       // 1. Aplicar al DOM para feedback inmediato
       if (org.theme_color) root.style.setProperty('--brand-primary', org.theme_color);
-      if (org.theme_secondary_color) root.style.setProperty('--brand-secondary', org.theme_secondary_color);
+      
+      // Si el estilo es sólido, el secundario DEBE ser igual al primario para consistencia total
+      const secondaryColor = org.theme_style === 'solid' ? (org.theme_color || '#3b82f6') : (org.theme_secondary_color || '#3b82f6');
+      root.style.setProperty('--brand-secondary', secondaryColor);
       
       if (org.theme_style === 'gradient') {
         document.body.classList.add('theme-gradient');

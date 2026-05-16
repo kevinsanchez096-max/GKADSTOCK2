@@ -62,7 +62,7 @@ export const CategoryManager = () => {
             <span className="text-[10px] font-black uppercase tracking-[0.4em] text-brand-500">Arquitectura de Datos</span>
           </div>
           <h1 className="text-4xl font-black text-foreground font-heading tracking-tighter uppercase leading-none">
-            Gestión de <span className="bg-gradient-to-r from-blue-400 to-emerald-500 bg-clip-text text-transparent">Categorías</span>
+            Gestión de <span className="bg-gradient-to-r from-[var(--brand-primary)] to-[var(--brand-secondary)] bg-clip-text text-transparent">Categorías</span>
           </h1>
           <p className="text-muted-foreground font-bold text-[11px] uppercase tracking-widest opacity-70 ml-1">Clasificación Lógica y Estructura Global de Productos</p>
         </div>

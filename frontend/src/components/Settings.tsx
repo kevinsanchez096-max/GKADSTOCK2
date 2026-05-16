@@ -270,7 +270,7 @@ export const Settings = () => {
             <span className="text-[10px] font-black uppercase tracking-[0.4em] text-brand-500">Configuración del Sistema</span>
           </div>
           <h1 className="text-4xl font-black text-foreground font-heading tracking-tighter uppercase leading-none">
-            Panel de <span className="bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent">Control</span>
+            Panel de <span className="bg-gradient-to-r from-[var(--brand-primary)] to-[var(--brand-secondary)] bg-clip-text text-transparent">Control</span>
           </h1>
           <p className="text-muted-foreground font-bold text-[11px] uppercase tracking-widest opacity-70 ml-1">Personalización de Experiencia y Datos Operativos</p>
         </div>
