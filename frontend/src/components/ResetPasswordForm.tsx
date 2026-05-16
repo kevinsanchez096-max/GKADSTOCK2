@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { toast } from 'sonner';
 import { Lock, Eye, EyeOff, ShieldCheck, CheckCircle2, XCircle } from 'lucide-react';
@@ -16,6 +16,16 @@ export const ResetPasswordForm: React.FC = () => {
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error || !session) {
+        window.location.href = '/';
+      }
+    };
+    checkSession();
+  }, []);
 
   const allRulesPassed = PASSWORD_RULES.every(r => r.test(password));
   const passwordsMatch = password === confirmPassword && confirmPassword.length > 0;

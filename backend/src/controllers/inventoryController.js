@@ -1,4 +1,5 @@
 const { supabaseAdmin, supabase } = require('../config/supabase');
+const { checkPlanLimit } = require('../middleware/planLimits');
 
 const inventoryController = {
   // Helper para obtener el ID de organización con validación estricta (Zero-Trust)
@@ -60,6 +61,13 @@ const inventoryController = {
     createProduct: async (req, res) => {
       try {
         const orgId = inventoryController.getOrgId(req);
+
+        // ── PLAN LIMIT CHECK: PRODUCTS ────────────────────────────────────
+        const limitCheck = await checkPlanLimit(orgId, 'products');
+        if (!limitCheck.allowed) {
+          return res.status(403).json({ error: limitCheck.message });
+        }
+
         const { name, sku, category_id, price, stock, unit, min_stock, barcode, is_weighted } = req.body;
         
         const { data, error } = await supabaseAdmin
@@ -147,6 +155,12 @@ const inventoryController = {
       const { name } = req.body;
 
       if (!name) return res.status(400).json({ error: 'El nombre de la categoría es obligatorio' });
+
+      // ── PLAN LIMIT CHECK: CATEGORIES ──────────────────────────────────
+      const limitCheck = await checkPlanLimit(orgId, 'categories');
+      if (!limitCheck.allowed) {
+        return res.status(403).json({ error: limitCheck.message });
+      }
 
       // 1. Verificación manual de duplicados para devolver error amigable
       const { data: existing } = await supabaseAdmin

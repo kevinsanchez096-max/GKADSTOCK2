@@ -25,7 +25,8 @@ import {
  Palette,
  X,
  User,
- SlidersHorizontal
+ SlidersHorizontal,
+ Crown
 } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
 import { useShopStore } from '../store/useShopStore';
@@ -108,6 +109,7 @@ export const DashboardLayout = ({
  { id: 'suppliers', label: 'Proveedores', icon: Truck, color: 'text-blue-400' },
  { id: 'categories', label: 'Categorías', icon: Layers, color: 'text-purple-500' },
  { id: 'expenses', label: 'Gastos', icon: ArrowDownRight, color: 'text-red-500' },
+ { id: 'subscriptions', label: 'Planes', icon: Crown, color: 'text-amber-500', premium: true },
  { id: 'settings', label: 'Ajustes', icon: Settings, color: 'text-muted-foreground' },
  ];
 

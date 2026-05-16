@@ -56,6 +56,30 @@ export const Customers = () => {
  const [form, setForm] = useState<CustomerForm>(EMPTY_FORM);
  const [search, setSearch] = useState('');
 
+ const [errors, setErrors] = useState<Partial<Record<keyof CustomerForm, string>>>({});
+
+ const validateField = (field: keyof CustomerForm, value: string) => {
+ let error = '';
+ switch (field) {
+ case 'name':
+ if (!value) error = 'El nombre es obligatorio';
+ else if (value.length < 3) error = 'Mínimo 3 caracteres';
+ else if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s&.\-]+$/.test(value)) error = 'Formato inválido. Solo letras, números y &, ., -';
+ break;
+ case 'document_number':
+ if (value && !/^[\d-]+$/.test(value)) error = 'Solo números y guiones';
+ break;
+ case 'email':
+ if (value && !/\S+@\S+\.\S+/.test(value)) error = 'Correo inválido';
+ break;
+ case 'phone':
+ if (value && !/^\d{7,10}$/.test(value)) error = 'Debe tener entre 7 y 10 dígitos';
+ break;
+ }
+ setErrors(prev => ({ ...prev, [field]: error }));
+ return error;
+ };
+
  // ── Data ──────────────────────────────────────────────────────────────────
  const fetchCustomers = async () => {
  setLoading(true);
@@ -103,7 +127,16 @@ export const Customers = () => {
 
  const handleSubmit = async (e: React.FormEvent) => {
  e.preventDefault();
- if (!form.name.trim()) return toast.error('El nombre es obligatorio');
+ 
+ const eName = validateField('name', form.name);
+ const eDoc = validateField('document_number', form.document_number);
+ const eEmail = validateField('email', form.email);
+ const ePhone = validateField('phone', form.phone);
+
+ if (eName || eDoc || eEmail || ePhone) {
+   return toast.error('Corrige los errores del formulario');
+ }
+
  setIsSubmitting(true);
  
  // 1. Sanitización de Texto (Title Case)
@@ -342,15 +375,16 @@ export const Customers = () => {
  <form onSubmit={handleSubmit} className="p-10 space-y-6 overflow-y-auto flex-1">
 
  {/* Nombre completo */}
- <FieldGroup label="Nombre / Razón Social"required>
+ <FieldGroup label="Nombre / Razón Social" required error={errors.name}>
  <input
  id="customer-name"
  type="text"
  placeholder="Ej. María García Ltda."
  value={form.name}
- onChange={e => f('name', e.target.value)}
+ onChange={e => { f('name', e.target.value); if (errors.name) validateField('name', e.target.value); }}
+ onBlur={e => validateField('name', e.target.value)}
  required
- className="w-full h-14 bg-card border border-border rounded-2xl px-6 text-sm font-bold focus:ring-2 focus:ring-brand-500 transition-all text-foreground outline-none placeholder:text-muted-foreground shadow-sm"
+ className={`w-full h-14 bg-card border ${errors.name ? 'border-red-500 focus:ring-red-500' : 'border-border focus:ring-brand-500'} rounded-2xl px-6 text-sm font-bold focus:ring-2 transition-all text-foreground outline-none placeholder:text-muted-foreground shadow-sm`}
  />
  </FieldGroup>
 
@@ -366,7 +400,7 @@ export const Customers = () => {
  {DOC_TYPES.map(d => <option key={d}>{d}</option>)}
  </select>
  </FieldGroup>
- <FieldGroup label="Número de Documento">
+ <FieldGroup label="Número de Documento" error={errors.document_number}>
  <div className="relative">
  <Hash className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"/>
  <input
@@ -377,8 +411,9 @@ export const Customers = () => {
  onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
  e.target.value = e.target.value.replace(/[^0-9]/g, '');
  }}
- onChange={e => f('document_number', e.target.value)}
- className="w-full h-14 bg-card border border-border rounded-2xl pl-11 pr-6 text-sm font-bold focus:ring-2 focus:ring-brand-500 transition-all text-foreground outline-none placeholder:text-muted-foreground font-mono shadow-sm"
+ onChange={e => { f('document_number', e.target.value); if (errors.document_number) validateField('document_number', e.target.value); }}
+ onBlur={e => validateField('document_number', e.target.value)}
+ className={`w-full h-14 bg-card border ${errors.document_number ? 'border-red-500 focus:ring-red-500' : 'border-border focus:ring-brand-500'} rounded-2xl pl-11 pr-6 text-sm font-bold focus:ring-2 transition-all text-foreground outline-none placeholder:text-muted-foreground font-mono shadow-sm`}
  />
  </div>
  </FieldGroup>
@@ -386,7 +421,7 @@ export const Customers = () => {
 
  {/* Email y Teléfono */}
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
- <FieldGroup label="Correo Electrónico">
+ <FieldGroup label="Correo Electrónico" error={errors.email}>
  <div className="relative">
  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"/>
  <input
@@ -394,12 +429,13 @@ export const Customers = () => {
  type="email"
  placeholder="cliente@empresa.com"
  value={form.email}
- onChange={e => f('email', e.target.value)}
- className="w-full h-14 bg-card border border-border rounded-2xl pl-11 pr-6 text-sm font-bold focus:ring-2 focus:ring-brand-500 transition-all text-foreground outline-none placeholder:text-muted-foreground font-mono shadow-sm"
+ onChange={e => { f('email', e.target.value); if (errors.email) validateField('email', e.target.value); }}
+ onBlur={e => validateField('email', e.target.value)}
+ className={`w-full h-14 bg-card border ${errors.email ? 'border-red-500 focus:ring-red-500' : 'border-border focus:ring-brand-500'} rounded-2xl pl-11 pr-6 text-sm font-bold focus:ring-2 transition-all text-foreground outline-none placeholder:text-muted-foreground font-mono shadow-sm`}
  />
  </div>
  </FieldGroup>
- <FieldGroup label="Teléfono / Celular">
+ <FieldGroup label="Teléfono / Celular" error={errors.phone}>
  <div className="relative">
  <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"/>
  <input
@@ -410,8 +446,9 @@ export const Customers = () => {
  onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
  e.target.value = e.target.value.replace(/[^0-9]/g, '');
  }}
- onChange={e => f('phone', e.target.value)}
- className="w-full h-14 bg-card border border-border rounded-2xl pl-11 pr-6 text-sm font-bold focus:ring-2 focus:ring-brand-500 transition-all text-foreground outline-none placeholder:text-muted-foreground shadow-sm"
+ onChange={e => { f('phone', e.target.value); if (errors.phone) validateField('phone', e.target.value); }}
+ onBlur={e => validateField('phone', e.target.value)}
+ className={`w-full h-14 bg-card border ${errors.phone ? 'border-red-500 focus:ring-red-500' : 'border-border focus:ring-brand-500'} rounded-2xl pl-11 pr-6 text-sm font-bold focus:ring-2 transition-all text-foreground outline-none placeholder:text-muted-foreground shadow-sm`}
  />
  </div>
  </FieldGroup>
@@ -467,10 +504,12 @@ export const Customers = () => {
 const FieldGroup = ({
  label,
  required,
+ error,
  children,
 }: {
  label: string;
  required?: boolean;
+ error?: string;
  children: React.ReactNode;
 }) => (
  <div className="space-y-2">
@@ -481,5 +520,6 @@ const FieldGroup = ({
  {label}{required && <span className="text-brand-500 ml-1">*</span>}
  </label>
  {children}
+ {error && <span className="text-xs text-red-500 ml-2 font-medium">{error}</span>}
  </div>
 );

@@ -20,25 +20,26 @@ interface AuthFormProps {
 // ── Componente de Input Premium ────────────────────────────────
 const DarkInput = ({ 
   label, type = 'text', placeholder, value, onChange, onFocus, onBlur,
-  autoFocus = false, required = false, icon: Icon, autoComplete 
+  autoFocus = false, required = false, icon: Icon, autoComplete, error
 }: { 
   label: string; type?: string; placeholder?: string; 
   value: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onFocus?: () => void; onBlur?: () => void;
   autoFocus?: boolean; required?: boolean; icon?: React.ElementType; autoComplete?: string;
+  error?: string;
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const isPassword = type === 'password';
   const inputType = isPassword ? (showPassword ? 'text' : 'password') : type;
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2 w-full">
       <label className="text-label text-zinc-500 ml-1">
         {label}
       </label>
       <div className="relative group">
         {Icon && (
-          <Icon size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-[var(--brand-primary)] transition-colors duration-300 pointer-events-none" />
+          <Icon size={18} className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors duration-300 pointer-events-none ${error ? 'text-red-500' : 'text-zinc-500 group-focus-within:text-[var(--brand-primary)]'}`} />
         )}
         <input
           type={inputType}
@@ -50,7 +51,7 @@ const DarkInput = ({
           autoFocus={autoFocus}
           required={required}
           autoComplete={autoComplete}
-          className={`text-body w-full bg-[#111] border border-[#1e1e1e] rounded-xl px-4 py-4 text-white placeholder:text-zinc-600 focus:outline-none focus:border-[var(--brand-primary)] focus:ring-1 focus:ring-[var(--brand-primary)]/20 transition-all duration-300 ${Icon ? 'pl-12' : ''} ${isPassword ? 'pr-12' : ''}`}
+          className={`text-body w-full bg-[#111] rounded-xl px-4 py-4 text-white placeholder:text-zinc-600 focus:outline-none transition-all duration-300 ${Icon ? 'pl-12' : ''} ${isPassword ? 'pr-12' : ''} ${error ? 'border border-red-500 focus:ring-1 focus:ring-red-500/20' : 'border border-[#1e1e1e] focus:border-[var(--brand-primary)] focus:ring-1 focus:ring-[var(--brand-primary)]/20'}`}
         />
         {isPassword && (
           <button
@@ -62,6 +63,7 @@ const DarkInput = ({
           </button>
         )}
       </div>
+      {error && <span className="text-xs text-red-500 ml-1 mt-1 font-medium">{error}</span>}
     </div>
   );
 };
@@ -92,6 +94,11 @@ export const AuthForm = ({ darkMode, toggleDarkMode, initialMode }: AuthFormProp
   const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [orgName, setOrgName] = useState('');
+
+  const [emailError, setEmailError] = useState('');
+  const [fullNameError, setFullNameError] = useState('');
+  const [orgNameError, setOrgNameError] = useState('');
+
   const [otpValues, setOtpValues] = useState<string[]>(Array(6).fill(''));
   const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -121,6 +128,26 @@ export const AuthForm = ({ darkMode, toggleDarkMode, initialMode }: AuthFormProp
     { id: 'spec', text: 'Un carácter especial', check: (p: string) => /[^A-Za-z0-9]/.test(p) },
   ];
   const isPasswordValid = passwordRules.every(r => r.check(password));
+
+  const validateEmailField = (val: string) => {
+    if (!val) return 'El correo es obligatorio.';
+    if (!/\S+@\S+\.\S+/.test(val)) return 'Correo inválido.';
+    return '';
+  };
+
+  const validateFullNameField = (val: string) => {
+    if (!val) return 'El nombre es obligatorio.';
+    if (val.length < 3) return 'Mínimo 3 caracteres.';
+    if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(val)) return 'Solo se permiten letras y espacios.';
+    return '';
+  };
+
+  const validateOrgNameField = (val: string) => {
+    if (!val) return 'La organización es obligatoria.';
+    if (val.length < 3) return 'Mínimo 3 caracteres.';
+    if (!/^[a-zA-Z0-9\s&.\-]+$/.test(val)) return 'Solo se permiten letras, números y &, ., -';
+    return '';
+  };
 
   const handleOtpChange = (index: number, value: string) => {
     if (value.length > 1) {
@@ -305,7 +332,7 @@ export const AuthForm = ({ darkMode, toggleDarkMode, initialMode }: AuthFormProp
           <div className="space-y-4">
             {[
               { icon: LayoutDashboard, title: 'Control Total', desc: 'Panel de mando centralizado.' },
-              { icon: BarChart3, title: 'Analíticas AI', desc: 'Proyecciones de venta inteligentes.' },
+              { icon: BarChart3, title: 'Reportes en tiempo real', desc: 'Dashboard financiero con KPIs actualizados al instante.' },
               { icon: Database, title: 'Stock Maestro', desc: 'Kardex con auditoría blindada.' }
             ].map((feat, i) => (
               <div key={i} className="flex items-center gap-6 group">
@@ -374,7 +401,26 @@ export const AuthForm = ({ darkMode, toggleDarkMode, initialMode }: AuthFormProp
 
               {mode === 'login' && step === 1 && (
                 <motion.div key="l1" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="relative">
-                  <DarkInput label="Correo Corporativo" type="email" placeholder="usuario@empresa.com" icon={Mail} value={email} onChange={e => setEmail(e.target.value)} onFocus={() => setShowRecent(true)} onBlur={() => setShowRecent(false)} autoComplete="email" autoFocus required />
+                  <DarkInput 
+                    label="Correo Corporativo" 
+                    type="email" 
+                    placeholder="usuario@empresa.com" 
+                    icon={Mail} 
+                    value={email} 
+                    onChange={e => {
+                      setEmail(e.target.value);
+                      if (emailError) setEmailError(validateEmailField(e.target.value));
+                    }} 
+                    onFocus={() => setShowRecent(true)} 
+                    onBlur={() => {
+                      setShowRecent(false);
+                      setEmailError(validateEmailField(email));
+                    }} 
+                    error={emailError}
+                    autoComplete="email" 
+                    autoFocus 
+                    required 
+                  />
                   
                   {/* Recent Emails Dropdown */}
                   <AnimatePresence>
@@ -406,7 +452,20 @@ export const AuthForm = ({ darkMode, toggleDarkMode, initialMode }: AuthFormProp
                       Ingresa tu correo para recibir un enlace de recuperación.
                     </p>
                   </div>
-                  <DarkInput label="Correo Registrado" type="email" icon={Mail} value={email} onChange={e => setEmail(e.target.value)} autoFocus required />
+                  <DarkInput 
+                    label="Correo Registrado" 
+                    type="email" 
+                    icon={Mail} 
+                    value={email} 
+                    onChange={e => {
+                      setEmail(e.target.value);
+                      if (emailError) setEmailError(validateEmailField(e.target.value));
+                    }}
+                    onBlur={() => setEmailError(validateEmailField(email))}
+                    error={emailError}
+                    autoFocus 
+                    required 
+                  />
                 </motion.div>
               )}
 
@@ -468,17 +527,56 @@ export const AuthForm = ({ darkMode, toggleDarkMode, initialMode }: AuthFormProp
 
               {mode === 'register' && step === 1 && (
                 <motion.div key="r1" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                  <DarkInput label="Correo Corporativo" type="email" icon={Mail} value={email} onChange={e => setEmail(e.target.value)} autoFocus required />
+                  <DarkInput 
+                    label="Correo Corporativo" 
+                    type="email" 
+                    icon={Mail} 
+                    value={email} 
+                    onChange={e => {
+                      setEmail(e.target.value);
+                      if (emailError) setEmailError(validateEmailField(e.target.value));
+                    }} 
+                    onBlur={() => setEmailError(validateEmailField(email))}
+                    error={emailError}
+                    autoFocus 
+                    required 
+                  />
                 </motion.div>
               )}
               {mode === 'register' && step === 2 && (
                 <motion.div key="r2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                  <DarkInput label="Tu Nombre" type="text" icon={Sparkles} value={fullName} onChange={e => setFullName(e.target.value)} autoFocus required />
+                  <DarkInput 
+                    label="Tu Nombre" 
+                    type="text" 
+                    icon={Sparkles} 
+                    value={fullName} 
+                    onChange={e => {
+                      setFullName(e.target.value);
+                      if (fullNameError) setFullNameError(validateFullNameField(e.target.value));
+                    }}
+                    onBlur={() => setFullNameError(validateFullNameField(fullName))}
+                    error={fullNameError}
+                    autoFocus 
+                    required 
+                  />
                 </motion.div>
               )}
               {mode === 'register' && step === 3 && (
                 <motion.div key="r3" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                  <DarkInput label="Organización" type="text" icon={Package} value={orgName} onChange={e => setOrgName(e.target.value)} autoFocus required />
+                  <DarkInput 
+                    label="Organización" 
+                    type="text" 
+                    icon={Package} 
+                    value={orgName} 
+                    onChange={e => {
+                      setOrgName(e.target.value);
+                      if (orgNameError) setOrgNameError(validateOrgNameField(e.target.value));
+                    }}
+                    onBlur={() => setOrgNameError(validateOrgNameField(orgName))}
+                    error={orgNameError}
+                    autoFocus 
+                    required 
+                  />
                 </motion.div>
               )}
               {mode === 'register' && step === 4 && (

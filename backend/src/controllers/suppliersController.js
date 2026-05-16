@@ -1,4 +1,5 @@
 const { supabaseAdmin } = require('../config/supabase');
+const { checkPlanLimit } = require('../middleware/planLimits');
 
 const suppliersController = {
   // GET /api/suppliers
@@ -21,12 +22,20 @@ const suppliersController = {
   // POST /api/suppliers
   createSupplier: async (req, res) => {
     try {
+      const orgId = req.user.organization_id;
+
+      // ── PLAN LIMIT CHECK: SUPPLIERS ─────────────────────────────────────
+      const limitCheck = await checkPlanLimit(orgId, 'suppliers');
+      if (!limitCheck.allowed) {
+        return res.status(403).json({ error: limitCheck.message });
+      }
+
       const { company_name, contact_name, tax_id, email, phone, address, notes } = req.body;
 
       const { data, error } = await supabaseAdmin
         .from('suppliers')
         .insert([{
-          organization_id: req.user.organization_id,
+          organization_id: orgId,
           company_name,
           contact_name,
           tax_id,

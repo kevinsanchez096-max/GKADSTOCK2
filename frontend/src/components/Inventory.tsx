@@ -129,6 +129,45 @@ export const Inventory = () => {
   const [purchasePrice, setPurchasePrice] = useState<string>('');
   const [profitMargin, setProfitMargin] = useState<string>('0');
 
+  // Validation States
+  const [errors, setErrors] = useState<{
+    name?: string;
+    sku?: string;
+    price?: string;
+    stock?: string;
+    min_stock?: string;
+    purchasePrice?: string;
+    profitMargin?: string;
+  }>({});
+
+  const validateField = (field: string, value: string) => {
+    let error = '';
+    switch (field) {
+      case 'name':
+        if (!value) error = 'El nombre es obligatorio';
+        else if (value.length < 3) error = 'Mínimo 3 caracteres';
+        else if (!/^[a-zA-Z0-9\s&.\-]+$/.test(value)) error = 'Solo letras, números, espacios y & . -';
+        break;
+      case 'sku':
+        if (value && !/^[a-zA-Z0-9]+$/.test(value)) error = 'Solo letras y números, sin espacios';
+        break;
+      case 'price':
+      case 'purchasePrice':
+        if (!value || Number(value) < 0) error = 'Debe ser un número positivo > 0';
+        break;
+      case 'stock':
+      case 'min_stock':
+        if (!value || Number(value) < 0) error = 'Debe ser mayor o igual a 0';
+        break;
+      case 'profitMargin':
+        const pm = Number(value);
+        if (pm < 0 || pm >= 100) error = 'Debe estar entre 0 y 99';
+        break;
+    }
+    setErrors(prev => ({ ...prev, [field]: error }));
+    return error;
+  };
+
   useEffect(() => {
     if (purchasePrice) {
       const pp = Number(purchasePrice);
@@ -264,6 +303,18 @@ export const Inventory = () => {
 
  const handleAddProduct = async (e: React.FormEvent) => {
  e.preventDefault();
+
+ const eName = validateField('name', newProduct.name);
+ const eSku = validateField('sku', newProduct.sku || '');
+ const ePrice = validateField('price', newProduct.price);
+ const eStock = validateField('stock', newProduct.stock);
+ const eMinStock = validateField('min_stock', newProduct.min_stock);
+
+ if (eName || eSku || ePrice || eStock || eMinStock || (purchasePrice && validateField('purchasePrice', purchasePrice)) || validateField('profitMargin', profitMargin)) {
+   toast.error('Corrige los errores del formulario');
+   return;
+ }
+
  if (!newProduct.category_id) {
  toast.warning("La categoría es obligatoria");
  return;
@@ -494,7 +545,9 @@ export const Inventory = () => {
  required 
  autoFocus
  value={newProduct.name} 
- onChange={(e) => setNewProduct({...newProduct, name: e.target.value})} 
+ onChange={(e) => { setNewProduct({...newProduct, name: e.target.value}); if (errors.name) validateField('name', e.target.value); }} 
+ onBlur={(e) => validateField('name', e.target.value)}
+ error={errors.name}
  icon={Package} 
  className="bg-background border-border text-foreground text-lg py-6 focus:border-blue-500 focus:ring-0"
  />
@@ -505,7 +558,9 @@ export const Inventory = () => {
  label="SKU / Identificador"
  placeholder="SKU-0000"
  value={newProduct.sku} 
- onChange={(e) => setNewProduct({...newProduct, sku: e.target.value})} 
+ onChange={(e) => { setNewProduct({...newProduct, sku: e.target.value}); if (errors.sku) validateField('sku', e.target.value); }} 
+ onBlur={(e) => validateField('sku', e.target.value)}
+ error={errors.sku}
  icon={Hash} 
  className="bg-background border-border text-foreground"
  />
@@ -528,7 +583,9 @@ export const Inventory = () => {
   min="0"
   step="0.01"
   value={purchasePrice}
-  onChange={(e) => setPurchasePrice(e.target.value)}
+  onChange={(e) => { setPurchasePrice(e.target.value); if (errors.purchasePrice) validateField('purchasePrice', e.target.value); }}
+  onBlur={(e) => validateField('purchasePrice', e.target.value)}
+  error={errors.purchasePrice}
   icon={DollarSign}
   className="bg-background border-border text-foreground font-bold"
   />
@@ -539,7 +596,9 @@ export const Inventory = () => {
   min="0"
   step="1"
   value={profitMargin}
-  onChange={(e) => setProfitMargin(e.target.value)}
+  onChange={(e) => { setProfitMargin(e.target.value); if (errors.profitMargin) validateField('profitMargin', e.target.value); }}
+  onBlur={(e) => validateField('profitMargin', e.target.value)}
+  error={errors.profitMargin}
   icon={TrendingUp}
   className="bg-background border-border text-foreground font-bold"
   />
@@ -553,7 +612,9 @@ export const Inventory = () => {
    required 
    readOnly={!!purchasePrice}
    value={Number(profitMargin) >= 100 ? "ERROR %" : newProduct.price} 
-   onChange={(e) => setNewProduct({...newProduct, price: e.target.value})} 
+   onChange={(e) => { setNewProduct({...newProduct, price: e.target.value}); if (errors.price) validateField('price', e.target.value); }} 
+   onBlur={(e) => validateField('price', e.target.value)}
+   error={errors.price}
    icon={DollarSign} 
    className={`bg-background border-border text-foreground font-bold ${Number(profitMargin) >= 100 ? 'border-red-500 text-red-500' : ''}`}
    />
@@ -597,7 +658,9 @@ export const Inventory = () => {
  placeholder="0"
  required 
  value={newProduct.stock} 
- onChange={(e) => setNewProduct({...newProduct, stock: e.target.value})} 
+ onChange={(e) => { setNewProduct({...newProduct, stock: e.target.value}); if (errors.stock) validateField('stock', e.target.value); }} 
+ onBlur={(e) => validateField('stock', e.target.value)}
+ error={errors.stock}
  icon={LayoutGrid} 
  className="bg-background border-border text-foreground font-bold"
  />
@@ -608,7 +671,9 @@ export const Inventory = () => {
  step="1"
  placeholder="5"
  value={newProduct.min_stock} 
- onChange={(e) => setNewProduct({...newProduct, min_stock: e.target.value})} 
+ onChange={(e) => { setNewProduct({...newProduct, min_stock: e.target.value}); if (errors.min_stock) validateField('min_stock', e.target.value); }} 
+ onBlur={(e) => validateField('min_stock', e.target.value)}
+ error={errors.min_stock}
  className="bg-background border-border text-foreground font-bold"
  />
 

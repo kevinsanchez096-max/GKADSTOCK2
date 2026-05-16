@@ -16,8 +16,10 @@ import { Customers } from './components/Customers';
 import { Suppliers } from './components/Suppliers';
 import { CategoryManager } from './components/CategoryManager';
 import { Expenses } from './components/Expenses';
+import { SubscriptionPlans } from './components/SubscriptionPlans';
 import { AuthForm } from './components/AuthForm';
 import { ResetPasswordForm } from './components/ResetPasswordForm';
+import { PlanLimitModal } from './components/PlanLimitModal';
 import { useAuthStore } from './store/useAuthStore';
 import { useOrganizationStore } from './store/useOrganizationStore';
 import { Toaster } from 'sonner';
@@ -47,8 +49,12 @@ function App() {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, _session) => {
       console.log('🛡️ Auth Event:', event);
-      if (event === 'PASSWORD_RECOVERY') {
-        console.log('🔑 Modo recuperación de contraseña activado.');
+      
+      const fullUrl = window.location.href;
+      const isUrlRecovery = fullUrl.includes('type=recovery') || fullUrl.includes('recovery_token=');
+      
+      if (event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && isUrlRecovery)) {
+        console.log('🔑 Modo recuperación de contraseña activado desde evento auth.');
         setIsResettingPassword(true);
         return; // No ejecutar nada más — no cargar perfil
       }
@@ -184,6 +190,8 @@ function App() {
         return <SalesHistory />;
       case 'settings':
         return <Settings />;
+      case 'subscriptions':
+        return <SubscriptionPlans />;
       case 'admin_metrics':
         return <SuperAdminDashboard setActiveTab={setActiveTab} />;
       case 'admin_organizations':
@@ -216,6 +224,7 @@ function App() {
           {renderContent()}
         </ErrorBoundary>
       </DashboardLayout>
+      <PlanLimitModal onNavigateToPlans={() => setActiveTab('subscriptions')} />
       <Toaster position="top-right" richColors />
     </>
   );

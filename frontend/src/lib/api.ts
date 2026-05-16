@@ -41,12 +41,20 @@ export const api = {
 
  result = await response.json();
 
- if (!response.ok) {
- const err: any = new Error(result?.message || result?.error || `Error ${response.status}: Petición fallida`);
- err.status = response.status;
- err.data = result;
- throw err;
- }
+  if (!response.ok) {
+  const err: any = new Error(result?.message || result?.error || `Error ${response.status}: Petición fallida`);
+  err.status = response.status;
+  err.data = result;
+
+  // ── PLAN LIMIT INTERCEPTION (403) ──────────────────────────────────
+  if (response.status === 403) {
+    window.dispatchEvent(new CustomEvent('gkad:plan-limit-reached', {
+      detail: { message: result?.error || result?.message || 'Has alcanzado el límite de tu plan.' }
+    }));
+  }
+
+  throw err;
+  }
 
  // Si la API devuelve un objeto con success, validarlo (arquitectura enterprise)
  if (result && typeof result === 'object' && 'success' in result && result.success === false) {
