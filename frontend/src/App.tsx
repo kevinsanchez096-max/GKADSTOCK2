@@ -92,11 +92,13 @@ function App() {
   }, [darkMode]);
 
   // Sincronización Global de Identidad Visual (Persistencia Maestro)
+  const { organization } = useOrganizationStore();
+  
   useEffect(() => {
     const applyTheme = () => {
-      const accentColor = localStorage.getItem('admin_accent_color') || '#3b82f6';
-      const colorMode = localStorage.getItem('admin_color_mode') || 'solid';
-      const secondaryColor = localStorage.getItem('admin_secondary_color') || '#8b5cf6';
+      const accentColor = organization?.theme_color || localStorage.getItem('admin_accent_color') || '#3b82f6';
+      const colorMode = organization?.theme_style || localStorage.getItem('admin_color_mode') || 'solid';
+      const secondaryColor = organization?.theme_secondary_color || localStorage.getItem('admin_secondary_color') || '#8b5cf6';
       const borderRadius = localStorage.getItem('admin_border_radius') || '1.5rem';
       const activeFont = localStorage.getItem('admin_font') || 'Plus Jakarta Sans';
       
@@ -117,7 +119,7 @@ function App() {
     // Escuchar cambios desde otras pestañas o desde el propio componente de apariencia
     window.addEventListener('storage', applyTheme);
     return () => window.removeEventListener('storage', applyTheme);
-  }, []);
+  }, [organization]);
 
   const toggleDarkMode = () => setDarkMode(!darkMode);
 
