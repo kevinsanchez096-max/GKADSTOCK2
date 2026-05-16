@@ -173,9 +173,8 @@ export const useOrganizationStore = create<OrganizationState>((set, get) => ({
       }
 
       // 2. Persistencia por organización para evitar el "flash" (leído por index.html)
-      localStorage.setItem(`gkad_brand_color_${orgId}`, org.theme_color || '#10b981');
+      localStorage.setItem(`gkad_brand_color_${orgId}`, org.theme_color || '#3b82f6');
       // Supongamos que el tema (oscuro/claro) también se guarda por organización
-      // Si el objeto org tiene un campo theme (dark/light), usarlo. Si no, por ahora asumimos dark o leemos del profile
       const currentTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
       localStorage.setItem(`gkad_theme_${orgId}`, currentTheme);
 

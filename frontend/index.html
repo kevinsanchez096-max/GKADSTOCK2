@@ -9,18 +9,24 @@
       (function() {
         try {
           const orgId = localStorage.getItem('gkad_last_org_id');
-          const themeKey = orgId ? 'gkad_theme_' + orgId : 'gkad_theme';
-          const colorKey = orgId ? 'gkad_brand_color_' + orgId : 'gkad_brand_color';
           
-          const theme = localStorage.getItem(themeKey) || localStorage.getItem('gkad_theme') || 'dark';
-          const color = localStorage.getItem(colorKey) || localStorage.getItem('gkad_brand_color') || '#10b981';
+          // Si hay organización, usamos su tema específico. Si no, usamos los valores neutros de GKAD (Azul/Oscuro)
+          // Esto evita que aparezcan colores verdes o antiguos guardados en llaves genéricas.
+          const theme = orgId ? (localStorage.getItem('gkad_theme_' + orgId) || 'dark') : 'dark';
+          const color = orgId ? (localStorage.getItem('gkad_brand_color_' + orgId) || '#3b82f6') : '#3b82f6';
           
           if (theme === 'dark') {
             document.documentElement.classList.add('dark');
           } else {
             document.documentElement.classList.remove('dark');
           }
+          
+          // Aplicar el color de marca inmediatamente
           document.documentElement.style.setProperty('--brand-primary', color);
+          
+          // Limpieza preventiva de rastro antiguo para asegurar profesionalismo
+          localStorage.removeItem('theme');
+          localStorage.removeItem('gkad_brand_color'); 
         } catch(e) {}
       })();
     </script>

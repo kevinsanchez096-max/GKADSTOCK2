@@ -261,6 +261,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     // ── PASO 4: Limpiar persistencia local ──
     localStorage.removeItem('gkad_token');
     localStorage.removeItem('gkad_last_org_id');
+    localStorage.removeItem('gkad_brand_color'); // Limpieza de rastro antiguo
     document.documentElement.style.removeProperty('--brand-primary');
     document.documentElement.style.removeProperty('--brand-secondary');
     document.body.classList.remove('theme-gradient');
