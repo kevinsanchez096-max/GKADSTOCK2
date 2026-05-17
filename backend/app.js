@@ -54,6 +54,7 @@ const userRoutes = require('./src/routes/users');
 const customersRoutes = require('./src/routes/customers');
 const suppliersRoutes = require('./src/routes/suppliers');
 const cashSessionsRoutes = require('./src/routes/cashSessions');
+const paymentsRoutes = require('./src/routes/payments');
 
 // Punto de Entrada Salud
 app.get('/api/health', (req, res) => {
@@ -76,6 +77,7 @@ mainRouter.use('/users', userRoutes);
 mainRouter.use('/customers', customersRoutes);
 mainRouter.use('/suppliers', suppliersRoutes);
 mainRouter.use('/cash-sessions', cashSessionsRoutes);
+mainRouter.use('/payments', paymentsRoutes);
 
 // Configuración del Daemon de Autocierre de Cajas a las 11:59 PM (Chequeo cada minuto)
 const cashSessionController = require('./src/controllers/cashSessionController');
