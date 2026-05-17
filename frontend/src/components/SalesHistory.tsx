@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Card, Button, Input } from './ui-components';
 import { 
  Search, 
@@ -237,7 +238,130 @@ export const SalesHistory = () => {
  };
 
  const handlePrintArqueo = () => {
- window.print();
+ if (!arqueoData) return;
+ 
+ // Generar HTML con estilos inline para impresión
+ const printWindow = window.open('', '', 'width=800,height=600');
+ if (!printWindow) {
+ toast.error('No se pudo abrir ventana de impresión');
+ return;
+ }
+ 
+ const methodLabels: { [key: string]: string } = {
+ cash: 'Efectivo Físico',
+ card: 'Terminal Bancaria',
+ transfer: 'Transferencia Cloud'
+ };
+ 
+ const methodColors: { [key: string]: string } = {
+ cash: '#22c55e',
+ card: '#3b82f6',
+ transfer: '#a855f7'
+ };
+ 
+ let methodsHTML = '';
+ Object.entries(arqueoData.totalsByMethod).forEach(([method, total]: any) => {
+ const color = methodColors[method] || '#666';
+ methodsHTML += `
+ <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px; background: #f3f4f6; margin: 12px 0; border-radius: 12px; border: 1px solid #e5e7eb;">
+ <span style="color: #666; font-weight: 900; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 12px;">
+ <div style="width: 8px; height: 8px; border-radius: 50%; background: ${color}; box-shadow: 0 0 8px rgba(${color}, 0.3);"></div>
+ ${methodLabels[method] || method}
+ </span>
+ <span style="font-weight: 900; font-size: 18px; color: #000;">${(total as number).toLocaleString()}</span>
+ </div>
+ `;
+ });
+ 
+ const html = `
+ <!DOCTYPE html>
+ <html>
+ <head>
+ <meta charset="UTF-8">
+ <title>Reporte de Arqueo</title>
+ <style>
+ body {
+ font-family: 'Courier New', monospace;
+ padding: 20px;
+ margin: 0;
+ background: white;
+ }
+ .header {
+ border-bottom: 2px solid #000;
+ padding-bottom: 20px;
+ margin-bottom: 20px;
+ text-align: center;
+ }
+ .header h1 {
+ margin: 0;
+ font-size: 20px;
+ font-weight: 900;
+ text-transform: uppercase;
+ letter-spacing: 2px;
+ }
+ .header p {
+ margin: 5px 0 0 0;
+ font-size: 11px;
+ font-weight: 900;
+ text-transform: uppercase;
+ letter-spacing: 0.2em;
+ color: #666;
+ }
+ .methods-section {
+ margin-bottom: 20px;
+ }
+ .methods-title {
+ font-size: 10px;
+ font-weight: 900;
+ text-transform: uppercase;
+ letter-spacing: 0.1em;
+ border-bottom: 2px solid #000;
+ padding-bottom: 10px;
+ margin-bottom: 15px;
+ color: #000;
+ }
+ .footer {
+ border-top: 2px solid #000;
+ padding-top: 20px;
+ margin-top: 20px;
+ text-align: center;
+ font-size: 10px;
+ font-weight: 900;
+ text-transform: uppercase;
+ letter-spacing: 0.1em;
+ color: #666;
+ }
+ </style>
+ </head>
+ <body>
+ <div class="header">
+ <h1>⏱️ CIERRE DE CAJA</h1>
+ <p>SESIÓN: ${arqueoData.date}</p>
+ </div>
+ 
+ <div class="methods-section">
+ <div class="methods-title">Distribución por Canal de Pago</div>
+ ${methodsHTML}
+ </div>
+ 
+ <div class="footer">
+ <p>GKAD STOCK - SISTEMA SEGURO DE AUDITORÍA ENCRIPTADO</p>
+ <p>${new Date().toLocaleString()}</p>
+ </div>
+ </body>
+ </html>
+ `;
+ 
+ printWindow.document.write(html);
+ printWindow.document.close();
+ 
+ // Esperar a que el contenido se cargue antes de imprimir
+ printWindow.onload = () => {
+ setTimeout(() => {
+ printWindow.print();
+ printWindow.close();
+ }, 500);
+ };
  };
 
   return (
@@ -637,10 +761,33 @@ export const SalesHistory = () => {
  )}
 
  {/* ARQUEO MODAL - No Print */}
- {arqueoData && (
- <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-background/80 backdrop-blur-xl animate-fade-in no-print">
- <Card className="w-full max-w-lg p-0 glass-dark border-border relative overflow-hidden rounded-[3rem]">
- <button onClick={() => setArqueoData(null)} className="absolute right-8 top-8 p-3 bg-muted text-muted-foreground hover:text-foreground rounded-2xl z-10"><X size={20} /></button>
+ {arqueoData && createPortal(
+  <div 
+    style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      width: '100vw',
+      height: '100vh',
+      zIndex: 99999,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: 'rgba(0,0,0,0.75)'
+    }}
+  >
+    <div style={{
+      position: 'relative',
+      width: '100%',
+      maxWidth: '520px',
+      maxHeight: '85vh',
+      overflowY: 'auto',
+      margin: '0 16px',
+      borderRadius: '24px',
+      background: 'var(--color-card)',
+    }}>
+      <Card className="w-full p-0 glass-dark border-border relative rounded-[3rem]">
+       <button onClick={() => setArqueoData(null)} className="absolute right-8 top-8 p-3 bg-muted text-muted-foreground hover:text-foreground rounded-2xl z-10"><X size={20} /></button>
  <div className="p-10 border-b border-border bg-brand-500/5">
  <div className="flex items-center gap-4 mb-2">
  <div className="p-3 bg-brand-500 rounded-2xl text-white shadow-xl shadow-brand-500/30 border-2 border-border"><DollarSign className="h-6 w-6"/></div>
@@ -668,9 +815,11 @@ export const SalesHistory = () => {
  <Button icon={Printer} onClick={handlePrintArqueo} className="h-14 text-[10px] font-black uppercase tracking-widest rounded-2xl glow-blue">IMPRIMIR REPORTE</Button>
  </div>
  </div>
- </Card>
- </div>
- )}
+      </Card>
+    </div>
+  </div>,
+  document.body
+)}
  </div>
  );
 };
