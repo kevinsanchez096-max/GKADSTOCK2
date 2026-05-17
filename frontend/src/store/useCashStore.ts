@@ -43,7 +43,7 @@ export const useCashStore = create<CashState>((set, get) => ({
     loadingHistory: false,
     hasCheckedActive: false,
 
-    fetchActiveSession: async () => {
+    fetchActiveSession: async (retries = 2) => {
         set({ loading: true });
         try {
             const data = await api.get('/cash-sessions/active');
@@ -52,8 +52,14 @@ export const useCashStore = create<CashState>((set, get) => ({
             } else {
                 set({ activeSession: null, hasCheckedActive: true });
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('[CashStore] Error fetching active cash session:', error);
+            // Si el backend arrojó 502 Bad Gateway u otro error de red, reintentar
+            if (retries > 0) {
+                console.warn(`[CashStore] Network error on active. Retrying... (${retries} left)`);
+                await new Promise(r => setTimeout(r, 1500));
+                return get().fetchActiveSession(retries - 1);
+            }
             set({ activeSession: null, hasCheckedActive: true });
         } finally {
             set({ loading: false });
@@ -102,8 +108,7 @@ export const useCashStore = create<CashState>((set, get) => ({
         }
     },
 
-    fetchHistory: async () => {
-        // Usamos loadingHistory separado para NO resetear el history durante la carga
+    fetchHistory: async (retries = 2) => {
         set({ loadingHistory: true });
         try {
             const timestamp = Date.now();
@@ -117,20 +122,29 @@ export const useCashStore = create<CashState>((set, get) => ({
             });
 
             if (!response.ok) {
+                if (response.status === 502 && retries > 0) {
+                    console.warn(`[CashStore] 502 Bad Gateway. Retrying... (${retries} left)`);
+                    await new Promise(r => setTimeout(r, 1500));
+                    return get().fetchHistory(retries - 1);
+                }
                 throw new Error(`HTTP ${response.status}`);
             }
 
             const data = await response.json();
             
             if (Array.isArray(data)) {
-                // Actualización atómica — reemplaza el historial completo con datos frescos
                 set({ history: data });
             } else {
                 set({ history: [] });
             }
         } catch (error) {
             console.error('[CashStore] Error fetching history:', error);
-            // No limpiar history si falla — mejor mostrar datos viejos que un flash vacío
+            // Si es un error de red o timeout, reintentar si quedan intentos
+            if (retries > 0) {
+                console.warn(`[CashStore] Network error. Retrying... (${retries} left)`);
+                await new Promise(r => setTimeout(r, 1500));
+                return get().fetchHistory(retries - 1);
+            }
         } finally {
             set({ loadingHistory: false });
         }
