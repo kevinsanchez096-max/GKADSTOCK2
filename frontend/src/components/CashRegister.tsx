@@ -25,7 +25,8 @@ export const CashRegister = () => {
     const { 
         activeSession, 
         history, 
-        loading, 
+        loading,
+        loadingHistory,
         fetchActiveSession, 
         openSession, 
         closeSession, 
@@ -39,10 +40,17 @@ export const CashRegister = () => {
     const [openingBalance, setOpeningBalance] = useState('');
     const [actualCash, setActualCash] = useState('');
     const [notes, setNotes] = useState('');
+    const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
     useEffect(() => {
         fetchActiveSession();
         fetchHistory();
+        // Polling automático cada 15s para mantener datos en tiempo real
+        const interval = setInterval(() => {
+            fetchActiveSession();
+            fetchHistory();
+        }, 15000);
+        return () => clearInterval(interval);
     }, []);
 
     const handleOpen = async (e: React.FormEvent) => {
@@ -86,125 +94,159 @@ export const CashRegister = () => {
     return (
         <div className="space-y-8 animate-slide-up flex-1 min-h-full flex flex-col">
             
-            {/* 1. MISSION CONTROL HEADER */}
-            <Card className="bg-card/30 p-10 rounded-[2.5rem] border border-border/50 backdrop-blur-xl relative overflow-hidden mb-4">
-                <div className="absolute top-[-20%] right-[-10%] w-64 h-64 bg-emerald-500/10 blur-[80px] rounded-full pointer-events-none"/>
-                <div className="absolute bottom-[-10%] left-[-5%] w-48 h-48 bg-blue-500/5 blur-[60px] rounded-full pointer-events-none"/>
-
-                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                    <div className="space-y-2">
-                        <div className="flex items-center gap-3">
-                            <div className={`h-2.5 w-2.5 rounded-full animate-pulse shadow-lg ${
-                                activeSession ? 'bg-emerald-500 shadow-emerald-500/50' : 'bg-rose-500 shadow-rose-500/50'
-                            }`}/>
-                            <span className={`text-[10px] font-black uppercase tracking-[0.4em] ${
-                                activeSession ? 'text-emerald-500' : 'text-rose-500'
-                            }`}>
-                                {activeSession ? 'Caja Abierta y Activa' : 'Caja Cerrada'}
-                            </span>
-                        </div>
-                        <h1 className="text-4xl font-black text-foreground font-heading tracking-tighter uppercase leading-none">
-                            Control de <span className="bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent">Caja</span>
-                        </h1>
-                        <p className="text-muted-foreground font-bold text-[11px] uppercase tracking-widest opacity-70 ml-1">
-                            Apertura, Arqueo e Historial de Ventas
-                        </p>
-                    </div>
-
-                    <div className="flex gap-3">
-                        <button 
-                            onClick={() => {
-                                fetchActiveSession();
-                                fetchHistory();
-                                toast.success('Datos de caja sincronizados');
-                            }}
-                            className="h-12 w-12 rounded-xl bg-muted border border-border/60 hover:bg-muted-hover flex items-center justify-center transition-all text-muted-foreground"
-                            title="Recargar datos"
-                        >
-                            <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
-                        </button>
-                    </div>
-                </div>
-            </Card>
-
             {loading && !activeSession && history.length === 0 ? (
                 <Card className="p-32 text-center text-muted-foreground font-black uppercase tracking-widest text-xs animate-pulse">
                     Cargando Módulo de Caja...
                 </Card>
             ) : !activeSession ? (
-                /* ── FORMULARIO DE APERTURA DE CAJA ── */
-                <div className="flex justify-center items-center py-8">
-                    <Card className="max-w-5xl w-full p-0 bg-card border border-border shadow-2xl rounded-[3rem] relative overflow-hidden flex flex-col md:flex-row">
-                        {/* LADO IZQUIERDO - INFORMACIÓN Y BRANDING */}
-                        <div className="md:w-1/2 p-12 bg-emerald-500/5 relative overflow-hidden flex flex-col justify-center border-r border-border/50">
-                            <div className="absolute top-[-20%] left-[-20%] w-80 h-80 bg-emerald-500/20 blur-[100px] rounded-full pointer-events-none"/>
-                            <div className="absolute bottom-[-10%] right-[-10%] font-black text-[120px] text-emerald-500/5 pointer-events-none select-none font-outfit">POS</div>
-                            
-                            <div className="relative z-10 space-y-6">
-                                <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 shadow-xl shadow-emerald-500/10">
-                                    <Wallet size={32} />
+                /* ── FORMULARIO DE APERTURA DE CAJA UNIFICADO ── */
+                <div className="flex justify-center items-center py-4">
+                    <Card className="max-w-7xl w-full p-0 bg-card border border-border shadow-2xl rounded-[2.5rem] relative overflow-hidden flex flex-col">
+                        
+                        {/* HEADER INTEGRADO */}
+                        <div className="relative z-20 flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 md:px-10 border-b border-border/50 bg-background/50 backdrop-blur-xl">
+                            <div className="space-y-1">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-2 w-2 rounded-full animate-pulse shadow-lg bg-rose-500 shadow-rose-500/50"/>
+                                    <span className="text-[9px] font-black uppercase tracking-[0.4em] text-rose-500">
+                                        Caja Cerrada
+                                    </span>
                                 </div>
-                                <div>
-                                    <h3 className="text-4xl font-black text-foreground uppercase tracking-tight leading-none">Apertura<br/>de Caja</h3>
-                                    <p className="text-sm font-bold text-muted-foreground mt-4 leading-relaxed max-w-sm">
-                                        Para comenzar a facturar y registrar movimientos en el terminal POS, es obligatorio realizar la apertura indicando el efectivo de base con el que inicia en caja física.
-                                    </p>
-                                </div>
-                                <div className="pt-8 grid grid-cols-2 gap-4">
-                                    <div className="bg-background/80 backdrop-blur-md rounded-2xl p-4 border border-border/50 shadow-sm">
-                                        <div className="flex items-center gap-2 mb-2 text-emerald-500">
-                                            <ShieldCheck size={18} />
-                                            <h4 className="text-[10px] uppercase font-black tracking-widest">Seguro</h4>
-                                        </div>
-                                        <p className="text-[10px] text-muted-foreground font-bold">Registro blindado</p>
-                                    </div>
-                                    <div className="bg-background/80 backdrop-blur-md rounded-2xl p-4 border border-border/50 shadow-sm">
-                                        <div className="flex items-center gap-2 mb-2 text-blue-500">
-                                            <Clock size={18} />
-                                            <h4 className="text-[10px] uppercase font-black tracking-widest">Auto-Cierre</h4>
-                                        </div>
-                                        <p className="text-[10px] text-muted-foreground font-bold">11:59 PM diario</p>
-                                    </div>
-                                </div>
+                                <h1 className="text-3xl font-black text-foreground font-heading tracking-tighter uppercase leading-none">
+                                    Control de <span className="bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent">Caja</span>
+                                </h1>
+                                <p className="text-muted-foreground font-bold text-[10px] uppercase tracking-widest opacity-70 ml-1">
+                                    Apertura, Arqueo e Historial de Ventas
+                                </p>
+                            </div>
+
+                            <div className="flex gap-3">
+                                <button 
+                                    onClick={() => {
+                                        fetchActiveSession();
+                                        fetchHistory();
+                                        toast.success('Datos de caja sincronizados');
+                                    }}
+                                    className="h-10 w-10 rounded-xl bg-muted border border-border/60 hover:bg-muted-hover flex items-center justify-center transition-all text-muted-foreground"
+                                    title="Recargar datos"
+                                >
+                                    <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
+                                </button>
                             </div>
                         </div>
 
-                        {/* LADO DERECHO - FORMULARIO INTERACTIVO */}
-                        <div className="md:w-1/2 p-12 flex flex-col justify-center bg-card/50 backdrop-blur-xl relative z-10">
-                            <form onSubmit={handleOpen} className="space-y-8 w-full max-w-sm mx-auto">
-                                <div className="space-y-3">
-                                    <label className="text-xs font-black text-foreground uppercase tracking-[0.2em] ml-1">
-                                        Dinero Base de Apertura ($)
-                                    </label>
-                                    <div className="relative">
-                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-black text-muted-foreground/50 font-outfit">$</span>
-                                        <input 
-                                            type="number"
-                                            placeholder="100000"
-                                            value={openingBalance}
-                                            onChange={e => setOpeningBalance(e.target.value)}
-                                            required
-                                            min="0"
-                                            className="w-full h-16 bg-background border border-border rounded-2xl pl-10 pr-4 text-3xl font-black text-emerald-500 focus:ring-2 focus:ring-emerald-500 outline-none placeholder:text-muted-foreground/30 font-outfit shadow-inner transition-all"
-                                        />
+                        {/* CUERPO: LADO IZQUIERDO Y DERECHO */}
+                        <div className="flex flex-col md:flex-row flex-1 relative z-10">
+                            {/* LADO IZQUIERDO - INFORMACIÓN Y BRANDING */}
+                            <div className="md:w-1/2 p-8 md:px-12 bg-emerald-500/5 relative overflow-hidden flex flex-col justify-center border-r border-border/50">
+                                <div className="absolute top-[-20%] left-[-20%] w-80 h-80 bg-emerald-500/20 blur-[100px] rounded-full pointer-events-none"/>
+                                <div className="absolute bottom-[-10%] right-[-10%] font-black text-[100px] text-emerald-500/5 pointer-events-none select-none font-outfit">POS</div>
+                                
+                                <div className="relative z-10 flex items-start gap-5">
+                                    <div className="flex-shrink-0 h-14 w-14 flex items-center justify-center rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 shadow-xl shadow-emerald-500/10">
+                                        <Wallet size={28} />
                                     </div>
-                                    <p className="text-[10px] font-bold text-muted-foreground/70 ml-1">
-                                        Ingrese el monto exacto disponible en la gaveta.
-                                    </p>
+                                    <div>
+                                        <h3 className="text-3xl font-black text-foreground uppercase tracking-tight leading-none">Apertura de Caja</h3>
+                                        <p className="text-xs font-bold text-muted-foreground mt-2 leading-relaxed max-w-sm">
+                                            Para comenzar a facturar y registrar movimientos en el terminal POS, es obligatorio realizar la apertura indicando el efectivo de base con el que inicia en caja física.
+                                        </p>
+                                    </div>
                                 </div>
-                                <Button 
-                                    type="submit"
-                                    className="w-full h-16 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-black uppercase text-[11px] tracking-widest hover:scale-[1.02] transition-all shadow-xl shadow-emerald-500/20 border-none rounded-2xl"
-                                >
-                                    ABRIR CAJA E INICIAR TURNO
-                                </Button>
-                            </form>
+
+                                <div className="pt-6 grid grid-cols-2 gap-4 relative z-10">
+                                    <div className="bg-background/80 backdrop-blur-md rounded-xl p-3 border border-border/50 shadow-sm flex flex-col justify-center">
+                                        <div className="flex items-center gap-2 mb-1 text-emerald-500">
+                                            <ShieldCheck size={16} />
+                                            <h4 className="text-[9px] uppercase font-black tracking-widest">Seguro</h4>
+                                        </div>
+                                        <p className="text-[9px] text-muted-foreground font-bold">Registro blindado</p>
+                                    </div>
+                                    <div className="bg-background/80 backdrop-blur-md rounded-xl p-3 border border-border/50 shadow-sm flex flex-col justify-center">
+                                        <div className="flex items-center gap-2 mb-1 text-blue-500">
+                                            <Clock size={16} />
+                                            <h4 className="text-[9px] uppercase font-black tracking-widest">Auto-Cierre</h4>
+                                        </div>
+                                        <p className="text-[9px] text-muted-foreground font-bold">11:59 PM diario</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* LADO DERECHO - FORMULARIO INTERACTIVO */}
+                            <div className="md:w-1/2 p-8 md:px-12 flex flex-col justify-center bg-card/50 backdrop-blur-xl relative z-10">
+                                <form onSubmit={handleOpen} className="space-y-6 w-full max-w-sm mx-auto">
+                                    <div className="space-y-2">
+                                        <label className="text-[11px] font-black text-foreground uppercase tracking-[0.2em] ml-1">
+                                            Dinero Base de Apertura ($)
+                                        </label>
+                                        <div className="relative">
+                                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl font-black text-muted-foreground/50 font-outfit">$</span>
+                                            <input 
+                                                type="number"
+                                                placeholder="100000"
+                                                value={openingBalance}
+                                                onChange={e => setOpeningBalance(e.target.value)}
+                                                required
+                                                min="0"
+                                                className="w-full h-14 bg-background border border-border rounded-xl pl-10 pr-4 text-2xl font-black text-emerald-500 focus:ring-2 focus:ring-emerald-500 outline-none placeholder:text-muted-foreground/30 font-outfit shadow-inner transition-all"
+                                            />
+                                        </div>
+                                        <p className="text-[9px] font-bold text-muted-foreground/70 ml-1">
+                                            Ingrese el monto exacto disponible en la gaveta.
+                                        </p>
+                                    </div>
+                                    <Button 
+                                        type="submit"
+                                        className="w-full h-14 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-black uppercase text-[10px] tracking-widest hover:scale-[1.02] transition-all shadow-xl shadow-emerald-500/20 border-none rounded-xl"
+                                    >
+                                        ABRIR CAJA E INICIAR TURNO
+                                    </Button>
+                                </form>
+                            </div>
                         </div>
                     </Card>
                 </div>
             ) : (
                 /* ── PANEL DE MONITOREO Y ARQUEO ACTIVO ── */
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <div className="space-y-8">
+                    {/* MISSION CONTROL HEADER FOR ACTIVE SESSION */}
+                    <Card className="bg-card/30 p-10 rounded-[2.5rem] border border-border/50 backdrop-blur-xl relative overflow-hidden">
+                        <div className="absolute top-[-20%] right-[-10%] w-64 h-64 bg-emerald-500/10 blur-[80px] rounded-full pointer-events-none"/>
+                        <div className="absolute bottom-[-10%] left-[-5%] w-48 h-48 bg-blue-500/5 blur-[60px] rounded-full pointer-events-none"/>
+
+                        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-2.5 w-2.5 rounded-full animate-pulse shadow-lg bg-emerald-500 shadow-emerald-500/50"/>
+                                    <span className="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-500">
+                                        Caja Abierta y Activa
+                                    </span>
+                                </div>
+                                <h1 className="text-4xl font-black text-foreground font-heading tracking-tighter uppercase leading-none">
+                                    Control de <span className="bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent">Caja</span>
+                                </h1>
+                                <p className="text-muted-foreground font-bold text-[11px] uppercase tracking-widest opacity-70 ml-1">
+                                    Apertura, Arqueo e Historial de Ventas
+                                </p>
+                            </div>
+
+                            <div className="flex gap-3">
+                                <button 
+                                    onClick={() => {
+                                        fetchActiveSession();
+                                        fetchHistory();
+                                        toast.success('Datos de caja sincronizados');
+                                    }}
+                                    className="h-12 w-12 rounded-xl bg-muted border border-border/60 hover:bg-muted-hover flex items-center justify-center transition-all text-muted-foreground"
+                                    title="Recargar datos"
+                                >
+                                    <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
+                                </button>
+                            </div>
+                        </div>
+                    </Card>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                     
                     {/* MONITOREO DE CAJA */}
                     <div className="lg:col-span-7 space-y-6">
@@ -355,6 +397,7 @@ export const CashRegister = () => {
                     </div>
 
                 </div>
+                </div>
             )}
 
             {/* TABLA DE HISTORIAL DE ARQUEOS */}
@@ -364,6 +407,12 @@ export const CashRegister = () => {
                         <h3 className="text-lg font-black uppercase text-foreground tracking-tight">Historial de Cierres de Caja</h3>
                         <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Sesiones Completadas</p>
                     </div>
+                    {loadingHistory && (
+                        <div className="flex items-center gap-2 text-[9px] font-black text-muted-foreground uppercase tracking-widest animate-pulse">
+                            <RefreshCw size={12} className="animate-spin" />
+                            Actualizando...
+                        </div>
+                    )}
                 </div>
 
                 <div className="overflow-x-auto flex-1">
@@ -450,17 +499,29 @@ export const CashRegister = () => {
                                                 )}
                                             </td>
                                             <td className="px-6 py-5 text-center whitespace-nowrap">
-                                                <button
-                                                    onClick={() => {
-                                                        if (window.confirm('¿Está seguro de que desea eliminar este reporte de cierre de caja permanentemente? Esta acción es irreversible.')) {
-                                                            deleteSession(s.id);
-                                                        }
-                                                    }}
-                                                    className="p-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 rounded-xl transition-all hover:scale-105 border border-rose-500/20 cursor-pointer"
-                                                    title="Eliminar reporte"
-                                                >
-                                                    <Trash2 size={14} />
-                                                </button>
+                                                {confirmDeleteId === s.id ? (
+                                                    <div className="flex items-center gap-1">
+                                                        <button
+                                                            onClick={() => {
+                                                                setConfirmDeleteId(null);
+                                                                deleteSession(s.id);
+                                                            }}
+                                                            className="px-2 py-1 bg-rose-500 text-white text-[9px] font-black uppercase rounded-lg cursor-pointer hover:bg-rose-600 transition-colors"
+                                                        >Sí</button>
+                                                        <button
+                                                            onClick={() => setConfirmDeleteId(null)}
+                                                            className="px-2 py-1 bg-muted text-muted-foreground text-[9px] font-black uppercase rounded-lg cursor-pointer hover:bg-muted-hover transition-colors"
+                                                        >No</button>
+                                                    </div>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => setConfirmDeleteId(s.id)}
+                                                        className="p-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 rounded-xl transition-all hover:scale-105 border border-rose-500/20 cursor-pointer"
+                                                        title="Eliminar reporte"
+                                                    >
+                                                        <Trash2 size={14} />
+                                                    </button>
+                                                )}
                                             </td>
                                         </tr>
                                     );

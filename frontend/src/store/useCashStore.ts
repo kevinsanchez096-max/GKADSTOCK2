@@ -25,6 +25,7 @@ interface CashState {
     activeSession: CashSession | null;
     history: CashSession[];
     loading: boolean;
+    loadingHistory: boolean;
     hasCheckedActive: boolean;
 
     fetchActiveSession: () => Promise<void>;
@@ -39,6 +40,7 @@ export const useCashStore = create<CashState>((set, get) => ({
     activeSession: null,
     history: [],
     loading: false,
+    loadingHistory: false,
     hasCheckedActive: false,
 
     fetchActiveSession: async () => {
@@ -65,6 +67,8 @@ export const useCashStore = create<CashState>((set, get) => ({
             if (data && data.success) {
                 toast.success('¡Caja abierta con éxito!');
                 set({ activeSession: data.session });
+                // Refrescar historial en background sin bloquear UI
+                get().fetchHistory();
                 return true;
             }
             return false;
@@ -84,7 +88,8 @@ export const useCashStore = create<CashState>((set, get) => ({
             if (data && data.success) {
                 toast.success('¡Caja cerrada y arqueada con éxito!');
                 set({ activeSession: null });
-                get().fetchHistory(); // Recargar el historial
+                // Refrescar historial en background sin bloquear UI
+                get().fetchHistory();
                 return true;
             }
             return false;
@@ -98,46 +103,73 @@ export const useCashStore = create<CashState>((set, get) => ({
     },
 
     fetchHistory: async () => {
-        set({ loading: true });
+        // Usamos loadingHistory separado para NO resetear el history durante la carga
+        set({ loadingHistory: true });
         try {
-            const data = await api.get(`/cash-sessions/history?t=${Date.now()}`);
+            const timestamp = Date.now();
+            const response = await fetch(`/api/cash-sessions/history?_t=${timestamp}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('gkad_token') || ''}`,
+                    'Cache-Control': 'no-cache, no-store',
+                    'Pragma': 'no-cache',
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            const data = await response.json();
+            
             if (Array.isArray(data)) {
+                // Actualización atómica — reemplaza el historial completo con datos frescos
                 set({ history: data });
             } else {
                 set({ history: [] });
             }
         } catch (error) {
             console.error('[CashStore] Error fetching history:', error);
-            set({ history: [] });
+            // No limpiar history si falla — mejor mostrar datos viejos que un flash vacío
         } finally {
-            set({ loading: false });
+            set({ loadingHistory: false });
         }
     },
 
-    deleteSession: async (id) => {
+    deleteSession: async (id: string) => {
         const previousHistory = get().history;
-        // Actualización optimista: removemos el elemento inmediatamente en el cliente
-        set({ 
-            history: previousHistory.filter(s => s.id !== id),
-            loading: true 
-        });
+
+        // 1. Actualización optimista instantánea: quitar de la UI al instante
+        set({ history: previousHistory.filter(s => s.id !== id) });
 
         try {
-            await api.delete(`/cash-sessions/${id}`);
-            toast.success('Reporte de cierre de caja eliminado con éxito.');
-            // Refrescar desde el servidor con bypass de caché para sincronía total
-            await get().fetchHistory();
+            // 2. Llamar al backend para eliminar de disco
+            const response = await fetch(`/api/cash-sessions/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('gkad_token') || ''}`,
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            if (!response.ok) {
+                const errBody = await response.json().catch(() => ({}));
+                throw new Error(errBody?.error || `Error ${response.status}`);
+            }
+
+            toast.success('Reporte eliminado correctamente.');
+
+            // 3. Sincronizar con el servidor en background para asegurar consistencia
+            get().fetchHistory();
             return true;
         } catch (error: any) {
-            // Revertir estado si el servidor falla
+            // 4. Revertir si falló en el servidor
             set({ history: previousHistory });
-            const serverMessage = error?.data?.error || error?.message || 'Error al eliminar el reporte';
+            const serverMessage = error?.message || 'Error al eliminar el reporte';
             toast.error(serverMessage);
             return false;
-        } finally {
-            set({ loading: false });
         }
     },
 
-    resetStore: () => set({ activeSession: null, history: [], loading: false, hasCheckedActive: false })
+    resetStore: () => set({ activeSession: null, history: [], loading: false, loadingHistory: false, hasCheckedActive: false })
 }));
