@@ -116,11 +116,11 @@ export const PaymentRequests = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'approved':
-        return <span className="px-2 py-1 bg-green-500/10 text-green-500 rounded text-xs font-bold uppercase tracking-wider">Aprobado</span>;
+        return <span className="px-3 py-1.5 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-xl text-[10px] font-black uppercase tracking-widest">Aprobado</span>;
       case 'rejected':
-        return <span className="px-2 py-1 bg-red-500/10 text-red-500 rounded text-xs font-bold uppercase tracking-wider">Rechazado</span>;
+        return <span className="px-3 py-1.5 bg-red-500/10 text-red-500 border border-red-500/20 rounded-xl text-[10px] font-black uppercase tracking-widest">Rechazado</span>;
       default:
-        return <span className="px-2 py-1 bg-yellow-500/10 text-yellow-500 rounded text-xs font-bold uppercase tracking-wider">Pendiente</span>;
+        return <span className="px-3 py-1.5 bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 rounded-xl text-[10px] font-black uppercase tracking-widest">Pendiente</span>;
     }
   };
 
@@ -130,105 +130,155 @@ export const PaymentRequests = () => {
   const rejectedReq = requests.filter(r => r.payment_status === 'rejected').length;
 
   return (
-    <div className="p-6">
-      <div className="flex flex-col gap-1 mb-8">
-        <div className="flex items-center gap-3">
-          <CreditCard size={22} className="text-[var(--brand-primary)]" />
-          <h1 className="text-2xl font-black uppercase tracking-tight text-foreground leading-none">
-            SOLICITUDES DE <span className="text-[var(--brand-primary)]">PAGO</span>
+    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20 p-6 md:p-10">
+      
+      {/* Header Corporativo */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-10">
+        <div className="space-y-2">
+          <div className="flex items-center gap-3">
+            <div className="h-2 w-2 rounded-full bg-[var(--brand-primary)] animate-pulse shadow-[0_0_10px_var(--brand-primary)]" />
+            <CreditCard size={18} className="text-[var(--brand-primary)]" />
+            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--brand-primary)]">
+              Auditoría Financiera
+            </span>
+          </div>
+          <h1 className="text-4xl font-black text-foreground font-outfit tracking-tighter uppercase leading-none">
+            Solicitudes de <span className="text-[var(--brand-primary)]">Pago</span>
           </h1>
-        </div>
-        <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted-foreground ml-[34px]">
-          Gestión de transferencias y pagos pendientes
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <div className="p-4 rounded-xl border border-border bg-card">
-          <div className="text-xs font-bold text-muted-foreground uppercase mb-1">Total Solicitudes</div>
-          <div className="text-2xl font-black">{totalReq}</div>
-        </div>
-        <div className="p-4 rounded-xl border border-yellow-500/20 bg-yellow-500/5">
-          <div className="text-xs font-bold text-yellow-500 uppercase mb-1">Pendientes</div>
-          <div className="text-2xl font-black text-yellow-500">{pendingReq}</div>
-        </div>
-        <div className="p-4 rounded-xl border border-green-500/20 bg-green-500/5">
-          <div className="text-xs font-bold text-green-500 uppercase mb-1">Aprobadas</div>
-          <div className="text-2xl font-black text-green-500">{approvedReq}</div>
-        </div>
-        <div className="p-4 rounded-xl border border-red-500/20 bg-red-500/5">
-          <div className="text-xs font-bold text-red-500 uppercase mb-1">Rechazadas</div>
-          <div className="text-2xl font-black text-red-500">{rejectedReq}</div>
+          <p className="text-muted-foreground font-bold text-[11px] uppercase tracking-widest opacity-70 ml-1">
+            Gestión de transferencias y pagos pendientes
+          </p>
         </div>
       </div>
 
-      <div className="bg-card rounded-xl border border-border overflow-hidden">
+      {/* KPI Cards Estilo Glassmorphism */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
+        <div className="bg-card/30 border border-border/50 rounded-[2.5rem] p-8 space-y-4 relative overflow-hidden group shadow-sm backdrop-blur-xl">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="h-10 w-10 rounded-2xl bg-muted flex items-center justify-center">
+              <CreditCard size={18} className="text-muted-foreground" />
+            </div>
+            <div className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Total Solicitudes</div>
+          </div>
+          <div className="text-4xl font-black font-outfit text-foreground">{totalReq}</div>
+        </div>
+
+        <div className="bg-yellow-500/5 border border-yellow-500/20 rounded-[2.5rem] p-8 space-y-4 relative overflow-hidden group shadow-sm backdrop-blur-xl">
+          <div className="absolute top-[-20%] right-[-10%] w-32 h-32 bg-yellow-500/10 blur-[40px] rounded-full pointer-events-none" />
+          <div className="flex items-center gap-3 mb-2 relative z-10">
+            <div className="h-10 w-10 rounded-2xl bg-yellow-500/10 flex items-center justify-center border border-yellow-500/20">
+              <Clock size={18} className="text-yellow-500" />
+            </div>
+            <div className="text-[10px] font-black text-yellow-500 uppercase tracking-widest">Pendientes</div>
+          </div>
+          <div className="text-4xl font-black font-outfit text-yellow-500 relative z-10">{pendingReq}</div>
+        </div>
+
+        <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-[2.5rem] p-8 space-y-4 relative overflow-hidden group shadow-sm backdrop-blur-xl">
+          <div className="absolute top-[-20%] right-[-10%] w-32 h-32 bg-emerald-500/10 blur-[40px] rounded-full pointer-events-none" />
+          <div className="flex items-center gap-3 mb-2 relative z-10">
+            <div className="h-10 w-10 rounded-2xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
+              <CheckCircle size={18} className="text-emerald-500" />
+            </div>
+            <div className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Aprobadas</div>
+          </div>
+          <div className="text-4xl font-black font-outfit text-emerald-500 relative z-10">{approvedReq}</div>
+        </div>
+
+        <div className="bg-red-500/5 border border-red-500/20 rounded-[2.5rem] p-8 space-y-4 relative overflow-hidden group shadow-sm backdrop-blur-xl">
+          <div className="absolute top-[-20%] right-[-10%] w-32 h-32 bg-red-500/10 blur-[40px] rounded-full pointer-events-none" />
+          <div className="flex items-center gap-3 mb-2 relative z-10">
+            <div className="h-10 w-10 rounded-2xl bg-red-500/10 flex items-center justify-center border border-red-500/20">
+              <XCircle size={18} className="text-red-500" />
+            </div>
+            <div className="text-[10px] font-black text-red-500 uppercase tracking-widest">Rechazadas</div>
+          </div>
+          <div className="text-4xl font-black font-outfit text-red-500 relative z-10">{rejectedReq}</div>
+        </div>
+      </div>
+
+      <div className="bg-card/40 backdrop-blur-xl rounded-[2.5rem] border border-border/50 overflow-hidden shadow-sm">
         {loading ? (
-          <div className="p-8 text-center text-muted-foreground">Cargando solicitudes...</div>
+          <div className="p-12 text-center flex flex-col items-center justify-center gap-4">
+             <div className="h-8 w-8 rounded-full border-2 border-[var(--brand-primary)] border-t-transparent animate-spin" />
+             <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Cargando solicitudes...</span>
+          </div>
         ) : requests.length === 0 ? (
-          <div className="p-8 text-center text-muted-foreground">No hay solicitudes de pago registradas.</div>
+          <div className="p-16 flex flex-col items-center justify-center text-center border-2 border-dashed border-border/50 rounded-[2rem] m-6 bg-muted/20">
+            <div className="h-16 w-16 bg-muted rounded-full flex items-center justify-center mb-4">
+              <CreditCard size={24} className="text-muted-foreground opacity-50" />
+            </div>
+            <h3 className="text-lg font-black font-outfit uppercase tracking-tight text-foreground mb-1">Sin Solicitudes</h3>
+            <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">
+              No hay solicitudes de pago registradas.
+            </p>
+          </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-muted/50 text-muted-foreground border-b border-border">
+              <thead className="bg-muted/30 border-b border-border/50">
                 <tr>
-                  <th className="px-4 py-3 text-left font-semibold uppercase tracking-wider text-[10px]">Fecha</th>
-                  <th className="px-4 py-3 text-left font-semibold uppercase tracking-wider text-[10px]">Organización</th>
-                  <th className="px-4 py-3 text-left font-semibold uppercase tracking-wider text-[10px]">Plan Solicitado</th>
-                  <th className="px-4 py-3 text-right font-semibold uppercase tracking-wider text-[10px]">Monto</th>
-                  <th className="px-4 py-3 text-left font-semibold uppercase tracking-wider text-[10px]">Método</th>
-                  <th className="px-4 py-3 text-center font-semibold uppercase tracking-wider text-[10px]">Estado</th>
-                  <th className="px-4 py-3 text-center font-semibold uppercase tracking-wider text-[10px]">Acciones</th>
+                  <th className="px-6 py-5 text-left text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Fecha</th>
+                  <th className="px-6 py-5 text-left text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Organización</th>
+                  <th className="px-6 py-5 text-left text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Plan Solicitado</th>
+                  <th className="px-6 py-5 text-right text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Monto</th>
+                  <th className="px-6 py-5 text-left text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Método</th>
+                  <th className="px-6 py-5 text-center text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Estado</th>
+                  <th className="px-6 py-5 text-center text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Acciones</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border">
+              <tbody className="divide-y divide-border/50">
                 {requests.map((req) => (
-                  <tr key={req.id} className="hover:bg-muted/30 transition-colors">
-                    <td className="px-4 py-3 whitespace-nowrap">
+                  <tr key={req.id} className="hover:bg-muted/20 transition-colors group">
+                    <td className="px-6 py-5 whitespace-nowrap text-xs font-bold text-muted-foreground">
                       {new Date(req.created_at).toLocaleString('es-CO', { 
                         year: 'numeric', month: 'short', day: 'numeric', 
                         hour: '2-digit', minute: '2-digit' 
                       })}
                     </td>
-                    <td className="px-4 py-3 font-medium">{req.organization_name}</td>
-                    <td className="px-4 py-3">
-                      <span className="font-semibold text-[var(--brand-primary)]">{req.plan_name}</span>
+                    <td className="px-6 py-5 font-black uppercase text-xs">{req.organization_name}</td>
+                    <td className="px-6 py-5">
+                      <span className="inline-flex items-center px-3 py-1 rounded-lg bg-[var(--brand-primary)]/10 text-[var(--brand-primary)] text-[10px] font-black uppercase tracking-widest border border-[var(--brand-primary)]/20">
+                        {req.plan_name}
+                      </span>
                     </td>
-                    <td className="px-4 py-3 text-right font-bold text-green-500">
+                    <td className="px-6 py-5 text-right font-black font-outfit text-foreground text-base">
                       ${Number(req.plan_price).toLocaleString()}
                     </td>
-                    <td className="px-4 py-3">
-                      <span className="px-2 py-1 bg-muted rounded text-xs font-semibold">
+                    <td className="px-6 py-5">
+                      <span className="px-3 py-1.5 bg-muted rounded-xl text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                         {req.payment_method}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-center">
+                    <td className="px-6 py-5 text-center">
                       {getStatusBadge(req.payment_status)}
                     </td>
-                    <td className="px-4 py-3 text-center">
-                      {req.payment_status === 'pending' && (
-                        <div className="flex items-center justify-center gap-2">
+                    <td className="px-6 py-5 text-center">
+                      {req.payment_status === 'pending' ? (
+                        <div className="flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button
                             onClick={() => {
                               setSelectedRequest(req);
                               setActionType('approve');
                             }}
-                            className="p-1.5 text-green-500 hover:bg-green-500/20 rounded-lg transition-colors"
+                            className="h-8 w-8 flex items-center justify-center bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white rounded-xl transition-all shadow-sm"
                             title="Aprobar"
                           >
-                            <CheckCircle size={18} />
+                            <CheckCircle size={16} />
                           </button>
                           <button
                             onClick={() => {
                               setSelectedRequest(req);
                               setActionType('reject');
                             }}
-                            className="p-1.5 text-red-500 hover:bg-red-500/20 rounded-lg transition-colors"
+                            className="h-8 w-8 flex items-center justify-center bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-xl transition-all shadow-sm"
                             title="Rechazar"
                           >
-                            <XCircle size={18} />
+                            <XCircle size={16} />
                           </button>
                         </div>
+                      ) : (
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">-</span>
                       )}
                     </td>
                   </tr>
