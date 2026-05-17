@@ -281,6 +281,7 @@ const cashSessionController = {
     // 4. Obtener historial de sesiones de caja cerradas (GET /api/cash-sessions/history)
     getHistory: async (req, res) => {
         try {
+            res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
             const orgId = cashSessionController.getOrgId(req);
             const sessions = readSessions();
             
