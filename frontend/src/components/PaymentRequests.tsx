@@ -130,71 +130,117 @@ export const PaymentRequests = () => {
   const rejectedReq = requests.filter(r => r.payment_status === 'rejected').length;
 
   return (
-    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20 p-6 md:p-10">
+    <div className="space-y-12 animate-slide-up pb-32">
       
-      {/* Header Corporativo */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-10">
-        <div className="space-y-2">
-          <div className="flex items-center gap-3">
-            <div className="h-2 w-2 rounded-full bg-[var(--brand-primary)] animate-pulse shadow-[0_0_10px_var(--brand-primary)]" />
-            <CreditCard size={18} className="text-[var(--brand-primary)]" />
-            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--brand-primary)]">
-              Auditoría Financiera
-            </span>
+      {/* 1. MISSION CONTROL HEADER */}
+      <div className="bg-card/30 p-10 rounded-[2.5rem] border border-border/50 backdrop-blur-xl relative overflow-hidden mb-8">
+        {/* Decorative elements */}
+        <div className="absolute top-[-20%] right-[-10%] w-64 h-64 bg-[var(--brand-primary)]/10 blur-[80px] rounded-full pointer-events-none" />
+        <div className="absolute bottom-[-10%] left-[-5%] w-48 h-48 bg-emerald-500/5 blur-[60px] rounded-full pointer-events-none" />
+
+        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 items-center gap-10">
+          <div className="lg:col-span-12 space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="h-2 w-2 rounded-full bg-[var(--brand-primary)] animate-pulse shadow-[0_0_10px_var(--brand-primary)]" />
+              <CreditCard size={18} className="text-[var(--brand-primary)]" />
+              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--brand-primary)]">
+                Auditoría Financiera
+              </span>
+            </div>
+            <h1 className="flex flex-col gap-1 text-5xl font-black text-foreground font-outfit tracking-tighter uppercase leading-none">
+              <span>SOLICITUDES DE</span>
+              <span className="bg-[var(--brand-primary)] text-white px-4 py-1 w-fit rounded-xl shadow-lg shadow-[var(--brand-primary)]/20 mt-1">PAGO</span>
+            </h1>
+            <div className="inline-block bg-muted/50 px-3 py-1.5 rounded-lg border border-border/50 mt-2">
+              <span className="text-muted-foreground font-bold text-[11px] uppercase tracking-widest">Gestión de transferencias y pagos pendientes</span>
+            </div>
           </div>
-          <h1 className="text-4xl font-black text-foreground font-outfit tracking-tighter uppercase leading-none">
-            Solicitudes de <span className="text-[var(--brand-primary)]">Pago</span>
-          </h1>
-          <p className="text-muted-foreground font-bold text-[11px] uppercase tracking-widest opacity-70 ml-1">
-            Gestión de transferencias y pagos pendientes
-          </p>
         </div>
       </div>
 
-      {/* KPI Cards Estilo Glassmorphism */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
-        <div className="bg-card/30 border border-border/50 rounded-[2.5rem] p-8 space-y-4 relative overflow-hidden group shadow-sm backdrop-blur-xl">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="h-10 w-10 rounded-2xl bg-muted flex items-center justify-center">
-              <CreditCard size={18} className="text-muted-foreground" />
-            </div>
-            <div className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Total Solicitudes</div>
+      {/* PANEL DE MÉTRICAS DINÁMICAS (MODO DIOS) */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        
+        {/* Card: Total Solicitudes */}
+        <div className="relative group overflow-hidden bg-muted/40 backdrop-blur-2xl border border-border rounded-[2rem] p-8 transition-all hover:border-[var(--brand-primary)]/50 shadow-2xl">
+          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-150 transition-all duration-700">
+            <CreditCard size={80} className="text-[var(--brand-primary)]" />
           </div>
-          <div className="text-4xl font-black font-outfit text-foreground">{totalReq}</div>
+          <div className="relative z-10">
+            <div className="h-12 w-12 bg-[var(--brand-primary)]/10 rounded-2xl flex items-center justify-center mb-4 border border-[var(--brand-primary)]/20 shadow-lg shadow-[var(--brand-primary)]/10">
+              <CreditCard className="text-[var(--brand-primary)]" size={24} />
+            </div>
+            <p className="text-[10px] font-black text-[var(--brand-primary)] uppercase tracking-[0.3em] mb-1">Total Solicitudes</p>
+            <h3 className="text-4xl font-black text-foreground font-outfit tracking-tighter leading-none">
+              {totalReq}
+            </h3>
+            <div className="mt-4 flex items-center gap-2">
+              <span className="px-2 py-0.5 bg-[var(--brand-primary)]/10 text-[var(--brand-primary)] text-[8px] font-black rounded-lg border border-[var(--brand-primary)]/20 uppercase tracking-widest">Global</span>
+            </div>
+          </div>
+          <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-transparent via-[var(--brand-primary)]/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
 
-        <div className="bg-yellow-500/5 border border-yellow-500/20 rounded-[2.5rem] p-8 space-y-4 relative overflow-hidden group shadow-sm backdrop-blur-xl">
-          <div className="absolute top-[-20%] right-[-10%] w-32 h-32 bg-yellow-500/10 blur-[40px] rounded-full pointer-events-none" />
-          <div className="flex items-center gap-3 mb-2 relative z-10">
-            <div className="h-10 w-10 rounded-2xl bg-yellow-500/10 flex items-center justify-center border border-yellow-500/20">
-              <Clock size={18} className="text-yellow-500" />
-            </div>
-            <div className="text-[10px] font-black text-yellow-500 uppercase tracking-widest">Pendientes</div>
+        {/* Card: Pendientes */}
+        <div className="relative group overflow-hidden bg-muted/40 backdrop-blur-2xl border border-border rounded-[2rem] p-8 transition-all hover:border-yellow-500/50 shadow-2xl">
+          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-150 transition-all duration-700">
+            <Clock size={80} className="text-yellow-500" />
           </div>
-          <div className="text-4xl font-black font-outfit text-yellow-500 relative z-10">{pendingReq}</div>
+          <div className="relative z-10">
+            <div className="h-12 w-12 bg-yellow-500/10 rounded-2xl flex items-center justify-center mb-4 border border-yellow-500/20 shadow-[0_0_15px_rgba(234,179,8,0.2)]">
+              <Clock className="text-yellow-500" size={24} />
+            </div>
+            <p className="text-[10px] font-black text-yellow-500 uppercase tracking-[0.3em] mb-1">Pendientes</p>
+            <h3 className="text-4xl font-black text-foreground font-outfit tracking-tighter leading-none">
+              {pendingReq}
+            </h3>
+            <div className="mt-4 flex items-center gap-2">
+              <span className="px-2 py-0.5 bg-yellow-500/10 text-yellow-500 text-[8px] font-black rounded-lg border border-yellow-500/20 uppercase tracking-widest">En Revisión</span>
+            </div>
+          </div>
+          <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-transparent via-yellow-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
 
-        <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-[2.5rem] p-8 space-y-4 relative overflow-hidden group shadow-sm backdrop-blur-xl">
-          <div className="absolute top-[-20%] right-[-10%] w-32 h-32 bg-emerald-500/10 blur-[40px] rounded-full pointer-events-none" />
-          <div className="flex items-center gap-3 mb-2 relative z-10">
-            <div className="h-10 w-10 rounded-2xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
-              <CheckCircle size={18} className="text-emerald-500" />
-            </div>
-            <div className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Aprobadas</div>
+        {/* Card: Aprobadas */}
+        <div className="relative group overflow-hidden bg-muted/40 backdrop-blur-2xl border border-border rounded-[2rem] p-8 transition-all hover:border-emerald-500/50 shadow-2xl">
+          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-150 transition-all duration-700">
+            <CheckCircle size={80} className="text-emerald-500" />
           </div>
-          <div className="text-4xl font-black font-outfit text-emerald-500 relative z-10">{approvedReq}</div>
+          <div className="relative z-10">
+            <div className="h-12 w-12 bg-emerald-500/10 rounded-2xl flex items-center justify-center mb-4 border border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
+              <CheckCircle className="text-emerald-500" size={24} />
+            </div>
+            <p className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.3em] mb-1">Aprobadas</p>
+            <h3 className="text-4xl font-black text-foreground font-outfit tracking-tighter leading-none">
+              {approvedReq}
+            </h3>
+            <div className="mt-4 flex items-center gap-2">
+              <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-500 text-[8px] font-black rounded-lg border border-emerald-500/20 uppercase tracking-widest">Verificadas</span>
+            </div>
+          </div>
+          <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
 
-        <div className="bg-red-500/5 border border-red-500/20 rounded-[2.5rem] p-8 space-y-4 relative overflow-hidden group shadow-sm backdrop-blur-xl">
-          <div className="absolute top-[-20%] right-[-10%] w-32 h-32 bg-red-500/10 blur-[40px] rounded-full pointer-events-none" />
-          <div className="flex items-center gap-3 mb-2 relative z-10">
-            <div className="h-10 w-10 rounded-2xl bg-red-500/10 flex items-center justify-center border border-red-500/20">
-              <XCircle size={18} className="text-red-500" />
-            </div>
-            <div className="text-[10px] font-black text-red-500 uppercase tracking-widest">Rechazadas</div>
+        {/* Card: Rechazadas */}
+        <div className="relative group overflow-hidden bg-muted/40 backdrop-blur-2xl border border-border rounded-[2rem] p-8 transition-all hover:border-red-500/50 shadow-2xl">
+          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-150 transition-all duration-700">
+            <XCircle size={80} className="text-red-500" />
           </div>
-          <div className="text-4xl font-black font-outfit text-red-500 relative z-10">{rejectedReq}</div>
+          <div className="relative z-10">
+            <div className="h-12 w-12 bg-red-500/10 rounded-2xl flex items-center justify-center mb-4 border border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.2)]">
+              <XCircle className="text-red-500" size={24} />
+            </div>
+            <p className="text-[10px] font-black text-red-500 uppercase tracking-[0.3em] mb-1">Rechazadas</p>
+            <h3 className="text-4xl font-black text-foreground font-outfit tracking-tighter leading-none">
+              {rejectedReq}
+            </h3>
+            <div className="mt-4 flex items-center gap-2">
+              <span className="px-2 py-0.5 bg-red-500/10 text-red-500 text-[8px] font-black rounded-lg border border-red-500/20 uppercase tracking-widest">Denegadas</span>
+            </div>
+          </div>
+          <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-transparent via-red-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
+
       </div>
 
       <div className="bg-card/40 backdrop-blur-xl rounded-[2.5rem] border border-border/50 overflow-hidden shadow-sm">
