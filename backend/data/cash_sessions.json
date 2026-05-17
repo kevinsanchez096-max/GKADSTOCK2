@@ -34,5 +34,41 @@
     "difference": 0,
     "notes": "",
     "auto_closed": false
+  },
+  {
+    "id": "e56e450a-a69c-4336-bb86-3135d29d9ca7",
+    "organization_id": "6c061000-984e-433a-ac64-a9fa06368baa",
+    "user_id": "8dc4a4b7-80eb-4ebe-b975-887eab2ee0ed",
+    "user_name": "ARIOSTO MALAVER GOMEZ ",
+    "status": "closed",
+    "opening_time": "2026-05-17T19:08:32.631Z",
+    "closing_time": "2026-05-17T19:16:02.769Z",
+    "opening_balance": 100000,
+    "sales_cash": 0,
+    "sales_other": 0,
+    "total_expenses": 0,
+    "expected_cash": 100000,
+    "actual_cash": 99998,
+    "difference": -2,
+    "notes": "",
+    "auto_closed": false
+  },
+  {
+    "id": "134bb6b2-e8a4-48c9-a741-374fd9965914",
+    "organization_id": "6c061000-984e-433a-ac64-a9fa06368baa",
+    "user_id": "8dc4a4b7-80eb-4ebe-b975-887eab2ee0ed",
+    "user_name": "ARIOSTO MALAVER GOMEZ ",
+    "status": "open",
+    "opening_time": "2026-05-17T19:16:19.085Z",
+    "closing_time": null,
+    "opening_balance": 100000,
+    "sales_cash": 0,
+    "sales_other": 0,
+    "total_expenses": 0,
+    "expected_cash": 100000,
+    "actual_cash": null,
+    "difference": null,
+    "notes": "",
+    "auto_closed": false
   }
 ]

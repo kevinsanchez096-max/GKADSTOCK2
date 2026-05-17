@@ -21,7 +21,7 @@ import { useCashStore } from '../store/useCashStore';
 import { useAuthStore } from '../store/useAuthStore';
 import { toast } from 'sonner';
 
-export const CashRegister = ({ setActiveTab }: { setActiveTab?: (tab: string) => void }) => {
+export const CashRegister = () => {
     const { 
         activeSession, 
         history, 
@@ -63,9 +63,6 @@ export const CashRegister = ({ setActiveTab }: { setActiveTab?: (tab: string) =>
         const success = await openSession(base);
         if (success) {
             setOpeningBalance('');
-            if (setActiveTab) {
-                setActiveTab('pos');
-            }
         }
     };
 
