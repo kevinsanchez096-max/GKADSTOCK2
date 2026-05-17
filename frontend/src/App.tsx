@@ -181,7 +181,7 @@ function App() {
       case 'pos':
         return <POSTerminal setActiveTab={setActiveTab} />;
       case 'cash_register':
-        return <CashRegister />;
+        return <CashRegister setActiveTab={setActiveTab} />;
       case 'customers':
         return <Customers />;
       case 'suppliers':
