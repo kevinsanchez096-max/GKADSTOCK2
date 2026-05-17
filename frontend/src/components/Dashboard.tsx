@@ -43,7 +43,7 @@ export const Dashboard = () => {
  // Detectar tema para configuración de Recharts
  const darkMode = document.documentElement.classList.contains('dark');
  
- const [timeFilter, setTimeFilter] = useState<FilterRange>('month');
+ const [timeFilter, setTimeFilter] = useState<FilterRange>('day');
  const [sales, setSales] = useState<any[]>([]);
  const [expenses, setExpenses] = useState<any[]>([]);
  const [ranking, setRanking] = useState<any[]>([]);
