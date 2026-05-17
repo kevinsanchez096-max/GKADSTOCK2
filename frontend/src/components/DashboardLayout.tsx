@@ -121,6 +121,7 @@ export const DashboardLayout = ({
  { id: 'admin_organizations', label: 'Organizaciones', icon: Building2, color: 'text-blue-500' },
  { id: 'admin_users', label: 'Usuarios Globales', icon: Users, color: 'text-orange-500' },
  { id: 'admin_subscriptions', label: 'Suscripciones', icon: CreditCard, color: 'text-emerald-500' },
+ { id: 'payments', label: 'Pagos', icon: CreditCard, color: 'text-amber-500' },
  { id: 'admin_appearance', label: 'Apariencia', icon: Palette, color: 'text-pink-500' },
  { id: 'admin_settings', label: 'Ajustes SaaS', icon: Settings, color: 'text-muted-foreground' },
  ];

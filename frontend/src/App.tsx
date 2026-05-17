@@ -10,6 +10,7 @@ import { AdminAppearance } from './components/AdminAppearance';
 import { AdminWelcome } from './components/AdminWelcome';
 import { GlobalUserAudit } from './components/GlobalUserAudit';
 import { SubscriptionsManager } from './components/SubscriptionsManager';
+import { PaymentRequests } from './components/PaymentRequests';
 import { Home } from './components/Home';
 import { POSTerminal } from './components/POSTerminal';
 import { Customers } from './components/Customers';
@@ -204,6 +205,8 @@ function App() {
         return <GlobalUserAudit />;
       case 'admin_subscriptions':
         return <SubscriptionsManager />;
+      case 'payments':
+        return profile?.role === 'super_admin' ? <PaymentRequests /> : <Dashboard />;
       case 'admin_appearance':
         return <AdminAppearance />;
       case 'admin_settings':

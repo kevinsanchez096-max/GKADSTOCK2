@@ -225,7 +225,38 @@ export const SubscriptionPlans = () => {
         setProcessingMessage('Confirmando autorización y balance de fondos...');
         setTimeout(async () => {
           try {
-            await orgStore.updateOrganization({ plan: selectedPlan! });
+            const planDetails = getPlanDetails(selectedPlan!);
+            const planPriceStr = planDetails.price.replace(/[^0-9]/g, '');
+            const payload = {
+              organization_id: orgStore.organization?.id || profile?.organization_id,
+              organization_name: orgStore.organization?.name || profile?.organizations?.name || 'Organización',
+              plan_name: selectedPlan,
+              plan_price: parseInt(planPriceStr),
+              payment_method: paymentMethod === 'card' ? 'Tarjeta' : 'PSE',
+              customer_name: paymentMethod === 'card' ? cardName : undefined,
+              customer_email: paymentMethod === 'pse' ? pseEmail : undefined,
+              customer_document: paymentMethod === 'pse' ? pseDoc : undefined,
+              bank_name: paymentMethod === 'pse' ? pseBank : undefined,
+            };
+
+            const res = await fetch('/api/payments/request', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+
+            if (!res.ok) throw new Error('Error al procesar solicitud');
+
+            // Enviar notificación al super admin
+            const notifMsg = `La organización ${payload.organization_name} solicitó el plan ${selectedPlan} por $${planPriceStr} vía ${payload.payment_method}`;
+            await supabase.from('system_notifications').insert([{
+              type: 'PAYMENT_REQUEST',
+              title: 'Nueva solicitud de pago',
+              message: notifMsg,
+              is_read: false,
+              organization_id: payload.organization_id // The trigger or query should handle SA visibility
+            }]);
+
             setTransactionRef(`REF-GKAD-${Math.random().toString(36).substring(2, 9).toUpperCase()}`);
             setCheckoutStep('success');
             toast.success('¡Suscripción actualizada con éxito!', {
