@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Building2, User, Mail, Lock, Shield, Zap, Sparkles } from 'lucide-react';
 import { api } from '../lib/api';
+import { supabase } from '../lib/supabase';
 import { toast } from 'sonner';
 import { Button } from './ui-components';
 
@@ -47,30 +49,57 @@ export const CreateOrganizationModal = ({ isOpen, onClose, onSuccess }: CreateOr
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-[100]">
-      {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm transition-opacity" onClick={onClose} />
-      
-      {/* Scrollable container */}
-      <div className="fixed inset-0 z-10 overflow-y-auto">
-        <div className="min-h-full flex items-start justify-center p-4 pt-16 pb-16">
-          <div className="bg-card border border-border w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 relative">
-          
-          {/* Header */}
-          <div className="p-8 border-b border-border bg-muted/30 flex items-center justify-between">
-            <div className="space-y-1">
-              <h2 className="text-2xl font-black text-foreground font-heading uppercase tracking-tighter flex items-center gap-2">
-                <Building2 className="text-brand-500" /> Nuevo <span className="text-brand-500">Inquilino</span>
-              </h2>
-              <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">Aprovisionamiento Atómico de Red SaaS</p>
+  return createPortal(
+    <div style={{
+      position: 'fixed', top: 0, left: 0,
+      width: '100vw', height: '100vh',
+      zIndex: 99999,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      backgroundColor: 'rgba(15, 23, 42, 0.45)'
+    }}>
+      <div className="relative w-full max-w-2xl bg-card border border-border shadow-[0_25px_60px_-15px_rgba(0,0,0,0.5)] overflow-hidden rounded-[3rem]">
+        
+        {/* Modal Header */}
+        <div 
+          style={{
+            padding: '40px',
+            borderBottom: '1px solid var(--border)',
+            backgroundColor: 'color-mix(in srgb, var(--brand-primary), transparent 95%)'
+          }}
+          className="relative shrink-0"
+        >
+          <div className="flex items-center gap-4">
+            <div 
+              style={{ 
+                padding: '12px',
+                backgroundColor: 'var(--brand-primary)', 
+                borderRadius: '16px', 
+                color: 'white', 
+                border: '2px solid var(--border)',
+                boxShadow: '0 10px 25px -5px color-mix(in srgb, var(--brand-primary), transparent 60%)'
+              }}
+              className="flex items-center justify-center animate-pulse"
+            >
+              <Building2 className="h-6 w-6"/>
             </div>
-            <button type="button" onClick={onClose} className="h-10 w-10 flex items-center justify-center rounded-xl bg-muted hover:bg-red-500/10 hover:text-red-500 transition-all">
-              <X size={20} />
-            </button>
+            <div>
+              <h3 className="font-black text-2xl text-foreground font-outfit uppercase tracking-tight m-0">
+                NUEVO <span style={{ color: 'var(--brand-primary)' }}>INQUILINO</span>
+              </h3>
+              <p style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '3px', color: 'var(--brand-primary)', margin: 0 }}>
+                Aprovisionamiento Atómico de Red SaaS
+              </p>
+            </div>
           </div>
+          <button
+            onClick={onClose}
+            className="absolute right-8 top-8 p-3 bg-muted text-muted-foreground hover:text-foreground rounded-2xl transition-all"
+          >
+            <X className="h-5 w-5"/>
+          </button>
+        </div>
 
-          <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit}>
             
             <div className="p-8 space-y-8">
               {/* Section 1: Org Details */}
@@ -181,9 +210,8 @@ export const CreateOrganizationModal = ({ isOpen, onClose, onSuccess }: CreateOr
               </div>
             </div>
           </form>
-          </div>
-        </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

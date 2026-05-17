@@ -30,16 +30,16 @@ interface SystemNotification {
   metadata: any;
 }
 
-// Color config por tipo de notificación
-const TYPE_COLORS: Record<string, { bg: string; border: string; icon: string; dot: string }> = {
-  HIGH_VALUE_SALE: { bg: 'rgba(34,197,94,0.08)', border: 'rgba(34,197,94,0.15)', icon: '#22c55e', dot: '#22c55e' },
-  NEW_USER:        { bg: 'rgba(59,130,246,0.08)', border: 'rgba(59,130,246,0.15)', icon: '#3b82f6', dot: '#3b82f6' },
-  ORG_CREATED:     { bg: 'rgba(34,197,94,0.08)', border: 'rgba(34,197,94,0.15)', icon: '#22c55e', dot: '#22c55e' },
-  SYSTEM_ERROR:    { bg: 'rgba(239,68,68,0.08)',  border: 'rgba(239,68,68,0.15)',  icon: '#ef4444', dot: '#ef4444' },
-  ORG_DELETED:     { bg: 'rgba(239,68,68,0.08)',  border: 'rgba(239,68,68,0.15)',  icon: '#ef4444', dot: '#ef4444' },
-  PLAN_LIMIT:      { bg: 'rgba(249,115,22,0.08)', border: 'rgba(249,115,22,0.15)', icon: '#f97316', dot: '#f97316' },
-  ORG_STATUS:      { bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.15)', icon: '#f59e0b', dot: '#f59e0b' },
-  DEFAULT:         { bg: 'rgba(99,102,241,0.08)', border: 'rgba(99,102,241,0.15)', icon: '#6366f1', dot: '#6366f1' },
+// Configuración de colores y acentos adaptativos por tipo de notificación
+const TYPE_COLORS: Record<string, { bg: string; border: string; icon: string; dot: string; accent: string }> = {
+  HIGH_VALUE_SALE: { bg: 'rgba(34,197,94,0.06)', border: 'rgba(34,197,94,0.15)', icon: '#22c55e', dot: '#22c55e', accent: '#22c55e' },
+  NEW_USER:        { bg: 'rgba(59,130,246,0.06)', border: 'rgba(59,130,246,0.15)', icon: '#3b82f6', dot: '#3b82f6', accent: '#3b82f6' },
+  ORG_CREATED:     { bg: 'color-mix(in srgb, var(--brand-primary), transparent 96%)', border: 'color-mix(in srgb, var(--brand-primary), transparent 85%)', icon: 'var(--brand-primary)', dot: 'var(--brand-primary)', accent: 'var(--brand-primary)' },
+  SYSTEM_ERROR:    { bg: 'rgba(239,68,68,0.06)',  border: 'rgba(239,68,68,0.15)',  icon: '#ef4444', dot: '#ef4444', accent: '#ef4444' },
+  ORG_DELETED:     { bg: 'rgba(239,68,68,0.06)',  border: 'rgba(239,68,68,0.15)',  icon: '#ef4444', dot: '#ef4444', accent: '#ef4444' },
+  PLAN_LIMIT:      { bg: 'rgba(249,115,22,0.06)', border: 'rgba(249,115,22,0.15)', icon: '#f97316', dot: '#f97316', accent: '#f97316' },
+  ORG_STATUS:      { bg: 'color-mix(in srgb, var(--brand-primary), transparent 96%)', border: 'color-mix(in srgb, var(--brand-primary), transparent 85%)', icon: 'var(--brand-primary)', dot: 'var(--brand-primary)', accent: 'var(--brand-primary)' },
+  DEFAULT:         { bg: 'color-mix(in srgb, var(--brand-primary), transparent 96%)', border: 'color-mix(in srgb, var(--brand-primary), transparent 85%)', icon: 'var(--brand-primary)', dot: 'var(--brand-primary)', accent: 'var(--brand-primary)' },
 };
 
 const getTypeColor = (type: string) => TYPE_COLORS[type] || TYPE_COLORS.DEFAULT;
@@ -96,7 +96,7 @@ export const NotificationBell = () => {
 
     fetchNotifications();
 
-    // Configuración de Realtime con mayor estabilidad
+    // Configuración de Realtime
     const channelName = `system-alerts-${profile?.id || 'guest'}`;
     const channel = supabase
       .channel(channelName)
@@ -186,21 +186,31 @@ export const NotificationBell = () => {
         style={{
           position: 'relative',
           padding: '10px',
-          background: isOpen ? '#1a1a1a' : 'transparent',
-          border: isOpen ? '1px solid #2a2a2a' : '1px solid transparent',
-          borderRadius: '12px',
+          background: isOpen ? 'color-mix(in srgb, var(--brand-primary), transparent 90%)' : 'transparent',
+          border: isOpen ? '1px solid var(--brand-primary)' : '1px solid transparent',
+          borderRadius: '14px',
           cursor: 'pointer',
-          transition: 'all 0.15s',
+          transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
           color: isOpen ? 'var(--brand-primary)' : '#888',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
         }}
-        onMouseEnter={(e) => { if (!isOpen) { e.currentTarget.style.background = '#1a1a1a'; e.currentTarget.style.color = 'var(--brand-primary)'; }}}
-        onMouseLeave={(e) => { if (!isOpen) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#888'; }}}
+        onMouseEnter={(e) => { 
+          if (!isOpen) { 
+            e.currentTarget.style.background = 'color-mix(in srgb, var(--brand-primary), transparent 95%)'; 
+            e.currentTarget.style.color = 'var(--brand-primary)'; 
+          }
+        }}
+        onMouseLeave={(e) => { 
+          if (!isOpen) { 
+            e.currentTarget.style.background = 'transparent'; 
+            e.currentTarget.style.color = '#888'; 
+          }
+        }}
         title="Centro de Control Global"
       >
-        <Bell size={18} />
+        <Bell size={18} className={unreadCount > 0 ? 'animate-bounce' : ''} />
         {unreadCount > 0 && (
           <span
             style={{
@@ -217,7 +227,7 @@ export const NotificationBell = () => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              border: '2px solid #0f0f0f',
+              border: '2px solid var(--border)',
               boxShadow: '0 2px 8px rgba(239,68,68,0.5)',
             }}
           >
@@ -228,26 +238,36 @@ export const NotificationBell = () => {
 
       {isOpen && (
         <div
-          className="absolute right-0 w-[340px] bg-card border border-border/50 rounded-2xl overflow-hidden z-[100] shadow-2xl backdrop-blur-xl"
-          style={{ top: 'calc(100% + 8px)' }}
+          className="absolute right-0 w-[360px] bg-card border border-border/80 rounded-[2.5rem] overflow-hidden z-[100] shadow-[0_20px_50px_rgba(0,0,0,0.35)] backdrop-blur-xl animate-fade-in"
+          style={{ top: 'calc(100% + 12px)' }}
         >
           {/* Header */}
-          <div className="px-5 py-4 border-b border-border/50 flex items-center justify-between bg-muted/20">
+          <div 
+            style={{
+              padding: '24px 28px',
+              borderBottom: '1px solid var(--border)',
+              backgroundColor: 'color-mix(in srgb, var(--brand-primary), transparent 95%)'
+            }}
+            className="flex items-center justify-between"
+          >
             <div>
-              <h4 className="text-[11px] font-black uppercase tracking-[0.15em] text-foreground flex items-center gap-1.5 m-0">
-                <ShieldAlert size={13} className="text-brand-500" />
+              <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-foreground flex items-center gap-2 m-0 font-outfit">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-500 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-500"></span>
+                </span>
                 Signal Center
               </h4>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
+              <div className="flex items-center gap-1.5 mt-1.5">
                 {isConnected ? (
                   <>
-                    <Wifi size={8} style={{ color: '#22c55e' }} />
-                    <span style={{ fontSize: '7px', fontWeight: 900, color: '#22c55e', textTransform: 'uppercase', letterSpacing: '0.15em' }}>En Línea</span>
+                    <Wifi size={10} className="text-emerald-500 animate-pulse" />
+                    <span style={{ fontSize: '8px', fontWeight: 900, color: '#22c55e', textTransform: 'uppercase', letterSpacing: '0.15em' }}>En Línea</span>
                   </>
                 ) : (
                   <>
-                    <WifiOff size={8} style={{ color: '#ef4444' }} />
-                    <span style={{ fontSize: '7px', fontWeight: 900, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.15em' }}>Desconectado</span>
+                    <WifiOff size={10} className="text-red-500" />
+                    <span style={{ fontSize: '8px', fontWeight: 900, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.15em' }}>Desconectado</span>
                   </>
                 )}
               </div>
@@ -255,96 +275,106 @@ export const NotificationBell = () => {
             <button
               onClick={(e) => { e.stopPropagation(); fetchNotifications(); }}
               disabled={isRefreshing}
-              className="p-1.5 bg-transparent border-none rounded-lg cursor-pointer text-muted-foreground hover:bg-muted/50 hover:text-brand-500 transition-all duration-150"
+              className="h-9 w-9 bg-card border border-border/80 text-muted-foreground hover:text-brand-500 hover:border-brand-500/30 rounded-xl cursor-pointer flex items-center justify-center transition-all duration-300 active:scale-90"
             >
               <RefreshCw size={14} className={isRefreshing ? 'animate-spin' : ''} />
             </button>
           </div>
           
           {/* Notification list */}
-          <div style={{ maxHeight: '400px', overflowY: 'auto' }} className="custom-scrollbar">
+          <div style={{ maxHeight: '420px', overflowY: 'auto' }} className="custom-scrollbar p-5 space-y-3 bg-muted/20 dark:bg-transparent">
             {notifications.length === 0 ? (
-              <div className="py-12 px-4 text-center">
-                <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-3 opacity-50">
+              <div className="py-16 px-4 text-center">
+                <div className="h-14 w-14 rounded-[1.5rem] bg-muted/50 border border-border/50 flex items-center justify-center mx-auto mb-4 opacity-75">
                   <CheckCircle2 size={24} className="text-emerald-500" />
                 </div>
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground m-0">Sistema Sincronizado</p>
-                <p className="text-[9px] text-muted-foreground/60 mt-1">No hay alertas pendientes</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground m-0 font-outfit">Sistema Sincronizado</p>
+                <p className="text-[9px] text-muted-foreground/60 mt-1 uppercase font-bold tracking-wider">No hay alertas pendientes</p>
               </div>
             ) : (
-              <div style={{ padding: '8px' }}>
-                {notifications.map((notif) => {
-                  const colors = getTypeColor(notif.type);
-                  return (
-                    <div
-                      key={notif.id}
-                      className="relative bg-card/50 border border-border/50 rounded-xl p-3 mb-1.5 cursor-pointer transition-colors hover:border-brand-500/30 hover:bg-muted/30"
-                    >
-                      {/* Unread dot */}
-                      {!notif.read && (
-                        <div
-                          style={{
-                            position: 'absolute',
-                            top: '8px',
-                            right: '8px',
-                            width: '6px',
-                            height: '6px',
-                            borderRadius: '50%',
-                            background: colors.dot,
-                            boxShadow: `0 0 6px ${colors.dot}`,
-                          }}
-                        />
-                      )}
+              notifications.map((notif) => {
+                const colors = getTypeColor(notif.type);
+                return (
+                  <div
+                    key={notif.id}
+                    className="relative border rounded-[1.5rem] p-4.5 cursor-pointer transition-all duration-300 shadow-[0_4px_12px_rgba(0,0,0,0.04)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.5)] hover:-translate-y-0.5 group overflow-hidden"
+                    style={{
+                      borderWidth: '1px',
+                      borderStyle: 'solid',
+                      borderColor: `color-mix(in srgb, ${colors.accent}, var(--border) 60%)`,
+                      borderLeftWidth: '5px',
+                      borderLeftColor: colors.accent,
+                      backgroundColor: `color-mix(in srgb, ${colors.accent}, var(--card) 95%)`,
+                      padding: '16px'
+                    }}
+                  >
+                    {/* Unread dot with pulse neon */}
+                    {!notif.read && (
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: '16px',
+                          right: '16px',
+                          width: '8px',
+                          height: '8px',
+                          borderRadius: '50%',
+                          background: colors.dot,
+                          boxShadow: `0 0 10px ${colors.dot}`,
+                        }}
+                        className="animate-pulse"
+                      />
+                    )}
 
-                      <div style={{ display: 'flex', gap: '10px' }}>
-                        {/* Icon box */}
-                        <div
-                          style={{
-                            height: '32px',
-                            width: '32px',
-                            borderRadius: '8px',
-                            background: colors.bg,
-                            border: `1px solid ${colors.border}`,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            flexShrink: 0,
-                            color: colors.icon,
-                          }}
-                        >
-                          {getIcon(notif.type)}
-                        </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <p className="text-foreground text-xs font-medium m-0 truncate">
-                            {notif.title}
-                          </p>
-                          <p className="text-muted-foreground text-[11px] mt-1 mb-0 leading-tight line-clamp-2">
-                            {notif.message}
-                          </p>
-                        </div>
+                    <div className="flex gap-4">
+                      {/* High-tech Icon box */}
+                      <div
+                        style={{
+                          height: '36px',
+                          width: '36px',
+                          borderRadius: '12px',
+                          background: colors.bg,
+                          border: `1px solid ${colors.border}`,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexShrink: 0,
+                          color: colors.accent,
+                          boxShadow: `0 4px 12px color-mix(in srgb, ${colors.accent}, transparent 95%)`
+                        }}
+                        className="transition-transform group-hover:scale-110 duration-300"
+                      >
+                        {getIcon(notif.type)}
                       </div>
-
-                      {/* Timestamp */}
-                      <div className="flex justify-end mt-1.5">
-                        <span className="text-[10px] text-muted-foreground/60 flex items-center gap-1">
-                          <Clock size={8} />
-                          {formatDistanceToNow(new Date(notif.created_at), { addSuffix: true, locale: es })}
-                        </span>
+                      <div style={{ flex: 1, minWidth: 0 }} className="space-y-1">
+                        <p className="text-foreground text-[11px] font-black uppercase tracking-tight m-0 truncate group-hover:text-brand-500 transition-colors font-outfit">
+                          {notif.title}
+                        </p>
+                        <p className="text-muted-foreground text-[10px] font-medium leading-relaxed m-0 line-clamp-2">
+                          {notif.message}
+                        </p>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
+
+                    {/* Timestamp */}
+                    <div className="flex justify-end mt-2.5">
+                      <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/60 flex items-center gap-1">
+                        <Clock size={10} className="text-muted-foreground/40" />
+                        {formatDistanceToNow(new Date(notif.created_at), { addSuffix: true, locale: es })}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })
             )}
           </div>
           
           {/* Footer */}
           <div
-            className="p-3 border-t border-border/50 text-center cursor-pointer transition-colors hover:bg-muted/50"
+            className="p-4.5 border-t border-border/80 text-center cursor-pointer bg-muted/20 transition-all duration-300 hover:bg-brand-500/10"
             onClick={() => setIsOpen(false)}
           >
-            <span className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground transition-colors hover:text-foreground">
-              Cerrar
+            <span className="text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground hover:text-brand-500 transition-colors duration-300 font-outfit">
+              Cerrar Centro
             </span>
           </div>
         </div>

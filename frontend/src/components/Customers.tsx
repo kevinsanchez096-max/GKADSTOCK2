@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Card, Button } from './ui-components';
 import {
  Contact,
@@ -353,31 +354,55 @@ export const Customers = () => {
   </Card>
 
   {/* ── MODAL CREAR / EDITAR ─────────────────────────────────────────── */}
-  {isModalOpen && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-card/60 backdrop-blur-xl animate-fade-in">
-  <div className="absolute inset-0"onClick={() => setIsModalOpen(false)} />
-
-  <Card className="relative w-full max-w-2xl p-0 glass-dark border-border shadow-[0_0_100px_rgba(0,0,0,0.1)] dark:shadow-[0_0_100px_rgba(0,0,0,0.5)] overflow-hidden rounded-[3rem] max-h-[90vh] flex flex-col">
+  {isModalOpen && createPortal(
+  <div style={{
+    position: 'fixed', top: 0, left: 0,
+    width: '100vw', height: '100vh',
+    zIndex: 99999,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: 'rgba(15, 23, 42, 0.45)'
+  }}>
+  <Card className="relative w-full max-w-2xl p-0 glass-dark border-border shadow-[0_25px_60px_-15px_rgba(0,0,0,0.5)] overflow-hidden rounded-[3rem] max-h-[90vh] flex flex-col">
   <div className="absolute top-[-20%] left-[-20%] w-64 h-64 bg-brand-500/10 blur-[80px] rounded-full pointer-events-none"/>
 
   {/* Modal Header */}
-  <div className="p-10 border-b border-border bg-muted shrink-0">
-  <div className="flex items-center justify-between">
-  <div className="space-y-1">
-  <h3 className="text-2xl font-black text-foreground font-outfit uppercase tracking-tight">
-  {editingId ? 'EDITAR CLIENTE' : 'NUEVO CLIENTE'}
-  </h3>
-  <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-[0.3em]">
-  {editingId ? 'Actualizar datos del directorio' : 'Registro en el directorio comercial'}
-  </p>
-  </div>
-  <button
-  onClick={() => setIsModalOpen(false)}
-  className="p-3 bg-muted text-muted-foreground hover:text-foreground hover:bg-muted/10 rounded-2xl transition-all"
+  <div 
+    style={{
+      padding: '40px',
+      borderBottom: '1px solid var(--border)',
+      backgroundColor: 'color-mix(in srgb, var(--brand-primary), transparent 95%)'
+    }}
+    className="relative shrink-0"
   >
-  <X className="h-6 w-6"/>
-  </button>
-  </div>
+    <div className="flex items-center gap-4">
+      <div 
+        style={{ 
+          padding: '12px',
+          backgroundColor: 'var(--brand-primary)', 
+          borderRadius: '16px', 
+          color: 'white', 
+          border: '2px solid var(--border)',
+          boxShadow: '0 10px 25px -5px color-mix(in srgb, var(--brand-primary), transparent 60%)'
+        }}
+        className="flex items-center justify-center animate-pulse"
+      >
+        <UserPlus className="h-6 w-6"/>
+      </div>
+      <div>
+        <h3 className="font-black text-2xl text-foreground font-outfit uppercase tracking-tight margin: 0">
+          {editingId ? 'EDITAR' : 'NUEVO'} <span style={{ color: 'var(--brand-primary)' }}>CLIENTE</span>
+        </h3>
+        <p style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '3px', color: 'var(--brand-primary)', margin: 0 }}>
+          {editingId ? 'Actualizar datos del directorio' : 'Registro en el directorio comercial'}
+        </p>
+      </div>
+    </div>
+    <button
+      onClick={() => setIsModalOpen(false)}
+      className="absolute right-8 top-8 p-3 bg-muted text-muted-foreground hover:text-foreground rounded-2xl transition-all"
+    >
+      <X className="h-5 w-5"/>
+    </button>
   </div>
 
   {/* Modal Body */}
@@ -495,6 +520,7 @@ export const Customers = () => {
 
   <Button
   type="submit"
+  style={{ background: 'var(--brand-primary)' }}
   className="w-full h-16 rounded-[1.5rem] font-black text-[11px] uppercase tracking-[0.2em] shadow-2xl transition-all active:scale-[0.98]"
   disabled={isSubmitting}
   loading={isSubmitting}
@@ -503,7 +529,8 @@ export const Customers = () => {
   </Button>
   </form>
   </Card>
-  </div>
+  </div>,
+  document.body
   )}
   </div>
  );

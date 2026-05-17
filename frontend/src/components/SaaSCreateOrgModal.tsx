@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { 
  X, 
  Building2, 
@@ -55,37 +56,65 @@ export const SaaSCreateOrgModal = ({ isOpen, onClose, onSuccess }: SaaSCreateOrg
  { id: 'Premium', label: 'Premium', desc: '$145.000 - Contabilidad Completa (Ilimitado)' }
  ];
 
- return (
- <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
- {/* OVERLAY */}
- <div 
- className="absolute inset-0 bg-background/80 backdrop-blur-sm animate-in fade-in duration-300"
- onClick={onClose}
- />
+ return createPortal(
+ 	<div style={{
+		position: 'fixed', top: 0, left: 0,
+		width: '100vw', height: '100vh',
+		zIndex: 99999,
+		display: 'flex', alignItems: 'center', justifyContent: 'center',
+		backgroundColor: 'rgba(15, 23, 42, 0.45)',
+		/* No Blur */
+	}}>
+ 
+  
+ 
+ 
+ 
 
  {/* MODAL CONTAINER */}
- <div className="relative w-full max-w-xl bg-background border border-border rounded-[2.5rem] shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] overflow-hidden animate-in zoom-in-95 duration-300">
+ <div className="relative w-full max-w-xl bg-card border border-border shadow-[0_25px_60px_-15px_rgba(0,0,0,0.5)] overflow-hidden rounded-[3rem]">
  
- {/* HEADER */}
- <div className="p-8 pb-4 flex items-center justify-between">
- <div className="flex items-center gap-4">
- <div className="h-12 w-12 bg-blue-600/10 rounded-2xl flex items-center justify-center text-blue-500 border border-blue-500/20">
- <Building2 className="h-6 w-6"/>
- </div>
- <div>
- <h2 className="text-xl font-black text-foreground font-outfit uppercase tracking-tight">Nueva Organización</h2>
- <p className="text-blue-500/60 text-[9px] font-black uppercase tracking-[0.2em]">Maestro de Provisión SaaS</p>
- </div>
- </div>
- <button 
- onClick={onClose}
- className="p-3 hover:bg-muted rounded-full transition-colors text-muted-foreground hover:text-foreground"
- >
- <X className="h-5 w-5"/>
- </button>
- </div>
+  {/* Modal Header */}
+  <div 
+    style={{
+      padding: '40px',
+      borderBottom: '1px solid var(--border)',
+      backgroundColor: 'color-mix(in srgb, var(--brand-primary), transparent 95%)'
+    }}
+    className="relative shrink-0 animate-in fade-in duration-300"
+  >
+    <div className="flex items-center gap-4">
+      <div 
+        style={{ 
+          padding: '12px',
+          backgroundColor: 'var(--brand-primary)', 
+          borderRadius: '16px', 
+          color: 'white', 
+          border: '2px solid var(--border)',
+          boxShadow: '0 10px 25px -5px color-mix(in srgb, var(--brand-primary), transparent 60%)'
+        }}
+        className="flex items-center justify-center animate-pulse"
+      >
+        <Building2 className="h-6 w-6"/>
+      </div>
+      <div>
+        <h3 className="font-black text-2xl text-foreground font-outfit uppercase tracking-tight margin: 0">
+          NUEVA <span style={{ color: 'var(--brand-primary)' }}>ORGANIZACIÓN</span>
+        </h3>
+        <p style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '3px', color: 'var(--brand-primary)', margin: 0 }}>
+          Maestro de Provisión SaaS
+        </p>
+      </div>
+    </div>
+    <button
+      onClick={onClose}
+      className="absolute right-8 top-8 p-3 bg-muted text-muted-foreground hover:text-foreground rounded-2xl transition-all"
+    >
+      <X className="h-5 w-5"/>
+    </button>
+  </div>
 
- <form onSubmit={handleSubmit} className="p-8 pt-4 space-y-8">
+  <form onSubmit={handleSubmit} className="p-10 space-y-8 animate-in slide-in-from-bottom-4 duration-300">
  
  {/* SECCIÓN 1: DATOS EMPRESA */}
  <div className="space-y-4">
@@ -165,7 +194,8 @@ export const SaaSCreateOrgModal = ({ isOpen, onClose, onSuccess }: SaaSCreateOrg
  <button 
  disabled={loading}
  type="submit"
- className="w-full h-16 bg-blue-600 hover:bg-blue-500 disabled:bg-muted text-white rounded-2xl font-black uppercase tracking-widest text-[12px] flex items-center justify-center gap-3 transition-all shadow-xl shadow-blue-600/20 active:scale-95"
+ style={{ background: 'var(--brand-primary)' }}
+  className="w-full h-16 hover:opacity-90 disabled:bg-muted text-white rounded-2xl font-black uppercase tracking-widest text-[12px] flex items-center justify-center gap-3 transition-all shadow-xl shadow-black/20 active:scale-95"
  >
  {loading ? (
  <Loader2 className="h-6 w-6 animate-spin opacity-50"/>
@@ -182,5 +212,5 @@ export const SaaSCreateOrgModal = ({ isOpen, onClose, onSuccess }: SaaSCreateOrg
  </form>
  </div>
  </div>
- );
+ ), document.body);
 };

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { 
  ShieldCheck, 
  Users, 
@@ -296,13 +297,55 @@ export const SubscriptionsManager = () => {
  </div>
 
   {/* MODAL PARA AÑADIR PLAN */}
-  {isAddModalOpen && (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-background/80 backdrop-blur-sm animate-in fade-in duration-300">
-      <Card className="w-full max-w-lg p-8 space-y-8 animate-in slide-in-from-bottom-4 duration-500 border border-border shadow-2xl">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-black text-foreground uppercase tracking-tight">Nuevo Plan Comercial</h2>
-          <button onClick={() => setIsAddModalOpen(false)} className="text-muted-foreground hover:text-foreground transition-colors"><X size={24} /></button>
-        </div>
+  {isAddModalOpen && createPortal(
+    <div style={{
+      position: 'fixed', top: 0, left: 0,
+      width: '100vw', height: '100vh',
+      zIndex: 99999,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      backgroundColor: 'rgba(15, 23, 42, 0.45)'
+    }}>
+      <Card className="relative w-full max-w-lg p-0 glass-dark border-border shadow-[0_25px_60px_-15px_rgba(0,0,0,0.5)] overflow-hidden rounded-[3rem]">
+        {/* Modal Header */}
+        <div 
+          style={{
+            padding: '40px',
+            borderBottom: '1px solid var(--border)',
+            backgroundColor: 'color-mix(in srgb, var(--brand-primary), transparent 95%)'
+          }}
+          className="relative shrink-0"
+        >
+          <div className="flex items-center gap-4">
+            <div 
+              style={{ 
+                padding: '12px',
+                backgroundColor: 'var(--brand-primary)', 
+                borderRadius: '16px', 
+                color: 'white', 
+                border: '2px solid var(--border)',
+                boxShadow: '0 10px 25px -5px color-mix(in srgb, var(--brand-primary), transparent 60%)'
+               }}
+               className="flex items-center justify-center animate-pulse"
+             >
+               <CreditCard className="h-6 w-6"/>
+             </div>
+             <div>
+               <h3 className="font-black text-2xl text-foreground font-outfit uppercase tracking-tight margin: 0">
+                 NUEVO <span style={{ color: 'var(--brand-primary)' }}>PLAN COMERCIAL</span>
+               </h3>
+               <p style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '3px', color: 'var(--brand-primary)', margin: 0 }}>
+                 Configuración de Suscripción
+               </p>
+             </div>
+           </div>
+           <button
+             onClick={() => setIsAddModalOpen(false)}
+             className="absolute right-8 top-8 p-3 bg-muted text-muted-foreground hover:text-foreground rounded-2xl transition-all"
+           >
+             <X className="h-5 w-5"/>
+           </button>
+         </div>
+         <div className="p-10 space-y-8">
 
         <div className="space-y-6">
           <Input 
@@ -347,11 +390,17 @@ export const SubscriptionsManager = () => {
           </div>
         </div>
 
-        <Button onClick={handleAddPlan} className="w-full h-14 rounded-2xl font-black uppercase tracking-widest bg-purple-600 shadow-xl shadow-purple-600/20 text-white">
+        <Button 
+          onClick={handleAddPlan} 
+          style={{ background: 'var(--brand-primary)' }}
+          className="w-full h-14 rounded-2xl font-black uppercase tracking-widest text-white shadow-xl shadow-black/20"
+        >
           Crear Plan de Suscripción
         </Button>
-      </Card>
-    </div>
+      </div>
+    </Card>
+    </div>,
+    document.body
   )}
   </div>
  );

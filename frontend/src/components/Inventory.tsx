@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Button, Input, Card } from './ui-components';
 import { 
  Plus, 
@@ -512,27 +513,55 @@ export const Inventory = () => {
  />
  )}
 
- {isAddModalOpen && (
- <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-8 bg-background/60 backdrop-blur-sm animate-fade-in">
- <div className="relative w-full max-w-4xl bg-card rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden animate-slide-up border border-border">
- 
- {/* Encabezado Fijo */}
- <div className="px-6 py-5 border-b border-border flex items-center justify-between bg-card z-10">
- <div>
- <h3 className="text-lg font-black text-foreground uppercase tracking-tight">
- {editingProduct ? 'Modificar Entidad Existente' : 'Nuevo Registro de Entidad'}
- </h3>
- <p className="text-[10px] text-muted-foreground mt-0.5 font-bold uppercase tracking-widest">
- {editingProduct ? `Editando ID: ${editingProduct.id.split('-')[0]}` : 'Protocolo de Alta de Mercancía'} / Retail Hardware v4.8
- </p>
- </div>
- <button 
- onClick={() => { setIsAddModalOpen(false); resetForm(); }}
- className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-all"
- >
- <X size={20} />
- </button>
- </div>
+ {isAddModalOpen && createPortal(
+  <div style={{
+    position: 'fixed', top: 0, left: 0,
+    width: '100vw', height: '100vh',
+    zIndex: 99999,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: 'rgba(15, 23, 42, 0.45)'
+  }}>
+  <div className="relative w-full max-w-4xl bg-card rounded-[3rem] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.5)] flex flex-col max-h-[90vh] overflow-hidden animate-slide-up border border-border">
+  
+  {/* Modal Header */}
+  <div 
+    style={{
+      padding: '40px',
+      borderBottom: '1px solid var(--border)',
+      backgroundColor: 'color-mix(in srgb, var(--brand-primary), transparent 95%)'
+    }}
+    className="relative shrink-0"
+  >
+    <div className="flex items-center gap-4">
+      <div 
+        style={{ 
+          padding: '12px',
+          backgroundColor: 'var(--brand-primary)', 
+          borderRadius: '16px', 
+          color: 'white', 
+          border: '2px solid var(--border)',
+          boxShadow: '0 10px 25px -5px color-mix(in srgb, var(--brand-primary), transparent 60%)'
+        }}
+        className="flex items-center justify-center animate-pulse"
+      >
+        <Package className="h-6 w-6"/>
+      </div>
+      <div>
+        <h3 className="font-black text-2xl text-foreground font-outfit uppercase tracking-tight margin: 0">
+          {editingProduct ? 'MODIFICAR' : 'REGISTRO DE'} <span style={{ color: 'var(--brand-primary)' }}>PRODUCTO</span>
+        </h3>
+        <p style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '3px', color: 'var(--brand-primary)', margin: 0 }}>
+          {editingProduct ? `Editando ID: ${editingProduct.id.split('-')[0]}` : 'Protocolo de Alta de Mercancía'} / Retail Hardware v4.8
+        </p>
+      </div>
+    </div>
+    <button
+      onClick={() => { setIsAddModalOpen(false); resetForm(); }}
+      className="absolute right-8 top-8 p-3 bg-muted text-muted-foreground hover:text-foreground rounded-2xl transition-all"
+    >
+      <X className="h-5 w-5"/>
+    </button>
+  </div>
 
  {/* Cuerpo del Formulario (Scroll Interno) */}
  <div className="overflow-y-auto p-6 sm:p-10 flex-1 custom-scrollbar">
@@ -704,14 +733,16 @@ export const Inventory = () => {
  <button 
  form="add-product-form"
  type="submit"
- className="flex-[1.5] h-12 text-[10px] font-bold text-white bg-brand-500 hover:bg-brand-600 uppercase tracking-[0.2em] rounded-xl shadow-lg shadow-brand-500/20 transition-all flex items-center justify-center gap-3 border-none"
+ style={{ background: 'var(--brand-primary)' }}
+ className="flex-[1.5] h-12 text-[10px] font-bold text-white uppercase tracking-[0.2em] rounded-xl shadow-lg shadow-black/20 transition-all flex items-center justify-center gap-3 border-none"
  >
  {editingProduct ? <Edit2 size={16} strokeWidth={3} /> : <Plus size={16} strokeWidth={3} />} 
  {editingProduct ? 'Guardar Cambios' : 'Sincronizar en Red'}
  </button>
  </div>
  </div>
- </div>
+ </div>,
+ document.body
  )}
 
  {/* PRODUCT LIST */}

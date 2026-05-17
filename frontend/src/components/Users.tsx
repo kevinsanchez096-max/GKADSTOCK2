@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Card, Button } from './ui-components';
 import { 
  Users as UsersIcon, 
@@ -257,35 +258,66 @@ export const Users = () => {
  </tbody>
  </table>
  </div>
- <div className="p-6 border-t border-border bg-muted text-center">
+<div className="p-6 border-t border-border bg-muted text-center">
  <p className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.5em]">PROTOCOLO DE SEGURIDAD GKAD V4 ACTIVADO</p>
  </div>
  </Card>
 
- {/* ADD USER MODAL */}
- {isModalOpen && (
- <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-card/60 backdrop-blur-xl animate-fade-in">
- <div className="absolute inset-0"onClick={() => setIsModalOpen(false)} />
- 
- <Card className="relative w-full max-w-xl p-0 glass-dark border-border shadow-[0_0_100px_rgba(0,0,0,0.1)] dark:shadow-[0_0_100px_rgba(0,0,0,0.5)] overflow-hidden rounded-[3rem]">
- <div className="absolute top-[-20%] left-[-20%] w-64 h-64 bg-brand-500/10 blur-[80px] rounded-full pointer-events-none"/>
- 
- <div className="p-10 border-b border-border bg-muted">
- <div className="flex items-center justify-between">
- <div className="space-y-1">
- <h3 className="text-2xl font-black text-foreground font-outfit uppercase tracking-tight">ALTA DE COLABORADOR</h3>
- <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-[0.3em]">Asignación de Credenciales y Roles</p>
- </div>
- <button 
- onClick={() => setIsModalOpen(false)}
- className="p-3 bg-muted text-muted-foreground hover:text-foreground hover:bg-muted/10 rounded-2xl transition-all"
- >
- <X className="h-6 w-6"/>
- </button>
- </div>
- </div>
+  {/* ADD USER MODAL */}
+  {isModalOpen && createPortal(
+  <div style={{
+    position: 'fixed', top: 0, left: 0,
+    width: '100vw', height: '100vh',
+    zIndex: 99999,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: 'rgba(15, 23, 42, 0.45)',
+    /* No Blur */
+  }}>
+  <Card className="relative w-full max-w-xl p-0 glass-dark border-border shadow-[0_25px_60px_-15px_rgba(0,0,0,0.5)] overflow-hidden rounded-[3rem]">
+  <div className="absolute top-[-20%] left-[-20%] w-64 h-64 bg-brand-500/10 blur-[80px] rounded-full pointer-events-none"/>
+  
+  {/* Modal Header */}
+  <div 
+    style={{
+      padding: '40px',
+      borderBottom: '1px solid var(--border)',
+      backgroundColor: 'color-mix(in srgb, var(--brand-primary), transparent 95%)'
+    }}
+    className="relative shrink-0"
+  >
+    <div className="flex items-center gap-4">
+      <div 
+        style={{ 
+          padding: '12px',
+          backgroundColor: 'var(--brand-primary)', 
+          borderRadius: '16px', 
+          color: 'white', 
+          border: '2px solid var(--border)',
+          boxShadow: '0 10px 25px -5px color-mix(in srgb, var(--brand-primary), transparent 60%)'
+        }}
+        className="flex items-center justify-center animate-pulse"
+      >
+        <UserPlus className="h-6 w-6"/>
+      </div>
+      <div>
 
- <form onSubmit={handleAddEmployee} className="p-10 space-y-6">
+        <h3 className="font-black text-2xl text-foreground font-outfit uppercase tracking-tight margin: 0">
+  ALTA DE <span style={{ color: 'var(--brand-primary)' }}>COLABORADOR</span>
+        </h3>
+        <p style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '3px', color: 'var(--brand-primary)', margin: 0 }}>
+  Asignación de Credenciales y Roles
+        </p>
+      </div>
+    </div>
+    <button
+      onClick={() => setIsModalOpen(false)}
+      className="absolute right-8 top-8 p-3 bg-muted text-muted-foreground hover:text-foreground rounded-2xl transition-all"
+    >
+      <X className="h-5 w-5"/>
+    </button>
+  </div>
+
+  <form onSubmit={handleAddEmployee} className="p-10 space-y-6">
  <div className="space-y-2">
  <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2">Nombre Legal Completo</label>
  <input 
@@ -345,19 +377,20 @@ export const Users = () => {
  </div>
  </div>
 
- <Button 
- type="submit"
- className="w-full h-16 rounded-[1.5rem] font-black text-[11px] uppercase tracking-[0.2em] shadow-2xl transition-all active:scale-[0.98]"
- disabled={isSubmitting}
- loading={isSubmitting}
- >
- REGISTRAR COLABORADOR
- </Button>
- </form>
- </Card>
- </div>
- )}
+  <Button 
+  type="submit"
+  style={{ background: 'var(--brand-primary)' }}
+  className="w-full h-16 rounded-[1.5rem] font-black text-[11px] uppercase tracking-[0.2em] shadow-2xl transition-all active:scale-[0.98]"
+  disabled={isSubmitting}
+  loading={isSubmitting}
+  >
+  REGISTRAR COLABORADOR
+  </Button>
+  </form>
+  </Card>
+  </div>,
+  document.body
+  )}
  </div>
  );
 };
-
