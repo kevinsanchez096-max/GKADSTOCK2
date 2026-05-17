@@ -148,7 +148,7 @@ export const Dashboard = () => {
 
  // Calcular Totales
  const totalSales = filteredSales.reduce((acc, s) => acc + Number(s.total), 0);
-  const totalCost = filteredSales.reduce((acc, s) => acc + Number(s.total_cost || 0), 0);
+ 
  const totalExpenses = filteredExpenses.reduce((acc, e) => acc + Number(e.amount), 0);
 
  // Nuevos cálculos
@@ -167,7 +167,7 @@ export const Dashboard = () => {
  return {
  totalSales,
  totalExpenses,
- netUtility: (totalSales - totalCost) - totalExpenses,
+ netUtility: totalSales - totalExpenses,
  transactionCount,
  averageTicket,
  chartData: chartData.length > 0 ? chartData : [{ name: 'Sin Datos', ventas: 0 }]
