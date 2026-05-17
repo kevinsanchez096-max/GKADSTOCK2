@@ -188,21 +188,21 @@ const salesController = {
         try {
             const orgId = salesController.getOrgId(req);
             const limit = parseInt(req.query.limit) || 50; 
-            console.log(`[SALES] Listando historial para Org: ${orgId} | Límite: ${limit}`);
+            const startDate = req.query.start_date;
+            console.log(`[SALES] Listando historial para Org: ${orgId} | Límite: ${limit} | Start: ${startDate || 'Ninguno'}`);
 
-            const { data, error } = await supabaseAdmin
+            let query = supabaseAdmin
                 .from('sales')
-                .select(`
-                    *,
-                    profiles (full_name),
-                    sale_items (
-                        quantity,
-                        products (cost_price)
-                    )
-                `)
+                .select(`*, profiles(full_name), sale_items(quantity, products(cost_price))`)
                 .eq('organization_id', orgId)
                 .order('created_at', { ascending: false })
                 .limit(limit);
+
+            if (startDate) {
+                query = query.gte('created_at', startDate);
+            }
+
+            const { data, error } = await query;
 
             if (error) throw error;
             

@@ -77,10 +77,20 @@ export const SalesHistory = () => {
  // Filtro de tiempo
  const now = new Date();
  const startRange = new Date();
- if (timeFilter === 'day') startRange.setHours(0, 0, 0, 0);
- else if (timeFilter === 'week') startRange.setDate(now.getDate() - 7);
- else if (timeFilter === 'month') startRange.setMonth(now.getMonth() - 1);
- else if (timeFilter === 'year') startRange.setFullYear(now.getFullYear() - 1);
+
+ if (timeFilter === 'day') {
+   startRange.setHours(0, 0, 0, 0);
+ } else if (timeFilter === 'week') {
+   startRange.setDate(now.getDate() - 7);
+   startRange.setHours(0, 0, 0, 0);
+ } else if (timeFilter === 'month') {
+   startRange.setDate(1);
+   startRange.setHours(0, 0, 0, 0);
+ } else if (timeFilter === 'year') {
+   startRange.setMonth(0);
+   startRange.setDate(1);
+   startRange.setHours(0, 0, 0, 0);
+ }
 
  return sales.filter(s => {
  // Filtro por rango de tiempo
@@ -168,11 +178,28 @@ export const SalesHistory = () => {
  }
  }, [saleToPrint]);
 
- // Efecto para recargar cuando cambia el límite o la organización
+ // Efecto para recargar cuando cambia el límite, la organización o el filtro de tiempo
  useEffect(() => {
  if (!profile || !profile.organization_id) return;
+
+ const now = new Date();
+ const startRange = new Date();
+ if (timeFilter === 'day') {
+   startRange.setHours(0, 0, 0, 0);
+ } else if (timeFilter === 'week') {
+   startRange.setDate(now.getDate() - 7);
+   startRange.setHours(0, 0, 0, 0);
+ } else if (timeFilter === 'month') {
+   startRange.setDate(1);
+   startRange.setHours(0, 0, 0, 0);
+ } else if (timeFilter === 'year') {
+   startRange.setMonth(0);
+   startRange.setDate(1);
+   startRange.setHours(0, 0, 0, 0);
+ }
+ const startDateStr = startRange.toISOString();
  
- useShopStore.getState().fetchSalesHistory(profile.organization_id, displayLimit);
+ useShopStore.getState().fetchSalesHistory(profile.organization_id, displayLimit, startDateStr);
  // Sincronizar perfil para asegurar datos de branding actualizados
  api.get('/auth/profile').then(data => {
  if (data) useAuthStore.getState().setProfile(data);
@@ -192,7 +219,7 @@ export const SalesHistory = () => {
  (payload) => {
  if (payload.new && payload.new.organization_id === profile.organization_id) {
  // Silenciosamente refrescar sin invadir al usuario
- useShopStore.getState().fetchSalesHistory(profile.organization_id, displayLimit);
+ useShopStore.getState().fetchSalesHistory(profile.organization_id, displayLimit, startDateStr);
  }
  }
  )
@@ -201,7 +228,7 @@ export const SalesHistory = () => {
  return () => {
  supabase.removeChannel(channel);
  };
- }, [profile?.organization_id, displayLimit]);
+ }, [profile?.organization_id, displayLimit, timeFilter]);
 
  const handlePrint = (sale: any) => {
  if (!sale) return;

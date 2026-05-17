@@ -250,9 +250,11 @@ export const useShopStore = create<ShopState>((set, get) => ({
  }
  },
 
- fetchSalesHistory: async (orgId: string, limit: number = 20) => {
+ fetchSalesHistory: async (orgId: string, limit: number = 20, startDate?: string) => {
  try {
- const data = await api.get(`/sales/history?organization_id=${orgId}&limit=${limit}`);
+ let url = `/sales/history?organization_id=${orgId}&limit=${limit}`;
+ if (startDate) url += `&start_date=${startDate}`;
+ const data = await api.get(url);
  set({ sales: Array.isArray(data) ? data : [] });
  } catch (error: any) {
  // Manejo Silencioso: Si el perfil no existe todavía o hay error de tenant, devolvemos array vacío
