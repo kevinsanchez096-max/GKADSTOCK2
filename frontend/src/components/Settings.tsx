@@ -447,42 +447,42 @@ export const Settings = () => {
  </Button>
  </div>
  <div className="bg-muted/40 p-8 rounded-3xl shadow-inner border border-border">
- <div className="bg-card text-black p-8 shadow-2xl max-w-[280px] mx-auto min-h-[420px] font-mono text-[10px] rounded-sm transform hover:scale-[1.02] transition-transform duration-500 border border-border">
+ <div className="bg-white text-zinc-950 p-8 shadow-2xl max-w-[280px] mx-auto min-h-[420px] font-mono text-[10px] rounded-sm transform hover:scale-[1.02] transition-transform duration-500 border border-zinc-200">
  <div className="text-center mb-6">
- <div className="h-20 w-20 bg-card rounded-full mx-auto mb-4 flex items-center justify-center shadow-[0_0_15px_-5px_rgba(0,0,0,0.2)] overflow-hidden border border-border p-1">
+ <div className="h-20 w-20 bg-white rounded-full mx-auto mb-4 flex items-center justify-center shadow-[0_0_15px_-5px_rgba(0,0,0,0.2)] overflow-hidden border border-zinc-200 p-1">
  {formData.logo_url ? (
  <img src={formData.logo_url} alt="Logo"className="max-h-full max-w-full object-contain rounded-full"style={{ filter: 'drop-shadow(0 0 2px rgba(0,0,0,0.05))' }} />
  ) : (
- <ImageIcon size={28} className="text-muted-foreground"/>
+ <ImageIcon size={28} className="text-zinc-400"/>
  )}
  </div>
- <h4 className="font-black uppercase text-sm tracking-tighter leading-tight">{formData.company_name || 'GKAD STOCK'}</h4>
- <p className="text-[9px] opacity-60">NIT: {formData.tax_id || 'Sin NIT registrado'}</p>
+ <h4 className="font-black uppercase text-sm tracking-tighter leading-tight text-zinc-950">{formData.company_name || 'GKAD STOCK'}</h4>
+ <p className="text-[9px] text-zinc-500 font-bold mt-1">NIT: {formData.tax_id || 'Sin NIT registrado'}</p>
  </div>
- <div className="border-b border-dashed border-border pb-3 mb-3 space-y-1">
- <div className="flex justify-between font-bold"><span>FAC:</span><span>TKT-4492</span></div>
- <div className="flex justify-between"><span>HORA:</span><span>{new Date().toLocaleTimeString()}</span></div>
- <div className="text-[8px] opacity-50">{formData.primary_address}</div>
- <div className="text-[8px] opacity-50">Tel: {formData.phone_number}</div>
+ <div className="border-b border-dashed border-zinc-300 pb-3 mb-3 space-y-1">
+ <div className="flex justify-between font-bold text-zinc-900"><span>FAC:</span><span>TKT-4492</span></div>
+ <div className="flex justify-between text-zinc-700"><span>HORA:</span><span>{new Date().toLocaleTimeString()}</span></div>
+ <div className="text-[8px] text-zinc-500 font-medium">{formData.primary_address}</div>
+ <div className="text-[8px] text-zinc-500 font-medium">Tel: {formData.phone_number}</div>
  </div>
  <div className="space-y-2 mb-6">
- <div className="flex justify-between font-black border-b border-border pb-1.5 text-[9px] uppercase tracking-tighter">
+ <div className="flex justify-between font-black border-b border-zinc-300 pb-1.5 text-[9px] uppercase tracking-tighter text-zinc-900">
  <span>DESCRIPCIÓN</span>
  <span>VALOR</span>
  </div>
- <div className="flex justify-between italic opacity-80">
+ <div className="flex justify-between italic text-zinc-800 font-medium">
  <span>Producto V5 Premium x 1</span>
  <span>$45.000</span>
  </div>
  </div>
- <div className="border-t border-double border-border pt-3 space-y-1.5">
- <div className="flex justify-between text-muted-foreground"><span>SUBTOTAL GRAVADO:</span><span>$37.815</span></div>
- <div className="flex justify-between text-muted-foreground"><span>IMPUESTO IVA ({formData.tax_percentage}%):</span><span>$7.185</span></div>
- <div className="flex justify-between font-black text-sm mt-3 border-t-2 border-black pt-2"><span>GRAN TOTAL:</span><span>$45.000</span></div>
+ <div className="border-t border-double border-zinc-300 pt-3 space-y-1.5">
+ <div className="flex justify-between text-zinc-500 font-bold"><span>SUBTOTAL GRAVADO:</span><span>$37.815</span></div>
+ <div className="flex justify-between text-zinc-500 font-bold"><span>IMPUESTO IVA ({formData.tax_percentage}%):</span><span>$7.185</span></div>
+ <div className="flex justify-between font-black text-zinc-950 text-sm mt-3 border-t-2 border-zinc-950 pt-2"><span>GRAN TOTAL:</span><span>$45.000</span></div>
  </div>
- <div className="mt-8 text-center text-[7px] space-y-1 leading-tight opacity-70 italic">
+ <div className="mt-8 text-center text-[7px] space-y-1 leading-tight text-zinc-500 italic">
  <p className="font-bold">{formData.billing_resolution}</p>
- <p className="mt-6">{formData.footer_message}</p>
+ <p className="mt-6 font-bold text-zinc-600">{formData.footer_message}</p>
  </div>
  </div>
  </div>
