@@ -322,40 +322,38 @@ const cashSessionController = {
 
     // 6. Eliminar un reporte de cierre de caja (DELETE /api/cash-sessions/:id)
     deleteSession: async (req, res) => {
-        try {
-            const orgId = cashSessionController.getOrgId(req);
-            const { id } = req.params;
-            const sessions = readSessions();
+      try {
+        const { id } = req.params;
+        const userRole = req.user?.role;
+        const userOrgId = req.user?.organization_id;
 
-            const sessionIndex = sessions.findIndex(s => s.id === id && s.organization_id === orgId);
-            if (sessionIndex === -1) {
-                return res.status(404).json({ error: 'La sesión de caja no existe o no pertenece a su organización.' });
-            }
+        const sessions = readSessions();
 
-            const sessionToDelete = sessions[sessionIndex];
-            
-            // Eliminar de la lista
-            sessions.splice(sessionIndex, 1);
-            writeSessions(sessions);
+        let sessionIndex;
 
-            // Log de auditoría (Seguro contra fallos de DB/esquema)
-            try {
-                await supabaseAdmin.from('system_logs').insert([{
-                    level: 'warning',
-                    module: 'cash_register',
-                    user_id: req.user.id,
-                    organization_id: orgId,
-                    message: `Reporte de cierre de caja (Fecha: ${new Date(sessionToDelete.closing_time || '').toLocaleDateString()}, Base: $${sessionToDelete.opening_balance.toLocaleString()}) ELIMINADO por ${req.user.full_name || 'Admin'}`
-                }]);
-            } catch (logError) {
-                console.error('⚠️ [CASH LOG ERROR] Falló al registrar log de eliminación:', logError.message);
-            }
-
-            res.status(200).json({ success: true, message: 'Reporte de cierre de caja eliminado correctamente.' });
-        } catch (error) {
-            console.error('🔥 [CASH ERROR] deleteSession:', error.message);
-            res.status(500).json({ error: error.message });
+        if (userRole === 'super_admin') {
+          // Super admin puede eliminar cualquier cierre sin importar la organización
+          sessionIndex = sessions.findIndex(s => s.id === id);
+        } else {
+          // Usuario regular solo puede eliminar cierres de su organización
+          sessionIndex = sessions.findIndex(s => s.id === id && s.organization_id === userOrgId);
         }
+
+        if (sessionIndex === -1) {
+          return res.status(404).json({ 
+            error: 'La sesión de caja no existe o no tiene permisos para eliminarla.' 
+          });
+        }
+
+        sessions.splice(sessionIndex, 1);
+        writeSessions(sessions);
+
+        return res.status(200).json({ message: 'Sesión eliminada correctamente.' });
+
+      } catch (error) {
+        console.error('[CASH] Error al eliminar sesión:', error.message);
+        return res.status(500).json({ error: 'Error interno al eliminar la sesión.' });
+      }
     },
 
     // 5. Daemon de Autocierre a las 11:59 PM o sesión vencida de días anteriores
