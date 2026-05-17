@@ -193,14 +193,18 @@ const cashSessionController = {
             sessions.push(newSession);
             writeSessions(sessions);
 
-            // Log de auditoría
-            await supabaseAdmin.from('system_logs').insert([{
-                level: 'info',
-                module: 'cash_register',
-                user_id: req.user.id,
-                organization_id: orgId,
-                message: `Caja ABIERTA por ${newSession.user_name} con base de $${newSession.opening_balance.toLocaleString()}`
-            }]);
+            // Log de auditoría (Seguro contra fallos de DB/esquema)
+            try {
+                await supabaseAdmin.from('system_logs').insert([{
+                    level: 'info',
+                    module: 'cash_register',
+                    user_id: req.user.id,
+                    organization_id: orgId,
+                    message: `Caja ABIERTA por ${newSession.user_name} con base de $${newSession.opening_balance.toLocaleString()}`
+                }]);
+            } catch (logError) {
+                console.error('⚠️ [CASH LOG ERROR] Falló al registrar log de apertura:', logError.message);
+            }
 
             res.status(201).json({ success: true, session: newSession });
         } catch (error) {
@@ -253,15 +257,19 @@ const cashSessionController = {
             sessions[activeIndex] = closedSession;
             writeSessions(sessions);
 
-            // Log de auditoría
+            // Log de auditoría (Seguro contra fallos de DB/esquema)
             const diffMsg = diff === 0 ? 'Caja cuadradra perfectamente' : diff > 0 ? `SOBRANTE de $${diff.toLocaleString()}` : `FALTANTE de $${Math.abs(diff).toLocaleString()}`;
-            await supabaseAdmin.from('system_logs').insert([{
-                level: diff === 0 ? 'info' : 'warning',
-                module: 'cash_register',
-                user_id: req.user.id,
-                organization_id: orgId,
-                message: `Caja CERRADA por ${closedSession.user_name}. Esperado: $${expected.toLocaleString()} | Real: $${closedSession.actual_cash.toLocaleString()} (${diffMsg})`
-            }]);
+            try {
+                await supabaseAdmin.from('system_logs').insert([{
+                    level: diff === 0 ? 'info' : 'warning',
+                    module: 'cash_register',
+                    user_id: req.user.id,
+                    organization_id: orgId,
+                    message: `Caja CERRADA por ${closedSession.user_name}. Esperado: $${expected.toLocaleString()} | Real: $${closedSession.actual_cash.toLocaleString()} (${diffMsg})`
+                }]);
+            } catch (logError) {
+                console.error('⚠️ [CASH LOG ERROR] Falló al registrar log de cierre:', logError.message);
+            }
 
             res.status(200).json({ success: true, session: closedSession });
         } catch (error) {
@@ -329,14 +337,18 @@ const cashSessionController = {
             sessions.splice(sessionIndex, 1);
             writeSessions(sessions);
 
-            // Log de auditoría
-            await supabaseAdmin.from('system_logs').insert([{
-                level: 'warning',
-                module: 'cash_register',
-                user_id: req.user.id,
-                organization_id: orgId,
-                message: `Reporte de cierre de caja (Fecha: ${new Date(sessionToDelete.closing_time || '').toLocaleDateString()}, Base: $${sessionToDelete.opening_balance.toLocaleString()}) ELIMINADO por ${req.user.full_name || 'Admin'}`
-            }]);
+            // Log de auditoría (Seguro contra fallos de DB/esquema)
+            try {
+                await supabaseAdmin.from('system_logs').insert([{
+                    level: 'warning',
+                    module: 'cash_register',
+                    user_id: req.user.id,
+                    organization_id: orgId,
+                    message: `Reporte de cierre de caja (Fecha: ${new Date(sessionToDelete.closing_time || '').toLocaleDateString()}, Base: $${sessionToDelete.opening_balance.toLocaleString()}) ELIMINADO por ${req.user.full_name || 'Admin'}`
+                }]);
+            } catch (logError) {
+                console.error('⚠️ [CASH LOG ERROR] Falló al registrar log de eliminación:', logError.message);
+            }
 
             res.status(200).json({ success: true, message: 'Reporte de cierre de caja eliminado correctamente.' });
         } catch (error) {
@@ -393,13 +405,17 @@ const cashSessionController = {
 
                     modified = true;
 
-                    // Log de auditoría
-                    await supabaseAdmin.from('system_logs').insert([{
-                        level: 'info',
-                        module: 'cash_register',
-                        organization_id: s.organization_id,
-                        message: `Cierre de Caja AUTOMÁTICO (Daemon). Esperado: $${expected.toLocaleString()} | La caja quedó de un día anterior.`
-                    }]);
+                    // Log de auditoría (Seguro contra fallos de DB/esquema)
+                    try {
+                        await supabaseAdmin.from('system_logs').insert([{
+                            level: 'info',
+                            module: 'cash_register',
+                            organization_id: s.organization_id,
+                            message: `Cierre de Caja AUTOMÁTICO (Daemon). Esperado: $${expected.toLocaleString()} | La caja quedó de un día anterior.`
+                        }]);
+                    } catch (logError) {
+                        console.error('⚠️ [CASH LOG ERROR] Falló al registrar log de autocierre daemon:', logError.message);
+                    }
                 }
             }
 

@@ -117,13 +117,10 @@ export const useCashStore = create<CashState>((set, get) => ({
     deleteSession: async (id) => {
         set({ loading: true });
         try {
-            const data = await api.delete(`/cash-sessions/${id}`);
-            if (data && data.success) {
-                toast.success('Reporte de cierre de caja eliminado con éxito.');
-                await get().fetchHistory(); // Recargar historial de arqueos
-                return true;
-            }
-            return false;
+            await api.delete(`/cash-sessions/${id}`);
+            toast.success('Reporte de cierre de caja eliminado con éxito.');
+            await get().fetchHistory(); // Recargar historial de arqueos
+            return true;
         } catch (error: any) {
             const serverMessage = error?.data?.error || error?.message || 'Error al eliminar el reporte';
             toast.error(serverMessage);
