@@ -123,6 +123,54 @@ PRUEBA INVENTARIO/
 
 ---
 
+## 📐 Ciclo de Operación y Flujo de Trabajo del Sistema
+
+Para garantizar el control financiero total y evitar descuadres operativos, el sistema sigue un ciclo lógico de uso obligatorio desde el inicio de la jornada:
+
+```mermaid
+graph TD
+    A[1. Inicio de Sesión] --> B[2. Validación de Plan Activo]
+    B --> C[3. Apertura de Caja Obligatoria]
+    C --> D[4. Registro de Productos en Inventario]
+    D --> E[5. Ventas en POS e Historial de Caja]
+    E --> F[6. Arqueo Físico y Cierre de Caja]
+    F -->|Manual / 11:59 PM Auto-Cierre| G[Historial de Turnos Consolidado]
+```
+
+### 1. 🔐 Inicio de Sesión
+El usuario ingresa al sistema utilizando sus credenciales corporativas (correo y contraseña). Se valida su rol (`super_admin`, `admin`, `cashier`) y se asocia la sesión a su organización (Multi-Tenant).
+
+### 2. 👑 Validación del Plan de Suscripción Activo
+El sistema verifica el plan corporativo de la empresa. El plan define los límites de usuarios, productos, gastos e ingresos. Si es la primera vez, el usuario puede seleccionar una prueba gratuita (plan Starter) o suscribirse de manera real ( PSE, Tarjeta) a los planes Avanzado, Emprendedor o Premium, visualizando en todo momento su plan actual activo.
+
+### 3. 💵 Apertura de Caja Obligatoria (Módulo de Caja)
+Antes de poder realizar cualquier venta en el terminal POS:
+* El cajero debe ingresar al módulo de **Caja**.
+* Es de carácter **obligatorio** indicar un monto base inicial (efectivo inicial para cambio).
+* Esta acción crea una sesión de caja activa en el servidor local (`backend/data/cash_sessions.json`), asociando el responsable y la hora de apertura.
+* *Nota:* Si la caja no está abierta, el terminal POS se bloqueará mostrando un aviso elegante de "Caja Cerrada" e inhabilitará la botonera de venta.
+
+### 4. 📦 Registro de Productos e Inventario
+Para poder facturar, los productos deben existir previamente en el catálogo:
+* El administrador registra los productos indicando nombre, precio de compra, precio de venta, categoría y stock disponible.
+* Cada producto se asocia de forma inmutable a la organización.
+
+### 5. 🏪 Facturación en el POS y Registro de Gastos
+* El cajero selecciona productos en el carrito de compras (soporte para lectura de código de barras o báscula simulada para kg).
+* Al procesar la venta (Efectivo, Tarjeta, Transferencia) o registrar un egreso corporativo, el backend asocia la transacción de forma dinámica a la sesión de caja activa comparando la fecha de creación con el rango de tiempo de la caja.
+
+### 6. 🧮 Arqueo Físico y Cierre de Caja (Control Total)
+Al finalizar el turno o la jornada de trabajo:
+* El cajero cuenta el dinero físico real de la caja y lo ingresa en el panel de Arqueo.
+* El sistema calcula en tiempo real la diferencia: `Físico Real - Efectivo Esperado` (Base inicial + Ventas en efectivo - Gastos).
+* **Alertas Visuales:**
+  * **Caja Cuadrada Perfecta** (Diferencia = $0): Muestra un banner verde.
+  * **Sobrante de Caja** (Diferencia > $0): Banner color ámbar.
+  * **Faltante de Caja** (Diferencia < $0): Banner rojo de alerta crítica.
+* **Auto-Cierre Autónomo:** Si el cajero olvida cerrar la caja al finalizar el día, a las **11:59 PM** el daemon autónomo del servidor realiza el arqueo automáticamente guardando los saldos correspondientes y garantizando auditoría perpetua.
+
+---
+
 ## ✨ Funcionalidades Implementadas
 
 ### 🏪 Módulo POS (Punto de Venta)
@@ -134,6 +182,15 @@ PRUEBA INVENTARIO/
 - Métodos de pago: Efectivo, Tarjeta, Transferencia, Nequi.
 - Carrito global persistente (no se pierde al navegar entre módulos).
 - Atajos de teclado: `Enter` para avanzar entre pasos.
+
+### 💵 Módulo de Caja (Control de Efectivo)
+
+- **Apertura de Caja Obligatoria**: Bloqueo preventivo del POS para forzar la declaración de la base inicial de efectivo.
+- **Monitoreo Contable en Vivo**: Conciliación en tiempo real de ingresos en efectivo, cobros con tarjeta/transferencia y egresos operacionales.
+- **Arqueo y Cierre Manual**: Formulario de conteo de efectivo real en caja física con cálculo de diferencia en tiempo real.
+- **Alertas Visuales de Cuadre**: Notificaciones de "Caja Perfecta" (verde), "Sobrante" (ámbar) y "Faltante" (rojo) según resultados de arqueo.
+- **Daemon de Auto-Cierre Autónomo**: Robot en segundo plano ejecutándose a las 11:59 PM para realizar auto-arqueos de turnos olvidados o del día anterior.
+- **Historial Completo**: Trazabilidad y auditoría de sesiones pasadas con detalles de cajero, saldo esperado, saldo real y diferencia.
 
 ### 📦 Módulo de Inventario
 

@@ -470,25 +470,25 @@ export const SaaSOrgRow = ({ org, isExpanded, onToggle, isMenuOpen, onToggleMenu
  </button>
  </div>
 
- <div className="bg-muted/20 rounded-2xl overflow-hidden border border-border">
+ <div className="bg-card border border-border rounded-[2rem] overflow-hidden shadow-sm">
  <table className="w-full border-collapse">
  <thead>
- <tr className="bg-muted/50">
- <th className="px-6 py-4 text-left text-[9px] font-black text-muted-foreground uppercase tracking-widest">Usuario</th>
- <th className="px-6 py-4 text-left text-[9px] font-black text-muted-foreground uppercase tracking-widest">Email</th>
- <th className="px-6 py-4 text-left text-[9px] font-black text-muted-foreground uppercase tracking-widest">Rol</th>
- <th className="px-6 py-4 text-left text-[9px] font-black text-muted-foreground uppercase tracking-widest">Estado</th>
- <th className="px-6 py-4 text-right text-[9px] font-black text-muted-foreground uppercase tracking-widest">Poderes</th>
+ <tr className="bg-muted/40 text-muted-foreground text-[10px] uppercase font-black tracking-[0.2em] border-b border-border">
+ <th className="px-6 py-5 text-left">Usuario</th>
+ <th className="px-6 py-5 text-left">Email</th>
+ <th className="px-6 py-5 text-left">Rol</th>
+ <th className="px-6 py-5 text-left">Estado</th>
+ <th className="px-6 py-5 text-right">Poderes</th>
  </tr>
  </thead>
- <tbody className="divide-y divide-border/50">
+ <tbody className="divide-y divide-border/40">
  {loadingUsers ? (
  <tr><td colSpan={5} className="py-20 text-center animate-pulse text-[10px] font-black text-muted-foreground">Sincronizando Auth...</td></tr>
  ) : users.length === 0 ? (
  <tr><td colSpan={5} className="py-20 text-center text-muted-foreground grayscale opacity-20"><Ghost size={40} className="mx-auto mb-4"/><p className="text-[10px] font-black uppercase">Sin Personal Registrado</p></td></tr>
  ) : (
  users.map(user => (
- <tr key={user.id} className="hover:bg-card transition-colors group/row">
+ <tr key={user.id} className="hover:bg-muted/30 transition-colors text-xs font-bold group/row">
  <td className="px-6 py-4">
  <div className="flex items-center gap-3">
  <div className="h-8 w-8 bg-card rounded-lg flex items-center justify-center text-[10px] font-black text-muted-foreground border border-border">

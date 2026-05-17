@@ -20,6 +20,7 @@ import { SubscriptionPlans } from './components/SubscriptionPlans';
 import { AuthForm } from './components/AuthForm';
 import { ResetPasswordForm } from './components/ResetPasswordForm';
 import { PlanLimitModal } from './components/PlanLimitModal';
+import { CashRegister } from './components/CashRegister';
 import { useAuthStore } from './store/useAuthStore';
 import { useOrganizationStore } from './store/useOrganizationStore';
 import { Toaster } from 'sonner';
@@ -178,7 +179,9 @@ function App() {
       case 'inventory':
         return <Inventory />;
       case 'pos':
-        return <POSTerminal />;
+        return <POSTerminal setActiveTab={setActiveTab} />;
+      case 'cash_register':
+        return <CashRegister />;
       case 'customers':
         return <Customers />;
       case 'suppliers':

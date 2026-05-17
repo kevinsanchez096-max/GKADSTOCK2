@@ -203,7 +203,7 @@ export const Suppliers = () => {
   <th className="px-8 py-5 text-right">Acciones</th>
   </tr>
   </thead>
-  <tbody className="divide-y divide-slate-200">
+  <tbody className="divide-y divide-border/40">
   {loading ? (
   <tr>
   <td colSpan={5} className="text-center py-32">
@@ -228,7 +228,7 @@ export const Suppliers = () => {
   </tr>
   ) : (
   filtered.map(s => (
-  <tr key={s.id} className="hover:bg-muted transition-colors group">
+  <tr key={s.id} className="hover:bg-muted/30 transition-colors text-xs font-bold group">
   {/* Nombre Empresa */}
   <td className="px-8 py-5 whitespace-nowrap">
   <div className="flex items-center gap-4">

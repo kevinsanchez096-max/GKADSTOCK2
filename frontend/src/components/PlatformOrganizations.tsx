@@ -265,16 +265,16 @@ export const PlatformOrganizations = () => {
   <div className="bg-card border border-border rounded-[2.5rem] overflow-x-auto overflow-y-hidden shadow-2xl transition-colors duration-500 max-w-[100vw] sm:max-w-none">
   <table className="w-full border-collapse min-w-[800px]">
   <thead>
- <tr className="bg-card border-b border-border">
- <th className="px-8 py-6 text-left text-[9px] font-black text-muted-foreground uppercase tracking-[0.3em]">ID Nodo</th>
- <th className="px-8 py-6 text-left text-[9px] font-black text-muted-foreground uppercase tracking-[0.3em]">Organización / Empresa</th>
- <th className="px-8 py-6 text-left text-[9px] font-black text-muted-foreground uppercase tracking-[0.3em]">Plan / Licencia</th>
- <th className="px-8 py-6 text-left text-[9px] font-black text-muted-foreground uppercase tracking-[0.3em]">Personal</th>
- <th className="px-8 py-6 text-left text-[9px] font-black text-muted-foreground uppercase tracking-[0.3em]">Estado SaaS</th>
- <th className="px-8 py-6 text-right text-[9px] font-black text-muted-foreground uppercase tracking-[0.3em]">Acciones</th>
- </tr>
+  <tr className="bg-muted/40 text-muted-foreground text-[10px] uppercase font-black tracking-[0.2em] border-b border-border">
+  <th className="px-8 py-5 text-left">ID Nodo</th>
+  <th className="px-8 py-5 text-left">Organización / Empresa</th>
+  <th className="px-8 py-5 text-left">Plan / Licencia</th>
+  <th className="px-8 py-5 text-left">Personal</th>
+  <th className="px-8 py-5 text-left">Estado SaaS</th>
+  <th className="px-8 py-5 text-right">Acciones</th>
+  </tr>
  </thead>
- <tbody className="divide-y divide-white/5">
+ <tbody className="divide-y divide-border/40">
  {loading && organizations.length === 0 ? (
  [...Array(5)].map((_, i) => (
  <tr key={i} className="animate-pulse">
@@ -317,18 +317,18 @@ export const PlatformOrganizations = () => {
      </div>
      
      <div className="bg-card border border-border rounded-[2rem] overflow-hidden shadow-sm">
-       <table className="w-full">
-         <thead className="bg-muted/30">
-           <tr>
-             <th className="px-8 py-4 text-left text-[8px] font-black text-muted-foreground uppercase tracking-widest">Fecha Purga</th>
-             <th className="px-8 py-4 text-left text-[8px] font-black text-muted-foreground uppercase tracking-widest">Organización</th>
-             <th className="px-8 py-4 text-left text-[8px] font-black text-muted-foreground uppercase tracking-widest">ID Previo</th>
-             <th className="px-8 py-4 text-right text-[8px] font-black text-muted-foreground uppercase tracking-widest">Pérdida MRR</th>
-           </tr>
-         </thead>
-         <tbody className="divide-y divide-border/30">
-           {deletionLogs.map((log) => (
-             <tr key={log.id} className="hover:bg-muted/10 transition-colors group">
+        <table className="w-full border-collapse">
+          <thead>
+            <tr className="bg-muted/40 text-muted-foreground text-[10px] uppercase font-black tracking-[0.2em] border-b border-border">
+              <th className="px-8 py-5 text-left">Fecha Purga</th>
+              <th className="px-8 py-5 text-left">Organización</th>
+              <th className="px-8 py-5 text-left">ID Previo</th>
+              <th className="px-8 py-5 text-right">Pérdida MRR</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border/40">
+            {deletionLogs.map((log) => (
+              <tr key={log.id} className="hover:bg-muted/30 transition-colors text-xs font-bold group">
                <td className="px-8 py-4 text-[10px] font-bold text-muted-foreground">
                  {new Date(log.created_at).toLocaleDateString()} {new Date(log.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                </td>

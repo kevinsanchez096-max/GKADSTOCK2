@@ -182,28 +182,28 @@ export const Users = () => {
  <th className="px-8 py-5 text-right">Control</th>
  </tr>
  </thead>
- <tbody className="divide-y divide-slate-200">
- {loading ? (
- <tr>
- <td colSpan={5} className="text-center py-32">
- <div className="flex flex-col items-center animate-pulse">
- <Loader2 className="h-10 w-10 text-brand-500 animate-spin mb-4"/>
- <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Sincronizando nómina...</p>
- </div>
- </td>
- </tr>
- ) : employees.length === 0 ? (
- <tr>
- <td colSpan={5} className="text-center py-32 text-foreground">
- <div className="flex flex-col items-center opacity-30">
- <UsersIcon className="h-16 w-16 mb-4"strokeWidth={1} />
- <p className="font-black uppercase tracking-[0.4em] text-[10px]">No se detectan registros de personal</p>
- </div>
- </td>
- </tr>
- ) : (
- employees.map((emp) => (
- <tr key={emp.id} className="hover:bg-muted transition-colors group">
+  <tbody className="divide-y divide-border/40">
+  {loading ? (
+  <tr>
+  <td colSpan={5} className="text-center py-32">
+  <div className="flex flex-col items-center animate-pulse">
+  <Loader2 className="h-10 w-10 text-brand-500 animate-spin mb-4"/>
+  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Sincronizando nómina...</p>
+  </div>
+  </td>
+  </tr>
+  ) : employees.length === 0 ? (
+  <tr>
+  <td colSpan={5} className="text-center py-32 text-foreground">
+  <div className="flex flex-col items-center opacity-30">
+  <UsersIcon className="h-16 w-16 mb-4"strokeWidth={1} />
+  <p className="font-black uppercase tracking-[0.4em] text-[10px]">No se detectan registros de personal</p>
+  </div>
+  </td>
+  </tr>
+  ) : (
+  employees.map((emp) => (
+  <tr key={emp.id} className="hover:bg-muted/30 transition-colors text-xs font-bold group">
  <td className="px-8 py-5 whitespace-nowrap">
  <div className="flex items-center gap-4">
  <div className="h-11 w-11 rounded-2xl bg-brand-500/10 border border-brand-500/20 flex items-center justify-center text-brand-500 font-black text-sm font-outfit shadow-lg shadow-brand-500/5 group-hover:scale-110 transition-transform">

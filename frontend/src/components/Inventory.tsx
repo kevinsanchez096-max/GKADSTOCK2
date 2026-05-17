@@ -753,20 +753,20 @@ export const Inventory = () => {
  ) : viewMode === 'list' ? (
  <Card className="p-0 bg-card border-border overflow-hidden shadow-2xl relative rounded-[2.5rem] backdrop-blur-xl">
  <div className="overflow-x-auto">
- <table className="w-full text-left">
+ <table className="w-full text-left border-collapse">
  <thead>
- <tr className="bg-muted border-b border-border/60">
- <th className="px-8 py-6 text-[10px] font-black uppercase text-muted-foreground tracking-[0.2em]">Producto / Entidad</th>
- <th className="px-8 py-6 text-[10px] font-black uppercase text-muted-foreground tracking-[0.2em] hidden md:table-cell">ID Logístico</th>
- <th className="px-8 py-6 text-[10px] font-black uppercase text-muted-foreground tracking-[0.2em] hidden md:table-cell">Categoría</th>
- <th className="px-8 py-6 text-[10px] font-black uppercase text-muted-foreground tracking-[0.2em] text-right">Precio / Medida</th>
- <th className="px-8 py-6 text-[10px] font-black uppercase text-muted-foreground tracking-[0.2em] text-center">Stock Disponible</th>
- <th className="px-8 py-6 text-[10px] font-black uppercase text-muted-foreground tracking-[0.2em] text-right">Acciones</th>
+ <tr className="bg-muted/40 text-muted-foreground text-[10px] uppercase font-black tracking-[0.2em] border-b border-border">
+ <th className="px-8 py-5">Producto / Entidad</th>
+ <th className="px-8 py-5 hidden md:table-cell">ID Logístico</th>
+ <th className="px-8 py-5 hidden md:table-cell">Categoría</th>
+ <th className="px-8 py-5 text-right">Precio / Medida</th>
+ <th className="px-8 py-5 text-center">Stock Disponible</th>
+ <th className="px-8 py-5 text-right">Acciones</th>
  </tr>
  </thead>
- <tbody className="divide-y divide-border">
+ <tbody className="divide-y divide-border/40">
  {filteredProducts.map((p) => (
- <tr key={p.id} className="group hover:bg-muted dark:hover:bg-brand-500/5 transition-all">
+ <tr key={p.id} className="hover:bg-muted/30 transition-colors text-xs font-bold group">
  <td className="px-8 py-5">
  <div className="flex items-center gap-4">
  <div className="h-12 w-12 bg-muted rounded-2xl flex items-center justify-center border border-border group-hover:scale-110 group-hover:border-brand-500/30 transition-all duration-300 shadow-sm">
@@ -944,16 +944,16 @@ export const Inventory = () => {
  </div>
 
  <div className="p-6 md:p-8 overflow-y-auto flex-1 custom-scrollbar">
- <table className="w-full text-left">
+ <table className="w-full text-left border-collapse">
  <thead>
- <tr className="border-b border-border">
- <th className="py-4 text-[9px] font-black text-muted-foreground uppercase tracking-widest pl-4">Fecha / Hora</th>
- <th className="py-4 text-[9px] font-black text-muted-foreground uppercase tracking-widest">Producto</th>
- <th className="py-4 text-[9px] font-black text-muted-foreground uppercase tracking-widest">Tipo</th>
- <th className="py-4 text-right text-[9px] font-black text-muted-foreground uppercase tracking-widest pr-4">Cantidad</th>
+ <tr className="bg-muted/40 text-muted-foreground text-[10px] uppercase font-black tracking-[0.2em] border-b border-border">
+ <th className="px-6 py-5">Fecha / Hora</th>
+ <th className="px-6 py-5">Producto</th>
+ <th className="px-6 py-5">Tipo</th>
+ <th className="px-6 py-5 text-right">Cantidad</th>
  </tr>
  </thead>
- <tbody className="divide-y divide-slate-100">
+ <tbody className="divide-y divide-border/40">
  {inventoryMovements?.length > 0 ? (
  inventoryMovements
  .filter(m => {
@@ -984,8 +984,8 @@ export const Inventory = () => {
  }
 
  return (
- <tr key={m.id || idx} className="hover:bg-muted transition-colors group">
- <td className="py-4 pl-4">
+ <tr key={m.id || idx} className="hover:bg-muted/30 transition-colors text-xs font-bold group">
+ <td className="px-6 py-5">
  <p className="text-xs font-bold text-foreground">
  {new Date(m.created_at).toLocaleDateString()}
  </p>
@@ -993,17 +993,17 @@ export const Inventory = () => {
  {new Date(m.created_at).toLocaleTimeString()}
  </p>
  </td>
- <td className="py-4">
+ <td className="px-6 py-5">
  <p className="text-sm font-black text-foreground uppercase tracking-tight">
  {m.product_name || 'Desconocido'}
  </p>
  </td>
- <td className="py-4">
+ <td className="px-6 py-5">
  <span className={`px-2.5 py-1 rounded-md text-[8px] font-black uppercase tracking-widest border ${badgeColors}`}>
  {badgeLabel}
  </span>
  </td>
- <td className="py-4 text-right pr-4">
+ <td className="px-6 py-5 text-right">
  <span className={`text-xl font-black tracking-tighter ${m.movement_type === 'IN' ? 'text-emerald-600 dark:text-emerald-500' : 'text-rose-600 dark:text-rose-500'}`}>
  {mathPrefix}{m.quantity_added}
  </span>

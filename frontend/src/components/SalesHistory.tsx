@@ -529,15 +529,15 @@ export const SalesHistory = () => {
  <div className="overflow-x-auto">
  <table className="w-full text-left border-collapse">
  <thead>
- <tr className="bg-muted/40 border-b border-border">
- <th className="px-8 py-5 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] hidden md:table-cell">Referencia</th>
- <th className="px-8 py-5 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Cronología</th>
- <th className="px-8 py-5 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] hidden md:table-cell">Canal de Pago</th>
- <th className="px-8 py-5 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Monto Liquido</th>
- <th className="px-8 py-5 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] text-right">Control</th>
+ <tr className="bg-muted/40 text-muted-foreground text-[10px] uppercase font-black tracking-[0.2em] border-b border-border">
+ <th className="px-8 py-5 hidden md:table-cell">Referencia</th>
+ <th className="px-8 py-5">Cronología</th>
+ <th className="px-8 py-5 hidden md:table-cell">Canal de Pago</th>
+ <th className="px-8 py-5">Monto Liquido</th>
+ <th className="px-8 py-5 text-right">Control</th>
  </tr>
  </thead>
- <tbody className="divide-y divide-slate-200">
+ <tbody className="divide-y divide-border/40">
  {filteredSales.length === 0 ? (
  <tr>
  <td colSpan={5} className="px-8 py-32 text-center text-foreground">
@@ -549,7 +549,7 @@ export const SalesHistory = () => {
  </tr>
  ) : (
  filteredSales?.map((sale) => (
- <tr key={sale.id} className="hover:bg-card transition-colors group">
+ <tr key={sale.id} className="hover:bg-muted/30 transition-colors text-xs font-bold group">
  <td className="px-8 py-5 whitespace-nowrap hidden md:table-cell">
  <span className="font-mono text-[10px] font-black bg-muted px-3 py-1.5 rounded-lg text-muted-foreground border border-border shadow-inner">
  {sale.id.substring(0, 8).toUpperCase()}

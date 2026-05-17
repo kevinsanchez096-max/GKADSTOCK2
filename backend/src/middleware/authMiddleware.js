@@ -29,7 +29,7 @@ const authMiddleware = async (req, res, next) => {
 
         let { data: profile, error: profileError } = await supabaseAdmin
             .from('profiles')
-            .select('role, organization_id')
+            .select('role, organization_id, full_name')
             .eq('id', user.id)
             .maybeSingle();
 
@@ -58,7 +58,8 @@ const authMiddleware = async (req, res, next) => {
                     id: user.id,
                     email: user.email,
                     role: profile?.role || 'admin',
-                    organization_id: org.id
+                    organization_id: org.id,
+                    full_name: profile?.full_name || user.user_metadata?.full_name || 'Usuario'
                 };
                 console.log('🔧 [AUTH] Auto-curación: Perfil vinculado a organización', org.id);
                 return next();
@@ -75,7 +76,8 @@ const authMiddleware = async (req, res, next) => {
             id: user.id,
             email: user.email,
             role: profile.role,
-            organization_id: profile.organization_id
+            organization_id: profile.organization_id,
+            full_name: profile.full_name || user.user_metadata?.full_name || 'Usuario'
         };
 
         return next();

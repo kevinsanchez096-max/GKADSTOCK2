@@ -26,7 +26,8 @@ import {
  X,
  User,
  SlidersHorizontal,
- Crown
+ Crown,
+ Wallet
 } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
 import { useShopStore } from '../store/useShopStore';
@@ -103,6 +104,7 @@ export const DashboardLayout = ({
  { id: 'home', label: 'Inicio', icon: LayoutGrid, color: 'text-blue-500' },
  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, color: 'text-indigo-500' },
  { id: 'pos', label: 'Punto de Venta', icon: ShoppingCart, color: 'text-emerald-500' },
+ { id: 'cash_register', label: 'Caja', icon: Wallet, color: 'text-emerald-400' },
  { id: 'sales_history', label: 'Historial', icon: FileText, color: 'text-amber-500' },
  { id: 'inventory', label: 'Inventario', icon: Package, color: 'text-violet-500' },
  { id: 'customers', label: 'Clientes', icon: Contact, color: 'text-pink-500' },

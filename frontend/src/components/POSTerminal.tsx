@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import { useShopStore } from '../store/useShopStore';
 import { useAuthStore } from '../store/useAuthStore';
+import { useCashStore } from '../store/useCashStore';
 import { supabase } from '../lib/supabase';
 import { toast } from 'sonner';
 import { PrintableTicket } from './PrintableTicket';
@@ -45,7 +46,17 @@ interface CartItem {
  category_id?: string;
 }
 
-export const POSTerminal = () => {
+interface POSTerminalProps {
+  setActiveTab: (tab: string) => void;
+}
+
+export const POSTerminal = ({ setActiveTab }: POSTerminalProps) => {
+ const { activeSession, fetchActiveSession } = useCashStore();
+
+ useEffect(() => {
+   fetchActiveSession();
+ }, []);
+
  const [searchTerm, setSearchTerm] = useState('');
  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
  const { 
@@ -369,6 +380,34 @@ export const POSTerminal = () => {
  window.addEventListener("keydown", handleKeyPress);
  return () => window.removeEventListener("keydown", handleKeyPress);
  }, [products, activeStep, cart, canFinalize, loading, handleFinalizeSale, showSuccess, isReadingScale]);
+
+ if (!activeSession) {
+  return (
+    <div className="h-full w-full flex items-center justify-center bg-card text-foreground p-8 animate-fade-in font-outfit">
+      <div className="max-w-md w-full bg-card border border-border p-10 rounded-[2.5rem] shadow-2xl backdrop-blur-xl relative overflow-hidden text-center space-y-6">
+        <div className="absolute top-[-20%] left-[-20%] w-64 h-64 bg-rose-500/10 blur-[80px] rounded-full pointer-events-none"/>
+        
+        <div className="mx-auto h-16 w-16 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-500 flex items-center justify-center">
+          <Wallet size={32} />
+        </div>
+
+        <div className="space-y-2">
+          <h2 className="text-2xl font-black text-foreground uppercase tracking-tight">Caja Cerrada</h2>
+          <p className="text-xs font-bold text-muted-foreground leading-relaxed">
+            Para poder vender y procesar facturas en el terminal POS, es obligatorio realizar la apertura de la caja con un saldo base inicial.
+          </p>
+        </div>
+
+        <Button 
+          onClick={() => setActiveTab('cash_register')}
+          className="w-full h-14 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-black uppercase text-[11px] tracking-widest hover:scale-[1.02] transition-all shadow-xl shadow-emerald-500/20 border-none rounded-xl"
+        >
+          IR AL MÓDULO DE CAJA
+        </Button>
+      </div>
+    </div>
+  );
+ }
 
  return (
  <div id="pos-main-container"className="h-full flex flex-col lg:flex-row bg-card text-foreground overflow-hidden animate-fade-in relative selection:bg-brand-500/30 transition-colors duration-300 font-outfit">

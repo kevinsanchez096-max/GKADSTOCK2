@@ -176,7 +176,7 @@ export const Expenses = () => {
  <th className="px-8 py-5 text-right">Monto Líquido</th>
  </tr>
  </thead>
- <tbody className="divide-y divide-slate-200">
+ <tbody className="divide-y divide-border/40">
  {loading ? (
  <tr><td colSpan={5} className="text-center py-32 text-muted-foreground font-black uppercase tracking-widest text-xs animate-pulse">Analizando Registros...</td></tr>
  ) : expenses.length === 0 ? (
@@ -190,7 +190,7 @@ export const Expenses = () => {
  </tr>
  ) : (
  expenses.map((exp) => (
- <tr key={exp.id} className="hover:bg-muted transition-colors group">
+ <tr key={exp.id} className="hover:bg-muted/30 transition-colors text-xs font-bold group">
  <td className="px-8 py-5 whitespace-nowrap">
  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{new Date(exp.created_at).toLocaleDateString()}</span>
  </td>

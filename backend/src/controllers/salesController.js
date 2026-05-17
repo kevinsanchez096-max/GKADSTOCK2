@@ -1,4 +1,6 @@
 const { supabaseAdmin } = require('../config/supabase');
+const fs = require('fs');
+const path = require('path');
 
 /**
  * CONTROLADOR DE VENTAS (POS): Facturación Atómica e Inventario
@@ -31,6 +33,23 @@ const salesController = {
 
             if (!items || items.length === 0) {
                 return res.status(400).json({ error: 'La venta no tiene ítems' });
+            }
+
+            // --- VALIDACIÓN DE CAJA ACTIVA ---
+            const sessionsPath = path.join(__dirname, '../../data/cash_sessions.json');
+            let hasActiveSession = false;
+            try {
+                if (fs.existsSync(sessionsPath)) {
+                    const sessionsContent = fs.readFileSync(sessionsPath, 'utf8');
+                    const sessions = JSON.parse(sessionsContent || '[]');
+                    hasActiveSession = sessions.some(s => s.organization_id === orgId && s.status === 'open');
+                }
+            } catch (fsErr) {
+                console.error('Error al leer sesiones en validación de venta:', fsErr);
+            }
+
+            if (!hasActiveSession) {
+                return res.status(400).json({ error: 'Operación denegada. Debe abrir la caja (sesión de caja activa) antes de registrar cualquier venta.' });
             }
 
             console.log(`🚀 [FACTURACIÓN] Iniciando transacción POS en Node.js (Org: ${orgId})`);

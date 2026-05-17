@@ -336,17 +336,17 @@ export const SuperAdminDashboard = ({ setActiveTab }: { setActiveTab?: (tab: str
           </Button>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead className="bg-muted/20">
-              <tr>
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-muted/40 text-muted-foreground text-[10px] uppercase font-black tracking-[0.2em] border-b border-border">
                 {['Organización', 'Plan', 'Usuarios', 'Ingresos', 'Estado', ''].map((h) => (
-                  <th key={h} className="px-10 py-6 text-[10px] font-black text-muted-foreground uppercase tracking-widest">{h}</th>
+                  <th key={h} className="px-10 py-5">{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-border/30">
+            <tbody className="divide-y divide-border/40">
               {topOrganizations.map((org, i) => (
-                <tr key={i} className="hover:bg-brand-500/5 transition-colors group">
+                <tr key={i} className="hover:bg-muted/30 transition-colors text-xs font-bold group">
                   <td className="px-10 py-8">
                     <div className="flex items-center gap-4">
                       <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-brand-500/20 to-brand-500/5 flex items-center justify-center text-brand-500 font-black text-sm border border-brand-500/20 group-hover:scale-110 transition-transform">

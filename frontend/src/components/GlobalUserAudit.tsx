@@ -265,18 +265,18 @@ export const GlobalUserAudit = () => {
  {viewMode === 'flat' ? (
  <Card className="bg-card border border-border rounded-[2.5rem] shadow-2xl overflow-hidden backdrop-blur-xl">
  <div className="overflow-x-auto">
- <table className="w-full text-left min-w-[800px]">
+ <table className="w-full text-left min-w-[800px] border-collapse">
  <thead>
- <tr className="bg-muted/50 text-[9px] uppercase tracking-[0.4em] text-muted-foreground font-black border-b border-border">
- <th className="px-8 py-6">OPERADOR</th>
- <th className="px-8 py-6">RANGO</th>
- <th className="px-8 py-6">ORGANIZACIÓN</th>
- <th className="px-8 py-6">ALTA</th>
- <th className="px-8 py-6 text-right">ID</th>
- <th className="px-8 py-6 text-right">ACCIONES</th>
+ <tr className="bg-muted/40 text-muted-foreground text-[10px] uppercase font-black tracking-[0.2em] border-b border-border">
+ <th className="px-8 py-5">OPERADOR</th>
+ <th className="px-8 py-5">RANGO</th>
+ <th className="px-8 py-5">ORGANIZACIÓN</th>
+ <th className="px-8 py-5">ALTA</th>
+ <th className="px-8 py-5 text-right">ID</th>
+ <th className="px-8 py-5 text-right">ACCIONES</th>
  </tr>
  </thead>
- <tbody className="divide-y divide-border">
+ <tbody className="divide-y divide-border/40">
  {loading && users.length === 0 ? (
  [...Array(3)].map((_, i) => (
  <tr key={i} className="animate-pulse">
@@ -284,7 +284,7 @@ export const GlobalUserAudit = () => {
  </tr>
  ))
  ) : filteredUsers.map(user => (
- <tr key={user.id} className="hover:bg-brand-500/5 transition-colors group">
+ <tr key={user.id} className="hover:bg-muted/30 transition-colors text-xs font-bold group">
  <td className="px-8 py-5">
  <div className="flex items-center gap-4">
  <div className="h-11 w-11 rounded-2xl bg-muted flex items-center justify-center font-black text-muted-foreground border border-border group-hover:scale-110 transition-transform">

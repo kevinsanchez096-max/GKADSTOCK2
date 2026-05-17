@@ -53,6 +53,7 @@ const expenseRoutes = require('./src/routes/expenses');
 const userRoutes = require('./src/routes/users');
 const customersRoutes = require('./src/routes/customers');
 const suppliersRoutes = require('./src/routes/suppliers');
+const cashSessionsRoutes = require('./src/routes/cashSessions');
 
 // Punto de Entrada Salud
 app.get('/api/health', (req, res) => {
@@ -74,6 +75,18 @@ mainRouter.use('/expenses', expenseRoutes);
 mainRouter.use('/users', userRoutes);
 mainRouter.use('/customers', customersRoutes);
 mainRouter.use('/suppliers', suppliersRoutes);
+mainRouter.use('/cash-sessions', cashSessionsRoutes);
+
+// Configuración del Daemon de Autocierre de Cajas a las 11:59 PM (Chequeo cada minuto)
+const cashSessionController = require('./src/controllers/cashSessionController');
+// Ejecutar una vez al arrancar
+setTimeout(() => {
+    cashSessionController.executeAutoCloseDaemon();
+}, 5000);
+// Programar ejecución periódica cada 60 segundos
+setInterval(() => {
+    cashSessionController.executeAutoCloseDaemon();
+}, 60000);
 
 // Montaje Dual (Local vs Vercel)
 app.use('/api', mainRouter);
