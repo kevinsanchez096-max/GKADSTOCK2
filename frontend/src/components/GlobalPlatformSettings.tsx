@@ -287,8 +287,18 @@ export const GlobalPlatformSettings = () => {
                 }`}>[{log.level}]</span>
                 <span className="font-black text-brand-500/80">[{log.origin}]</span>
                 <span className="uppercase tracking-tight font-bold">{traducirEvento(log.event)}</span>
-                <span className="ml-auto text-[8px] opacity-0 group-hover:opacity-40 transition-opacity uppercase truncate max-w-[200px]">
-                  {JSON.stringify(log.metadata)}
+                <span className="ml-auto text-[8px] opacity-0 group-hover:opacity-80 transition-opacity uppercase truncate max-w-[250px] text-right">
+                  {log.metadata?.user_name ? (
+                    <span className="text-emerald-400 font-bold tracking-widest">{log.metadata.user_name}</span>
+                  ) : log.metadata?.email ? (
+                    <span className="text-emerald-400 font-bold tracking-widest">{log.metadata.email}</span>
+                  ) : log.metadata?.org_name ? (
+                    <span className="text-brand-400 font-bold tracking-widest">{log.metadata.org_name}</span>
+                  ) : log.metadata?.user_id ? (
+                    <span className="text-muted-foreground/80 tracking-widest">ID: {log.metadata.user_id.split('-')[0]}...</span>
+                  ) : (
+                    <span className="text-muted-foreground/50 tracking-widest">{JSON.stringify(log.metadata)}</span>
+                  )}
                 </span>
               </div>
             ))

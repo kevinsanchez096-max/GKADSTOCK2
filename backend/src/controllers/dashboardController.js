@@ -40,6 +40,14 @@ const dashboardController = {
             const totalSales = sales.data?.reduce((acc, s) => acc + Number(s.total), 0) || 0;
             const totalExpenses = expenses.data?.reduce((acc, e) => acc + Number(e.amount), 0) || 0;
 
+            const netUtility = totalSales - totalExpenses;
+            console.log('--- DIAGNÓSTICO DASHBOARD BACKEND ---');
+            console.log('totalSales:', totalSales);
+            console.log('totalExpenses:', totalExpenses);
+            console.log('totalCost (si existe):', typeof totalCost !== 'undefined' ? totalCost : 'No definido en backend');
+            console.log('netUtility calculado:', netUtility);
+            console.log('-------------------------------------');
+
             res.status(200).json({
                 totalProducts: totalProductsCount,
                 inventoryValue: totalInventoryValue,
@@ -47,7 +55,7 @@ const dashboardController = {
                 lowStockCount: lowStock.count || 0,
                 totalSales,
                 totalExpenses,
-                netUtility: totalSales - totalExpenses
+                netUtility: netUtility
             });
 
         } catch (error) {

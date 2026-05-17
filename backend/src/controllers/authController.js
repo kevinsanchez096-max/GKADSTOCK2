@@ -131,7 +131,8 @@ const authController = {
             await logAuditEvent('SEC', 'AuthAPI', organization?.id || null, 'AUTH_SUCCESS', { 
                 user_id: authData.user.id, 
                 email: authData.user.email,
-                role: profileData.role 
+                role: profileData.role,
+                user_name: profileData.full_name
             });
 
             res.status(200).json({ user: authData.user, session: authData.session, profile: finalProfile });
@@ -233,7 +234,8 @@ const authController = {
                     await logAuditEvent('SEC', 'AuthAPI', organization?.id || null, 'AUTH_SUCCESS', { 
                         user_id: userId, 
                         email: profile.email || req.user.email,
-                        role: profile.role 
+                        role: profile.role,
+                        user_name: profile.full_name
                     });
                 } catch (auditErr) {
                     console.error('⚠️ [GET_ME] Error en auditoría:', auditErr.message);
@@ -513,7 +515,8 @@ const authController = {
             logAuditEvent('INFO', 'AuthAPI', finalProfile.organization_id || null, 'AUTH_SUCCESS', { 
                 user_id: userId, 
                 email: finalProfile.email,
-                organization_id: finalProfile.organization_id 
+                organization_id: finalProfile.organization_id,
+                user_name: finalProfile.full_name
             });
 
             if (refreshErr) throw refreshErr;
