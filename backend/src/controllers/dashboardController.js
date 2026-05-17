@@ -27,20 +27,18 @@ const dashboardController = {
             const orgId = dashboardController.getOrgId(req);
             console.log(`[DASHBOARD] Calculando KPIs para Org: ${orgId}`);
 
-            const [products, expenses, sales, lowStock, categories, saleItems] = await Promise.all([
+            const [products, expenses, sales, lowStock, categories] = await Promise.all([
                 supabaseAdmin.from('products').select('stock, cost_price, price').eq('organization_id', orgId),
                 supabaseAdmin.from('expenses').select('amount').eq('organization_id', orgId),
                 supabaseAdmin.from('sales').select('total').eq('organization_id', orgId),
                 supabaseAdmin.from('products').select('*', { count: 'exact' }).eq('organization_id', orgId).lt('stock', 5),
-                supabaseAdmin.from('categories').select('*', { count: 'exact' }).eq('organization_id', orgId),
-                supabaseAdmin.from('sale_items').select('quantity, products!inner(cost_price)').eq('products.organization_id', orgId)
+                supabaseAdmin.from('categories').select('*', { count: 'exact' }).eq('organization_id', orgId)
             ]);
 
             const totalInventoryValue = products.data?.reduce((acc, p) => acc + (p.stock * (p.cost_price || 0)), 0) || 0;
             const totalProductsCount = products.data?.length || 0;
             const totalSales = sales.data?.reduce((acc, s) => acc + Number(s.total), 0) || 0;
             const totalExpenses = expenses.data?.reduce((acc, e) => acc + Number(e.amount), 0) || 0;
-            const totalCost = saleItems.data?.reduce((acc, item) => acc + (item.quantity * (item.products?.cost_price || 0)), 0) || 0;
 
             res.status(200).json({
                 totalProducts: totalProductsCount,
@@ -49,7 +47,7 @@ const dashboardController = {
                 lowStockCount: lowStock.count || 0,
                 totalSales,
                 totalExpenses,
-                netUtility: (totalSales - totalCost) - totalExpenses
+                netUtility: totalSales - totalExpenses
             });
 
         } catch (error) {
