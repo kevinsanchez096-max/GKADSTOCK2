@@ -27,9 +27,6 @@ interface CashState {
     loading: boolean;
     loadingHistory: boolean;
     hasCheckedActive: boolean;
-    // Timestamp de la última apertura confirmada por el servidor.
-    // Se usa para proteger contra respuestas stale en plataformas serverless.
-    _sessionConfirmedAt: number;
 
     fetchActiveSession: () => Promise<void>;
     openSession: (openingBalance: number) => Promise<boolean>;
@@ -39,58 +36,25 @@ interface CashState {
     resetStore: () => void;
 }
 
-// Ventana de protección: 30 segundos después de abrir o confirmar una sesión,
-// no permitimos que una respuesta "active: false" resetee el estado local.
-const STALE_GUARD_MS = 30_000;
-
 export const useCashStore = create<CashState>((set, get) => ({
     activeSession: null,
     history: [],
     loading: false,
     loadingHistory: false,
     hasCheckedActive: false,
-    _sessionConfirmedAt: 0,
 
-    fetchActiveSession: async (retries = 2) => {
+    fetchActiveSession: async () => {
         set({ loading: true });
         try {
             const data = await api.get('/cash-sessions/active');
             if (data && data.active) {
-                // Servidor confirma sesión activa — actualizar estado y timestamp
-                set({ activeSession: data.session, hasCheckedActive: true, _sessionConfirmedAt: Date.now() });
-            } else {
-                // Servidor dice que NO hay sesión activa.
-                // GUARDIA contra respuestas stale en plataformas serverless (Vercel):
-                // Si acabamos de abrir una sesión hace menos de 30s, el servidor
-                // puede estar leyendo un filesystem efímero sin los datos escritos.
-                const current = get().activeSession;
-                const confirmedAt = get()._sessionConfirmedAt;
-                const timeSinceConfirm = Date.now() - confirmedAt;
-
-                if (current && timeSinceConfirm < STALE_GUARD_MS) {
-                    console.warn('[CashStore] Server says no active session, but we have one confirmed locally (<30s). Keeping local state.');
-                    set({ hasCheckedActive: true });
-                } else {
-                    set({ activeSession: null, hasCheckedActive: true });
-                }
-            }
-        } catch (error: any) {
-            console.error('[CashStore] Error fetching active cash session:', error);
-            // Reintentar en caso de error de red / 502
-            if (retries > 0) {
-                console.warn(`[CashStore] Network error on active. Retrying... (${retries} left)`);
-                await new Promise(r => setTimeout(r, 1500));
-                return get().fetchActiveSession(retries - 1);
-            }
-            // Misma guardia: no resetear si la sesión fue confirmada recientemente
-            const current = get().activeSession;
-            const confirmedAt = get()._sessionConfirmedAt;
-            if (current && (Date.now() - confirmedAt) < STALE_GUARD_MS) {
-                console.warn('[CashStore] All retries failed, but session was recently confirmed. Keeping local state.');
-                set({ hasCheckedActive: true });
+                set({ activeSession: data.session, hasCheckedActive: true });
             } else {
                 set({ activeSession: null, hasCheckedActive: true });
             }
+        } catch (error) {
+            console.error('[CashStore] Error fetching active cash session:', error);
+            set({ activeSession: null, hasCheckedActive: true });
         } finally {
             set({ loading: false });
         }
@@ -102,8 +66,7 @@ export const useCashStore = create<CashState>((set, get) => ({
             const data = await api.post('/cash-sessions/open', { opening_balance: openingBalance });
             if (data && data.success) {
                 toast.success('¡Caja abierta con éxito!');
-                // Marcar timestamp de confirmación para proteger contra stale fetches
-                set({ activeSession: data.session, _sessionConfirmedAt: Date.now() });
+                set({ activeSession: data.session });
                 // Refrescar historial en background sin bloquear UI
                 get().fetchHistory();
                 return true;
@@ -124,8 +87,7 @@ export const useCashStore = create<CashState>((set, get) => ({
             const data = await api.post('/cash-sessions/close', { actual_cash: actualCash, notes });
             if (data && data.success) {
                 toast.success('¡Caja cerrada y arqueada con éxito!');
-                // Resetear sesión y timestamp — cierre explícito del usuario
-                set({ activeSession: null, _sessionConfirmedAt: 0 });
+                set({ activeSession: null });
                 // Refrescar historial en background sin bloquear UI
                 get().fetchHistory();
                 return true;
@@ -140,30 +102,10 @@ export const useCashStore = create<CashState>((set, get) => ({
         }
     },
 
-    fetchHistory: async (retries = 2) => {
+    fetchHistory: async () => {
         set({ loadingHistory: true });
         try {
-            const timestamp = Date.now();
-            const response = await fetch(`/api/cash-sessions/history?_t=${timestamp}`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('gkad_token') || ''}`,
-                    'Cache-Control': 'no-cache, no-store',
-                    'Pragma': 'no-cache',
-                }
-            });
-
-            if (!response.ok) {
-                if (response.status === 502 && retries > 0) {
-                    console.warn(`[CashStore] 502 Bad Gateway. Retrying... (${retries} left)`);
-                    await new Promise(r => setTimeout(r, 1500));
-                    return get().fetchHistory(retries - 1);
-                }
-                throw new Error(`HTTP ${response.status}`);
-            }
-
-            const data = await response.json();
-            
+            const data = await api.get('/cash-sessions/history');
             if (Array.isArray(data)) {
                 set({ history: data });
             } else {
@@ -171,12 +113,6 @@ export const useCashStore = create<CashState>((set, get) => ({
             }
         } catch (error) {
             console.error('[CashStore] Error fetching history:', error);
-            // Si es un error de red o timeout, reintentar si quedan intentos
-            if (retries > 0) {
-                console.warn(`[CashStore] Network error. Retrying... (${retries} left)`);
-                await new Promise(r => setTimeout(r, 1500));
-                return get().fetchHistory(retries - 1);
-            }
         } finally {
             set({ loadingHistory: false });
         }
@@ -189,19 +125,8 @@ export const useCashStore = create<CashState>((set, get) => ({
         set({ history: previousHistory.filter(s => s.id !== id) });
 
         try {
-            // 2. Llamar al backend para eliminar de disco
-            const response = await fetch(`/api/cash-sessions/${id}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('gkad_token') || ''}`,
-                    'Content-Type': 'application/json',
-                }
-            });
-
-            if (!response.ok) {
-                const errBody = await response.json().catch(() => ({}));
-                throw new Error(errBody?.error || `Error ${response.status}`);
-            }
+            // 2. Llamar al backend para eliminar
+            await api.delete(`/cash-sessions/${id}`);
 
             toast.success('Reporte eliminado correctamente.');
 
@@ -217,5 +142,5 @@ export const useCashStore = create<CashState>((set, get) => ({
         }
     },
 
-    resetStore: () => set({ activeSession: null, history: [], loading: false, loadingHistory: false, hasCheckedActive: false, _sessionConfirmedAt: 0 })
+    resetStore: () => set({ activeSession: null, history: [], loading: false, loadingHistory: false, hasCheckedActive: false })
 }));

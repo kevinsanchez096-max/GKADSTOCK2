@@ -1,6 +1,4 @@
 const { supabaseAdmin } = require('../config/supabase');
-const fs = require('fs');
-const path = require('path');
 
 /**
  * CONTROLADOR DE VENTAS (POS): Facturación Atómica e Inventario
@@ -35,17 +33,21 @@ const salesController = {
                 return res.status(400).json({ error: 'La venta no tiene ítems' });
             }
 
-            // --- VALIDACIÓN DE CAJA ACTIVA ---
-            const sessionsPath = path.join(__dirname, '../../data/cash_sessions.json');
+            // --- VALIDACIÓN DE CAJA ACTIVA (via Supabase) ---
             let hasActiveSession = false;
             try {
-                if (fs.existsSync(sessionsPath)) {
-                    const sessionsContent = fs.readFileSync(sessionsPath, 'utf8');
-                    const sessions = JSON.parse(sessionsContent || '[]');
-                    hasActiveSession = sessions.some(s => s.organization_id === orgId && s.status === 'open');
+                const { data: activeSession, error: cashErr } = await supabaseAdmin
+                    .from('cash_sessions')
+                    .select('id')
+                    .eq('organization_id', orgId)
+                    .eq('status', 'open')
+                    .maybeSingle();
+                
+                if (!cashErr && activeSession) {
+                    hasActiveSession = true;
                 }
-            } catch (fsErr) {
-                console.error('Error al leer sesiones en validación de venta:', fsErr);
+            } catch (cashCheckErr) {
+                console.error('Error al verificar sesión de caja activa:', cashCheckErr);
             }
 
             if (!hasActiveSession) {
