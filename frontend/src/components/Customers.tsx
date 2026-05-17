@@ -195,7 +195,7 @@ export const Customers = () => {
               <span className="text-[10px] font-black uppercase tracking-[0.4em] text-brand-500">Gestión de Clientes</span>
             </div>
             <h1 className="text-4xl font-black text-foreground font-heading tracking-tighter uppercase leading-none">
-              Directorio de <span className="bg-gradient-to-r from-brand-500 to-brand-600 bg-clip-text text-transparent">Clientes</span>
+              Directorio de <span className="text-brand-500">Clientes</span>
             </h1>
             <p className="text-muted-foreground font-bold text-[11px] uppercase tracking-widest opacity-70 ml-1">Base de datos de socios comerciales</p>
           </div>
@@ -217,7 +217,7 @@ export const Customers = () => {
             <Button 
               onClick={openCreate}
               icon={UserPlus}
-              className="h-14 px-10 rounded-2xl bg-gradient-to-r from-brand-500 to-brand-600 text-white font-black uppercase text-[10px] tracking-widest hover:scale-105 transition-all shadow-2xl shadow-brand-500/20 border-none"
+              className="h-14 px-10 rounded-2xl bg-brand-500 hover:bg-brand-600 text-white font-black uppercase text-[10px] tracking-widest hover:scale-105 transition-all shadow-2xl shadow-brand-500/20 border-none"
             >
               Nuevo Cliente
             </Button>

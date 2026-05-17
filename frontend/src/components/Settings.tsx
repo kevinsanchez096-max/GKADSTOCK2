@@ -270,7 +270,7 @@ export const Settings = () => {
             <span className="text-[10px] font-black uppercase tracking-[0.4em] text-brand-500">Configuración del Sistema</span>
           </div>
           <h1 className="text-4xl font-black text-foreground font-heading tracking-tighter uppercase leading-none">
-            Panel de <span className="bg-gradient-to-r from-[var(--brand-primary)] to-[var(--brand-secondary)] bg-clip-text text-transparent">Control</span>
+            Panel de <span className="text-brand-500">Control</span>
           </h1>
           <p className="text-muted-foreground font-bold text-[11px] uppercase tracking-widest opacity-70 ml-1">Personalización de Experiencia y Datos Operativos</p>
         </div>
@@ -709,7 +709,7 @@ const ChangePasswordModal = ({ onClose }: { onClose: () => void }) => {
  <button onClick={onClose} className="p-3 bg-muted rounded-xl transition-all text-muted-foreground hover:text-foreground"><X size={20} /></button>
  </div>
  <div className="flex flex-col items-center text-center mb-8 relative z-10">
- <div className="h-14 w-14 bg-gradient-to-br from-brand-500 to-blue-700 rounded-2xl flex items-center justify-center text-foreground mb-4 shadow-lg shadow-brand-500/20 border border-white/20">
+ <div className="h-14 w-14 bg-brand-500 rounded-2xl flex items-center justify-center text-foreground mb-4 shadow-lg shadow-brand-500/20 border border-white/20">
  <Lock size={28} />
  </div>
  <h3 className="text-xl font-black text-foreground font-outfit uppercase tracking-tight">Seguridad</h3>

@@ -384,7 +384,7 @@ export const SalesHistory = () => {
                 <span className="text-[10px] font-black uppercase tracking-[0.4em] text-brand-500">Protocolo de Auditoría</span>
               </div>
               <h1 className="text-4xl font-black text-foreground font-heading tracking-tighter uppercase leading-none">
-                Historial de <span className="bg-gradient-to-r from-brand-500 to-brand-600 bg-clip-text text-transparent">Ventas</span>
+                Historial de <span className="text-brand-500">Ventas</span>
               </h1>
               <p className="text-muted-foreground font-bold text-[11px] uppercase tracking-widest opacity-70 ml-1">Auditoría centralizada de transacciones</p>
             </div>
@@ -409,7 +409,7 @@ export const SalesHistory = () => {
                     onClick={() => setTimeFilter(range)}
                     className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all duration-300 ${
                       timeFilter === range 
-                        ? 'bg-gradient-to-r from-brand-500 to-brand-600 text-white shadow-lg shadow-brand-500/20' 
+                        ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' 
                         : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
@@ -429,7 +429,7 @@ export const SalesHistory = () => {
               </Button>
               
               <Button 
-                className="px-6 h-12 text-[10px] font-black uppercase tracking-widest rounded-xl bg-gradient-to-r from-brand-500 to-brand-600 text-white shadow-2xl shadow-brand-500/20 border-none transition-all active:scale-95"
+                className="px-6 h-12 text-[10px] font-black uppercase tracking-widest rounded-xl bg-brand-500 hover:bg-brand-600 text-white shadow-2xl shadow-brand-500/20 border-none transition-all active:scale-95"
                 onClick={fetchArqueo}
                 loading={loadingArqueo}
               >

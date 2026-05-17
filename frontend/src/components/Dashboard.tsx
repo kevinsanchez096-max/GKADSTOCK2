@@ -205,7 +205,7 @@ export const Dashboard = () => {
           <span className="text-[10px] font-black uppercase tracking-[0.4em] text-brand-500">Inteligencia de Negocio</span>
         </div>
         <h1 className="text-4xl font-black text-foreground font-heading tracking-tighter uppercase leading-none">
-          Análisis <span className="bg-gradient-to-r from-brand-500 to-brand-600 bg-clip-text text-transparent">Financiero</span>
+          Análisis <span className="text-brand-500">Financiero</span>
         </h1>
         <p className="text-muted-foreground font-bold text-[11px] uppercase tracking-widest opacity-70 ml-1">Ecosistema operativo GKAD STOCK</p>
       </div>
@@ -218,7 +218,7 @@ export const Dashboard = () => {
               onClick={() => setTimeFilter(range)}
               className={`px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${
                 timeFilter === range 
-                  ? 'bg-gradient-to-r from-brand-500 to-brand-600 text-white shadow-lg shadow-brand-500/20' 
+                  ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' 
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -357,7 +357,7 @@ const KPICard = ({ title, value, icon: Icon, trend, trendUp, description, alert,
   return (
     <Card className={`group relative p-8 h-[220px] rounded-[2.5rem] border flex flex-col justify-between overflow-hidden transition-all duration-500 shadow-xl backdrop-blur-2xl
       ${isUtilidadReal 
-        ? 'bg-gradient-to-br from-brand-500 to-brand-700 border-none text-white' 
+        ? 'bg-brand-500 border-none text-white' 
         : 'bg-card/40 border-border/50 text-foreground hover:border-brand-500/40'}`}
     >
       {/* Decorative Glows */}

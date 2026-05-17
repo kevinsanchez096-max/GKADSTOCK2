@@ -128,7 +128,7 @@ export const Users = () => {
             <span className="text-[10px] font-black uppercase tracking-[0.4em] text-brand-500">Gestión de Talento</span>
           </div>
           <h1 className="text-4xl font-black text-foreground font-heading tracking-tighter uppercase leading-none">
-            Estructura de <span className="bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent">Equipo</span>
+            Estructura de <span className="text-brand-500">Equipo</span>
           </h1>
           <p className="text-muted-foreground font-bold text-[11px] uppercase tracking-widest opacity-70 ml-1">Control de Accesos y Jerarquía Operativa Global</p>
         </div>
@@ -142,7 +142,7 @@ export const Users = () => {
               className={`h-14 px-10 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all shadow-2xl border-none ${
                 isLimitReached 
                   ? 'bg-muted text-muted-foreground' 
-                  : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-blue-500/20'
+                  : 'bg-brand-500 hover:bg-brand-600 text-white shadow-brand-500/20'
               }`}
             >
               {isLimitReached ? 'Límite de Plan Alcanzado' : 'Vincular Colaborador'}

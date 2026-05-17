@@ -400,7 +400,7 @@ export const POSTerminal = ({ setActiveTab }: POSTerminalProps) => {
 
         <Button 
           onClick={() => setActiveTab('cash_register')}
-          className="w-full h-14 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-black uppercase text-[11px] tracking-widest hover:scale-[1.02] transition-all shadow-xl shadow-emerald-500/20 border-none rounded-xl"
+          className="w-full h-14 bg-brand-500 hover:bg-brand-600 text-white font-black uppercase text-[11px] tracking-widest hover:scale-[1.02] transition-all shadow-xl shadow-brand-500/20 border-none rounded-xl"
         >
           IR AL MÓDULO DE CAJA
         </Button>

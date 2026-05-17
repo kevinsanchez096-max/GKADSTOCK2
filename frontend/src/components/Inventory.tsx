@@ -387,7 +387,7 @@ export const Inventory = () => {
             <span className="text-[10px] font-black uppercase tracking-[0.4em] text-brand-500">Gestión de Existencias</span>
           </div>
           <h1 className="text-4xl font-black text-foreground font-heading tracking-tighter uppercase leading-none">
-            Control de <span className="bg-gradient-to-r from-brand-500 to-brand-600 bg-clip-text text-transparent">Existencias</span>
+            Control de <span className="text-brand-500">Existencias</span>
           </h1>
           <p className="text-muted-foreground font-bold text-[11px] uppercase tracking-widest opacity-70 ml-1">Monitoreo de inventario global</p>
         </div>
@@ -409,7 +409,7 @@ export const Inventory = () => {
               onClick={() => setViewMode('list')} 
               className={`px-8 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all duration-300 ${
                 viewMode === 'list' 
-                  ? 'bg-gradient-to-r from-brand-500 to-brand-600 text-white shadow-lg shadow-brand-500/20' 
+                  ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' 
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -419,7 +419,7 @@ export const Inventory = () => {
               onClick={() => setViewMode('grid')} 
               className={`px-8 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all duration-300 ${
                 viewMode === 'grid' 
-                  ? 'bg-gradient-to-r from-brand-500 to-brand-600 text-white shadow-lg shadow-brand-500/20' 
+                  ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' 
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -432,7 +432,7 @@ export const Inventory = () => {
           <Button 
             onClick={() => setIsAddModalOpen(true)}
             icon={Plus}
-            className="h-14 px-10 rounded-2xl bg-gradient-to-r from-brand-500 to-brand-600 text-white font-black uppercase text-[10px] tracking-widest hover:scale-105 transition-all shadow-2xl shadow-brand-500/20 border-none"
+            className="h-14 px-10 rounded-2xl bg-brand-500 hover:bg-brand-600 text-white font-black uppercase text-[10px] tracking-widest hover:scale-105 transition-all shadow-2xl shadow-brand-500/20 border-none"
           >
             Nuevo Producto
           </Button>

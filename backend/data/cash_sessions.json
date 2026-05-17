@@ -124,5 +124,23 @@
     "difference": 0,
     "notes": "",
     "auto_closed": false
+  },
+  {
+    "id": "0d79fdc0-cdc8-4f26-a870-e11c1d3b8c32",
+    "organization_id": "6c061000-984e-433a-ac64-a9fa06368baa",
+    "user_id": "8dc4a4b7-80eb-4ebe-b975-887eab2ee0ed",
+    "user_name": "ARIOSTO MALAVER GOMEZ ",
+    "status": "open",
+    "opening_time": "2026-05-17T21:09:22.378Z",
+    "closing_time": null,
+    "opening_balance": 10000,
+    "sales_cash": 0,
+    "sales_other": 0,
+    "total_expenses": 0,
+    "expected_cash": 10000,
+    "actual_cash": null,
+    "difference": null,
+    "notes": "",
+    "auto_closed": false
   }
 ]

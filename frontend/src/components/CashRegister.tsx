@@ -113,7 +113,7 @@ export const CashRegister = () => {
                                     </span>
                                 </div>
                                 <h1 className="text-3xl font-black text-foreground font-heading tracking-tighter uppercase leading-none">
-                                    Control de <span className="bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent">Caja</span>
+                                    Control de <span className="text-brand-500">Caja</span>
                                 </h1>
                                 <p className="text-muted-foreground font-bold text-[10px] uppercase tracking-widest opacity-70 ml-1">
                                     Apertura, Arqueo e Historial de Ventas
@@ -138,12 +138,12 @@ export const CashRegister = () => {
                         {/* CUERPO: LADO IZQUIERDO Y DERECHO */}
                         <div className="flex flex-col md:flex-row flex-1 relative z-10">
                             {/* LADO IZQUIERDO - INFORMACIÓN Y BRANDING */}
-                            <div className="md:w-1/2 p-8 md:px-12 bg-emerald-500/5 relative overflow-hidden flex flex-col justify-center border-r border-border/50">
-                                <div className="absolute top-[-20%] left-[-20%] w-80 h-80 bg-emerald-500/20 blur-[100px] rounded-full pointer-events-none"/>
-                                <div className="absolute bottom-[-10%] right-[-10%] font-black text-[100px] text-emerald-500/5 pointer-events-none select-none font-outfit">POS</div>
+                            <div className="md:w-1/2 p-8 md:px-12 bg-brand-500/5 relative overflow-hidden flex flex-col justify-center border-r border-border/50">
+                                <div className="absolute top-[-20%] left-[-20%] w-80 h-80 bg-brand-500/20 blur-[100px] rounded-full pointer-events-none"/>
+                                <div className="absolute bottom-[-10%] right-[-10%] font-black text-[100px] text-brand-500/5 pointer-events-none select-none font-outfit">POS</div>
                                 
                                 <div className="relative z-10 flex items-start gap-5">
-                                    <div className="flex-shrink-0 h-14 w-14 flex items-center justify-center rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 shadow-xl shadow-emerald-500/10">
+                                    <div className="flex-shrink-0 h-14 w-14 flex items-center justify-center rounded-2xl bg-brand-500/10 border border-brand-500/20 text-brand-500 shadow-xl shadow-brand-500/10">
                                         <Wallet size={28} />
                                     </div>
                                     <div>
@@ -156,7 +156,7 @@ export const CashRegister = () => {
 
                                 <div className="pt-6 grid grid-cols-2 gap-4 relative z-10">
                                     <div className="bg-background/80 backdrop-blur-md rounded-xl p-3 border border-border/50 shadow-sm flex flex-col justify-center">
-                                        <div className="flex items-center gap-2 mb-1 text-emerald-500">
+                                        <div className="flex items-center gap-2 mb-1 text-brand-500">
                                             <ShieldCheck size={16} />
                                             <h4 className="text-[9px] uppercase font-black tracking-widest">Seguro</h4>
                                         </div>
@@ -197,7 +197,7 @@ export const CashRegister = () => {
                                     </div>
                                     <Button 
                                         type="submit"
-                                        className="w-full h-14 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-black uppercase text-[10px] tracking-widest hover:scale-[1.02] transition-all shadow-xl shadow-emerald-500/20 border-none rounded-xl"
+                                        className="w-full h-14 bg-brand-500 hover:bg-brand-600 text-white font-black uppercase text-[10px] tracking-widest hover:scale-[1.02] transition-all shadow-xl shadow-brand-500/20 border-none rounded-xl"
                                     >
                                         ABRIR CAJA E INICIAR TURNO
                                     </Button>
@@ -211,19 +211,19 @@ export const CashRegister = () => {
                 <div className="space-y-8">
                     {/* MISSION CONTROL HEADER FOR ACTIVE SESSION */}
                     <Card className="bg-card/30 p-10 rounded-[2.5rem] border border-border/50 backdrop-blur-xl relative overflow-hidden">
-                        <div className="absolute top-[-20%] right-[-10%] w-64 h-64 bg-emerald-500/10 blur-[80px] rounded-full pointer-events-none"/>
+                        <div className="absolute top-[-20%] right-[-10%] w-64 h-64 bg-brand-500/10 blur-[80px] rounded-full pointer-events-none"/>
                         <div className="absolute bottom-[-10%] left-[-5%] w-48 h-48 bg-blue-500/5 blur-[60px] rounded-full pointer-events-none"/>
 
                         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
                             <div className="space-y-2">
                                 <div className="flex items-center gap-3">
-                                    <div className="h-2.5 w-2.5 rounded-full animate-pulse shadow-lg bg-emerald-500 shadow-emerald-500/50"/>
-                                    <span className="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-500">
+                                    <div className="h-2.5 w-2.5 rounded-full animate-pulse shadow-lg bg-brand-500 shadow-brand-500/50"/>
+                                    <span className="text-[10px] font-black uppercase tracking-[0.4em] text-brand-500">
                                         Caja Abierta y Activa
                                     </span>
                                 </div>
                                 <h1 className="text-4xl font-black text-foreground font-heading tracking-tighter uppercase leading-none">
-                                    Control de <span className="bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent">Caja</span>
+                                    Control de <span className="text-brand-500">Caja</span>
                                 </h1>
                                 <p className="text-muted-foreground font-bold text-[11px] uppercase tracking-widest opacity-70 ml-1">
                                     Apertura, Arqueo e Historial de Ventas
@@ -251,10 +251,10 @@ export const CashRegister = () => {
                     {/* MONITOREO DE CAJA */}
                     <div className="lg:col-span-7 space-y-6">
                         <Card className="p-8 bg-card border border-border/60 shadow-xl rounded-[2.5rem] relative overflow-hidden">
-                            <div className="absolute right-[-5%] top-[-5%] text-emerald-500/[0.03] font-black text-[150px] pointer-events-none select-none font-outfit">ACTIVE</div>
+                            <div className="absolute right-[-5%] top-[-5%] text-brand-500/[0.03] font-black text-[150px] pointer-events-none select-none font-outfit">ACTIVE</div>
                             
                             <h3 className="text-lg font-black uppercase text-foreground tracking-tight border-b border-border/50 pb-4 mb-6 flex items-center gap-3">
-                                <Clock size={18} className="text-emerald-500" /> Resumen de Sesión Activa
+                                <Clock size={18} className="text-brand-500" /> Resumen de Sesión Activa
                             </h3>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -289,14 +289,14 @@ export const CashRegister = () => {
                             </div>
 
                             {/* TOTAL ESPERADO GLOW */}
-                            <div className="mt-6 p-6 rounded-2xl bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-500/20 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div className="mt-6 p-6 rounded-2xl bg-brand-500/10 border border-brand-500/20 flex flex-col md:flex-row md:items-center justify-between gap-4">
                                 <div>
-                                    <h4 className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Efectivo Esperado en Caja</h4>
+                                    <h4 className="text-[10px] font-black text-brand-500 uppercase tracking-widest">Efectivo Esperado en Caja</h4>
                                     <p className="text-[9px] text-muted-foreground font-bold mt-1 uppercase tracking-wider">
                                         (Base Inicial + Ventas Efectivo - Egresos)
                                     </p>
                                 </div>
-                                <span className="text-3xl font-black text-emerald-500 font-outfit tracking-tighter">
+                                <span className="text-3xl font-black text-brand-500 font-outfit tracking-tighter">
                                     ${expectedTotal.toLocaleString()}
                                 </span>
                             </div>

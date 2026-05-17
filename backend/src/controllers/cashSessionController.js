@@ -1,10 +1,40 @@
+const fs = require('fs');
+const path = require('path');
 const { supabaseAdmin } = require('../config/supabase');
 
-/**
- * CONTROLADOR DE SESIONES DE CAJA — Persistencia en Supabase
- * Migrado desde cash_sessions.json (filesystem efímero) a Supabase (base de datos persistente)
- * para garantizar compatibilidad total con plataformas serverless (Vercel, AWS Lambda, etc.)
- */
+const DATA_DIR = path.join(__dirname, '../../data');
+const DATA_FILE = path.join(DATA_DIR, 'cash_sessions.json');
+
+// Inicializar archivo de datos de forma segura
+function ensureDataFile() {
+    if (!fs.existsSync(DATA_DIR)) {
+        fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+    if (!fs.existsSync(DATA_FILE)) {
+        fs.writeFileSync(DATA_FILE, JSON.stringify([], null, 2), 'utf8');
+    }
+}
+
+function readSessions() {
+    ensureDataFile();
+    try {
+        const content = fs.readFileSync(DATA_FILE, 'utf8');
+        return JSON.parse(content || '[]');
+    } catch (error) {
+        console.error('Error leyendo sesiones de caja:', error);
+        return [];
+    }
+}
+
+function writeSessions(sessions) {
+    ensureDataFile();
+    try {
+        fs.writeFileSync(DATA_FILE, JSON.stringify(sessions, null, 2), 'utf8');
+    } catch (error) {
+        console.error('Error escribiendo sesiones de caja:', error);
+    }
+}
+
 const cashSessionController = {
     getOrgId: (req) => {
         const user = req.user;
@@ -24,17 +54,11 @@ const cashSessionController = {
     getActiveSession: async (req, res) => {
         try {
             const orgId = cashSessionController.getOrgId(req);
-
+            const sessions = readSessions();
+            
             // Buscar sesión activa ('open') de la organización
-            const { data: active, error } = await supabaseAdmin
-                .from('cash_sessions')
-                .select('*')
-                .eq('organization_id', orgId)
-                .eq('status', 'open')
-                .maybeSingle();
-
-            if (error) throw error;
-
+            const active = sessions.find(s => s.organization_id === orgId && s.status === 'open');
+            
             if (!active) {
                 return res.status(200).json({ active: false, session: null });
             }
@@ -139,21 +163,16 @@ const cashSessionController = {
                 return res.status(400).json({ error: 'Debe ingresar un monto inicial positivo para abrir la caja.' });
             }
 
+            const sessions = readSessions();
+            
             // Verificar que no haya otra abierta
-            const { data: existing, error: checkError } = await supabaseAdmin
-                .from('cash_sessions')
-                .select('id')
-                .eq('organization_id', orgId)
-                .eq('status', 'open')
-                .maybeSingle();
-
-            if (checkError) throw checkError;
-
-            if (existing) {
+            const hasActive = sessions.some(s => s.organization_id === orgId && s.status === 'open');
+            if (hasActive) {
                 return res.status(400).json({ error: 'Ya existe una sesión de caja activa abierta para esta organización.' });
             }
 
             const newSession = {
+                id: require('crypto').randomUUID(),
                 organization_id: orgId,
                 user_id: req.user.id,
                 user_name: req.user.full_name || 'Cajero',
@@ -171,13 +190,8 @@ const cashSessionController = {
                 auto_closed: false
             };
 
-            const { data: inserted, error: insertError } = await supabaseAdmin
-                .from('cash_sessions')
-                .insert([newSession])
-                .select()
-                .single();
-
-            if (insertError) throw insertError;
+            sessions.push(newSession);
+            writeSessions(sessions);
 
             // Log de auditoría (Seguro contra fallos de DB/esquema)
             try {
@@ -186,13 +200,13 @@ const cashSessionController = {
                     module: 'cash_register',
                     user_id: req.user.id,
                     organization_id: orgId,
-                    message: `Caja ABIERTA por ${inserted.user_name} con base de $${inserted.opening_balance.toLocaleString()}`
+                    message: `Caja ABIERTA por ${newSession.user_name} con base de $${newSession.opening_balance.toLocaleString()}`
                 }]);
             } catch (logError) {
                 console.error('⚠️ [CASH LOG ERROR] Falló al registrar log de apertura:', logError.message);
             }
 
-            res.status(201).json({ success: true, session: inserted });
+            res.status(201).json({ success: true, session: newSession });
         } catch (error) {
             console.error('🔥 [CASH ERROR] openSession:', error.message);
             res.status(500).json({ error: error.message });
@@ -209,20 +223,14 @@ const cashSessionController = {
                 return res.status(400).json({ error: 'Debe ingresar el monto real contado en caja física.' });
             }
 
-            // Buscar la sesión activa
-            const { data: active, error: findError } = await supabaseAdmin
-                .from('cash_sessions')
-                .select('*')
-                .eq('organization_id', orgId)
-                .eq('status', 'open')
-                .maybeSingle();
+            const sessions = readSessions();
+            const activeIndex = sessions.findIndex(s => s.organization_id === orgId && s.status === 'open');
 
-            if (findError) throw findError;
-
-            if (!active) {
+            if (activeIndex === -1) {
                 return res.status(400).json({ error: 'No existe ninguna sesión de caja activa para cerrar.' });
             }
 
+            const active = sessions[activeIndex];
             const closingTime = new Date().toISOString();
 
             // Calcular métricas consolidadas finales de la sesión
@@ -232,7 +240,8 @@ const cashSessionController = {
             const expected = base + metrics.sales_cash - metrics.total_expenses;
             const diff = Number(actual_cash) - expected;
 
-            const closedData = {
+            const closedSession = {
+                ...active,
                 status: 'closed',
                 closing_time: closingTime,
                 sales_cash: metrics.sales_cash,
@@ -245,17 +254,11 @@ const cashSessionController = {
                 auto_closed: false
             };
 
-            const { data: closedSession, error: updateError } = await supabaseAdmin
-                .from('cash_sessions')
-                .update(closedData)
-                .eq('id', active.id)
-                .select()
-                .single();
-
-            if (updateError) throw updateError;
+            sessions[activeIndex] = closedSession;
+            writeSessions(sessions);
 
             // Log de auditoría (Seguro contra fallos de DB/esquema)
-            const diffMsg = diff === 0 ? 'Caja cuadrada perfectamente' : diff > 0 ? `SOBRANTE de $${diff.toLocaleString()}` : `FALTANTE de $${Math.abs(diff).toLocaleString()}`;
+            const diffMsg = diff === 0 ? 'Caja cuadradra perfectamente' : diff > 0 ? `SOBRANTE de $${diff.toLocaleString()}` : `FALTANTE de $${Math.abs(diff).toLocaleString()}`;
             try {
                 await supabaseAdmin.from('system_logs').insert([{
                     level: diff === 0 ? 'info' : 'warning',
@@ -280,18 +283,15 @@ const cashSessionController = {
         try {
             res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
             const orgId = cashSessionController.getOrgId(req);
+            const sessions = readSessions();
             
-            const { data: history, error } = await supabaseAdmin
-                .from('cash_sessions')
-                .select('*')
-                .eq('organization_id', orgId)
-                .eq('status', 'closed')
-                .order('closing_time', { ascending: false });
+            // Filtrar las cerradas de esta organización ordenadas de más reciente a más antigua
+            const history = sessions
+                .filter(s => s.organization_id === orgId && s.status === 'closed')
+                .sort((a, b) => new Date(b.closing_time) - new Date(a.closing_time));
 
-            if (error) throw error;
-
-            // Enriquecer dinámicamente el nombre real del cajero
-            const userIds = [...new Set((history || []).map(s => s.user_id).filter(Boolean))];
+            // Enriquecer dinámicamente el nombre real del cajero si está como "Cajero" o para asegurar
+            const userIds = [...new Set(history.map(s => s.user_id).filter(Boolean))];
             let userNamesMap = {};
             if (userIds.length > 0) {
                 const { data: profiles, error: pError } = await supabaseAdmin
@@ -308,7 +308,7 @@ const cashSessionController = {
                 }
             }
 
-            const enrichedHistory = (history || []).map(s => ({
+            const enrichedHistory = history.map(s => ({
                 ...s,
                 user_name: userNamesMap[s.user_id] || s.user_name || 'Cajero'
             }));
@@ -325,28 +325,18 @@ const cashSessionController = {
         try {
             const orgId = cashSessionController.getOrgId(req);
             const { id } = req.params;
+            const sessions = readSessions();
 
-            // Verificar que existe y pertenece a la organización
-            const { data: sessionToDelete, error: findError } = await supabaseAdmin
-                .from('cash_sessions')
-                .select('*')
-                .eq('id', id)
-                .eq('organization_id', orgId)
-                .maybeSingle();
-
-            if (findError) throw findError;
-
-            if (!sessionToDelete) {
+            const sessionIndex = sessions.findIndex(s => s.id === id && s.organization_id === orgId);
+            if (sessionIndex === -1) {
                 return res.status(404).json({ error: 'La sesión de caja no existe o no pertenece a su organización.' });
             }
 
-            // Eliminar
-            const { error: deleteError } = await supabaseAdmin
-                .from('cash_sessions')
-                .delete()
-                .eq('id', id);
-
-            if (deleteError) throw deleteError;
+            const sessionToDelete = sessions[sessionIndex];
+            
+            // Eliminar de la lista
+            sessions.splice(sessionIndex, 1);
+            writeSessions(sessions);
 
             // Log de auditoría (Seguro contra fallos de DB/esquema)
             try {
@@ -372,27 +362,26 @@ const cashSessionController = {
     executeAutoCloseDaemon: async () => {
         try {
             console.log('⏰ Running Cash Register Autocierre Daemon...');
-            
+            const sessions = readSessions();
+            let modified = false;
+
             const now = new Date();
             const todayStr = now.toISOString().split('T')[0];
 
-            // Buscar todas las sesiones abiertas
-            const { data: openSessions, error } = await supabaseAdmin
-                .from('cash_sessions')
-                .select('*')
-                .eq('status', 'open');
+            for (let i = 0; i < sessions.length; i++) {
+                const s = sessions[i];
+                if (s.status !== 'open') continue;
 
-            if (error) throw error;
-            if (!openSessions || openSessions.length === 0) return;
-
-            for (const s of openSessions) {
                 const openDateStr = s.opening_time.split('T')[0];
                 const isPreviousDay = openDateStr < todayStr;
+                
+                // Si la hora es las 11:59 PM (23:59:00 o posterior) O si es de un día anterior
                 const isLateNight = now.getHours() === 23 && now.getMinutes() >= 59;
 
                 if (isPreviousDay || isLateNight) {
                     console.log(`⚠️ Auto-cerrando sesión vencida ID ${s.id} (Org: ${s.organization_id})`);
                     
+                    // Definir tiempo de cierre: si es día anterior, 11:59:00 de ese día. Si no, 11:59:00 de hoy.
                     const closingTime = isPreviousDay 
                         ? `${openDateStr}T23:59:00.000Z`
                         : `${todayStr}T23:59:00.000Z`;
@@ -401,25 +390,21 @@ const cashSessionController = {
                     const base = s.opening_balance;
                     const expected = base + metrics.sales_cash - metrics.total_expenses;
 
-                    const { error: updateError } = await supabaseAdmin
-                        .from('cash_sessions')
-                        .update({
-                            status: 'closed',
-                            closing_time: closingTime,
-                            sales_cash: metrics.sales_cash,
-                            sales_other: metrics.sales_other,
-                            total_expenses: metrics.total_expenses,
-                            expected_cash: expected,
-                            actual_cash: expected,
-                            difference: 0,
-                            notes: 'Sesión clausurada automáticamente por el daemon del sistema (11:59 PM).',
-                            auto_closed: true
-                        })
-                        .eq('id', s.id);
+                    sessions[i] = {
+                        ...s,
+                        status: 'closed',
+                        closing_time: closingTime,
+                        sales_cash: metrics.sales_cash,
+                        sales_other: metrics.sales_other,
+                        total_expenses: metrics.total_expenses,
+                        expected_cash: expected,
+                        actual_cash: expected, // En autocierre asumimos cuadrado
+                        difference: 0,
+                        notes: 'Sesión clausurada automáticamente por el daemon del sistema (11:59 PM).',
+                        auto_closed: true
+                    };
 
-                    if (updateError) {
-                        console.error(`🔥 Error auto-cerrando sesión ${s.id}:`, updateError.message);
-                    }
+                    modified = true;
 
                     // Log de auditoría (Seguro contra fallos de DB/esquema)
                     try {
@@ -435,7 +420,10 @@ const cashSessionController = {
                 }
             }
 
-            console.log('✅ Daemon de autocierre completado.');
+            if (modified) {
+                writeSessions(sessions);
+                console.log('✅ Base de cajas actualizada con los autocierres.');
+            }
         } catch (error) {
             console.error('🔥 Error en Daemon de Autocierre de Cajas:', error.message);
         }
