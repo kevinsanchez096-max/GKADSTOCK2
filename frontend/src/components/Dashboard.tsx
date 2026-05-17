@@ -153,7 +153,7 @@ export const Dashboard = () => {
 
  // Nuevos cálculos
  const transactionCount = filteredSales.length;
- const averageTicket = transactionCount > 0 ? totalSales / transactionCount : 0;
+ const averageTicket = transactionCount > 0 ? Math.round(totalSales / transactionCount) : 0;
 
  // Generar Datos para Gráfica (Agrupación simple para el demo)
  const chartMap: Record<string, number> = {};
