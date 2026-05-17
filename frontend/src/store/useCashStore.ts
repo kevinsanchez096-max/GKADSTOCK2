@@ -100,7 +100,7 @@ export const useCashStore = create<CashState>((set, get) => ({
     fetchHistory: async () => {
         set({ loading: true });
         try {
-            const data = await api.get('/cash-sessions/history');
+            const data = await api.get(`/cash-sessions/history?t=${Date.now()}`);
             if (Array.isArray(data)) {
                 set({ history: data });
             } else {
@@ -115,13 +115,22 @@ export const useCashStore = create<CashState>((set, get) => ({
     },
 
     deleteSession: async (id) => {
-        set({ loading: true });
+        const previousHistory = get().history;
+        // Actualización optimista: removemos el elemento inmediatamente en el cliente
+        set({ 
+            history: previousHistory.filter(s => s.id !== id),
+            loading: true 
+        });
+
         try {
             await api.delete(`/cash-sessions/${id}`);
             toast.success('Reporte de cierre de caja eliminado con éxito.');
-            await get().fetchHistory(); // Recargar historial de arqueos
+            // Refrescar desde el servidor con bypass de caché para sincronía total
+            await get().fetchHistory();
             return true;
         } catch (error: any) {
+            // Revertir estado si el servidor falla
+            set({ history: previousHistory });
             const serverMessage = error?.data?.error || error?.message || 'Error al eliminar el reporte';
             toast.error(serverMessage);
             return false;
