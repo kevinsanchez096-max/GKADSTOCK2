@@ -833,7 +833,7 @@ export const Inventory = () => {
  </div>
  )}
  </Card>
- }
+ )}
  {/* MODAL KARDEX: TRAZABILIDAD INBOUND */}
  {isHistoryModalOpen && (
  <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-background/60 backdrop-blur-md animate-in fade-in">
