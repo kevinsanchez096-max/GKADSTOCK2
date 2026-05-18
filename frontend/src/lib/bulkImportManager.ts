@@ -64,6 +64,25 @@ const sanitizeData = (rawData: any[]) => {
       cleanCostPrice = Number(costStr);
     }
 
+    // Leer Margen_Ganancia
+    let cleanMargin = 0;
+    if (row.Margen_Ganancia !== undefined && row.Margen_Ganancia !== null) {
+      const marginStr = row.Margen_Ganancia.toString().replace(/[^0-9.-]+/g, "");
+      cleanMargin = Number(marginStr);
+      if (isNaN(cleanMargin)) cleanMargin = 0;
+    }
+
+    let finalPrice = isNaN(cleanPrice) ? 0 : cleanPrice;
+    const finalCostPrice = isNaN(cleanCostPrice) ? 0 : cleanCostPrice;
+
+    // Si viene con margen > 0 y Precio_Venta está vacío o es 0, calcula el precio de venta
+    if (cleanMargin > 0 && finalPrice === 0 && finalCostPrice > 0) {
+      const divisor = 1 - (cleanMargin / 100);
+      if (divisor > 0) {
+        finalPrice = Math.round(finalCostPrice / divisor);
+      }
+    }
+
     // Normalizar si es pesable (SI / NO)
     const esPesableStr = row.Es_Pesable?.toString().trim().toUpperCase() || 'NO';
     const isWeighted = esPesableStr === 'SI';
@@ -72,8 +91,8 @@ const sanitizeData = (rawData: any[]) => {
       Nombre: row.Nombre?.toString().trim().toUpperCase() || '',
       Sku: row.SKU?.toString().trim() || '',
       Codigo_Barras: row.Codigo_Barras?.toString().trim() || '',
-      Precio_Venta: isNaN(cleanPrice) ? 0 : cleanPrice,
-      Precio_Compra: isNaN(cleanCostPrice) ? 0 : cleanCostPrice,
+      Precio_Venta: finalPrice,
+      Precio_Compra: finalCostPrice,
       Stock: Number(row.Stock) || 0,
       Minimo_Stock: Math.floor(Number(row.Minimo_Stock)) || 5,
       Unidad: row.Unidad?.toString().trim().toLowerCase() || 'unid',

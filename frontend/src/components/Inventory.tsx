@@ -105,6 +105,9 @@ export const Inventory = () => {
       Categoria: getCategoryName(p.category_id),
       Precio_Venta: p.price,
       Precio_Compra: p.cost_price || 0,
+      Margen_Ganancia: p.cost_price && p.cost_price > 0 && p.price > 0 
+        ? Math.round((1 - p.cost_price / p.price) * 100) 
+        : 0,
       Stock: p.stock,
       Minimo_Stock: p.min_stock || 5,
       Unidad: p.unit || 'unid',
