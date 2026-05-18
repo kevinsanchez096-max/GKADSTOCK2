@@ -136,33 +136,44 @@ const usersController = {
     // 3. Eliminar Usuario (FILTRADO Y VERIFICADO)
     deleteUser: async (req, res) => {
         try {
-            const { userId } = req.params;
-            const orgId = usersController.getOrgId(req);
-            const creatorRole = req.user.role;
+            const id = req.params.userId || req.params.id;
+            const userRole = req.user?.role;
+            const userOrgId = req.user?.organization_id;
 
-            // 1. Verificar pertenencia del objetivo
-            const { data: targetProfile, error: fetchError } = await supabase
+            // Buscar el usuario directamente por ID sin filtrar por organización (usando supabaseAdmin para bypass RLS)
+            const { data: profile, error: findError } = await supabaseAdmin
                 .from('profiles')
-                .select('organization_id')
-                .eq('id', userId)
+                .select('id, organization_id, role')
+                .eq('id', id)
                 .single();
 
-            if (fetchError || !targetProfile) return res.status(404).json({ error: 'Usuario no encontrado.' });
-
-            if (creatorRole !== 'super_admin' && targetProfile.organization_id !== orgId) {
-                return res.status(403).json({ error: 'No tienes permiso para borrar este usuario (Violación de Inquilino).' });
+            if (findError || !profile) {
+                return res.status(404).json({ error: 'Usuario no encontrado.' });
             }
 
-            // 2. Eliminar perfil en base de datos
-            await supabase.from('profiles').delete().eq('id', userId);
+            // Si no es super admin solo puede eliminar usuarios de su organización
+            if (userRole !== 'super_admin' && profile.organization_id !== userOrgId) {
+                return res.status(403).json({ error: 'No tiene permisos para eliminar este usuario.' });
+            }
 
-            // 3. Eliminar de Supabase Auth
-            const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(userId);
-            if (authError) throw authError;
+            // Eliminar perfil de la tabla profiles
+            const { error: deleteProfileError } = await supabaseAdmin
+                .from('profiles')
+                .delete()
+                .eq('id', id);
 
-            res.status(200).json({ message: 'Usuario purgado correctamente.' });
+            if (deleteProfileError) throw deleteProfileError;
+
+            // Eliminar usuario de Supabase Auth
+            const { error: deleteAuthError } = await supabaseAdmin.auth.admin.deleteUser(id);
+
+            if (deleteAuthError) throw deleteAuthError;
+
+            return res.status(200).json({ message: 'Usuario eliminado correctamente.' });
+
         } catch (error) {
-            res.status(500).json({ error: error.message });
+            console.error('[USERS] Error al eliminar usuario:', error.message);
+            return res.status(500).json({ error: 'Error interno al eliminar el usuario.' });
         }
     },
 
