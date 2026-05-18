@@ -204,11 +204,11 @@ const processImport = async (
       }
 
       if (row.Codigo_Barras) {
-        const barcodeLower = row.Codigo_Barras.toLowerCase();
+        const barcodeLower = row.Codigo_Barras.toString().toLowerCase().trim();
         if (existingBarcodes.has(barcodeLower) || seenBarcodes.has(barcodeLower)) {
           localErrors.push({ 
             row: rowNum, 
-            message: `Código de Barras duplicado detectado: "${row.Codigo_Barras}".`, 
+            message: 'Código de barras duplicado', 
             productName: row.Nombre 
           });
           continue;
@@ -217,44 +217,44 @@ const processImport = async (
       }
 
       validatedRows.push({
-        organization_id: orgId,
-        name: row.Nombre,
-        sku: row.Sku || null,
-        barcode: row.Codigo_Barras || null,
-        price: row.Precio_Venta,
-        cost_price: row.Precio_Compra || 0,
-        stock: row.Stock,
-        min_stock: row.Minimo_Stock,
-        unit: row.Unidad,
-        is_weighted: row.Es_Pesable,
-        category_id: row.Categoria ? categoryMap[row.Categoria.toLowerCase()] : null
+        rowNum,
+        payload: {
+          organization_id: orgId,
+          name: row.Nombre,
+          sku: row.Sku || null,
+          barcode: row.Codigo_Barras || null,
+          price: row.Precio_Venta,
+          cost_price: row.Precio_Compra || 0,
+          stock: row.Stock,
+          min_stock: row.Minimo_Stock,
+          unit: row.Unidad,
+          is_weighted: row.Es_Pesable,
+          category_id: row.Categoria ? categoryMap[row.Categoria.toLowerCase()] : null
+        }
       });
     }
 
-    // FASE 2: INSERCIÓN EN SEGUNDO PLANO POR LOTES (Permisiva)
+    // FASE 2: INSERCIÓN INDIVIDUAL PRODUCTO POR PRODUCTO (Permisiva)
     if (validatedRows.length > 0) {
-      const batchSize = 50;
       const totalRows = validatedRows.length;
 
-      for (let i = 0; i < totalRows; i += batchSize) {
-        const batch = validatedRows.slice(i, i + batchSize);
+      for (let i = 0; i < totalRows; i++) {
+        const { rowNum, payload } = validatedRows[i];
 
-        const { error: insertErr } = await supabase.from('products').insert(batch);
+        const { error: insertErr } = await supabase.from('products').insert([payload]);
         if (insertErr) {
-          console.error(`[BulkImport] Error de inserción de lote:`, insertErr);
-          failedCount += batch.length;
-          batch.forEach((b: any) => {
-            localErrors.push({
-              row: -1,
-              message: `Error de base de datos: ${insertErr.message}`,
-              productName: b.name
-            });
+          console.error(`[BulkImport] Error al insertar producto "${payload.name}" (Fila ${rowNum}):`, insertErr);
+          failedCount++;
+          localErrors.push({
+            row: rowNum,
+            message: `Fallo al insertar en base de datos: ${insertErr.message}`,
+            productName: payload.name
           });
         } else {
-          successCount += batch.length;
+          successCount++;
         }
 
-        const progress = Math.min(100, Math.round(((i + batch.length) / totalRows) * 80) + 20);
+        const progress = Math.min(100, Math.round(((i + 1) / totalRows) * 80) + 20);
         toast.loading(`Sincronizando inventario... (${progress}%)`, { id: toastId });
       }
     }
