@@ -379,21 +379,56 @@ export const Inventory = () => {
       <div className="absolute top-[-20%] right-[-10%] w-64 h-64 bg-brand-500/10 blur-[80px] rounded-full pointer-events-none"/>
       <div className="absolute bottom-[-10%] left-[-5%] w-48 h-48 bg-emerald-500/5 blur-[60px] rounded-full pointer-events-none"/>
 
-      <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 items-center gap-10">
-        <div className="lg:col-span-4 space-y-2">
-          <div className="flex items-center gap-3">
-            <div className="h-2 w-2 rounded-full bg-brand-500 animate-pulse shadow-[0_0_10px_rgba(var(--brand-primary-rgb),0.5)]"/>
-            <Package size={18} className="text-brand-500" />
-            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-brand-500">Gestión de Existencias</span>
+      <div className="relative z-10 flex flex-col gap-8">
+        {/* Fila 1: Título y Botones de Acción */}
+        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <div className="h-2 w-2 rounded-full bg-brand-500 animate-pulse shadow-[0_0_10px_rgba(var(--brand-primary-rgb),0.5)]"/>
+              <Package size={18} className="text-brand-500" />
+              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-brand-500">Gestión de Existencias</span>
+            </div>
+            <h1 className="text-4xl font-black text-foreground font-heading tracking-tighter uppercase leading-none">
+              Control de <span className="text-brand-500">Existencias</span>
+            </h1>
+            <p className="text-muted-foreground font-bold text-[11px] uppercase tracking-widest opacity-70 ml-1">Monitoreo de inventario global</p>
           </div>
-          <h1 className="text-4xl font-black text-foreground font-heading tracking-tighter uppercase leading-none">
-            Control de <span className="text-brand-500">Existencias</span>
-          </h1>
-          <p className="text-muted-foreground font-bold text-[11px] uppercase tracking-widest opacity-70 ml-1">Monitoreo de inventario global</p>
+
+          <div className="flex items-center gap-3 flex-wrap sm:flex-nowrap">
+            {/* Botón de Importación */}
+            <button 
+              onClick={() => setIsImportModalOpen(true)}
+              className="h-14 px-6 bg-muted/40 hover:bg-muted/80 text-foreground border border-border/50 rounded-2xl flex items-center justify-center gap-2 hover:scale-105 transition-all font-black uppercase text-[10px] tracking-widest"
+              title="Importar catálogo desde Excel"
+            >
+              <Upload size={16} />
+              Importar
+            </button>
+
+            {/* Botón de Exportación */}
+            <button 
+              onClick={handleExportExcel}
+              className="h-14 px-6 bg-muted/40 hover:bg-muted/80 text-foreground border border-border/50 rounded-2xl flex items-center justify-center gap-2 hover:scale-105 transition-all font-black uppercase text-[10px] tracking-widest"
+              title="Exportar catálogo a Excel"
+            >
+              <Download size={16} />
+              Exportar
+            </button>
+
+            {/* Botón Nuevo Producto */}
+            <Button 
+              onClick={() => setIsAddModalOpen(true)}
+              icon={Plus}
+              className="h-14 px-8 rounded-2xl bg-brand-500 hover:bg-brand-600 text-white font-black uppercase text-[10px] tracking-widest hover:scale-105 transition-all shadow-2xl shadow-brand-500/20 border-none whitespace-nowrap"
+            >
+              Nuevo
+            </Button>
+          </div>
         </div>
 
-        <div className="lg:col-span-4 flex flex-col gap-4">
-          <div className="relative group w-full">
+        {/* Fila 2: Barra de Búsqueda y Selector de Vista */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-6 border-t border-border/10">
+          <div className="relative group w-full md:max-w-md">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-brand-500 transition-colors z-10"/>
             <input 
               type="text"
@@ -407,7 +442,7 @@ export const Inventory = () => {
           <div className="flex bg-muted/40 p-1 rounded-2xl border border-border/50 shadow-inner w-fit">
             <button 
               onClick={() => setViewMode('list')} 
-              className={`px-8 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all duration-300 ${
+              className={`px-8 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all duration-300 ${
                 viewMode === 'list' 
                   ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' 
                   : 'text-muted-foreground hover:text-foreground'
@@ -417,7 +452,7 @@ export const Inventory = () => {
             </button>
             <button 
               onClick={() => setViewMode('grid')} 
-              className={`px-8 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all duration-300 ${
+              className={`px-8 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all duration-300 ${
                 viewMode === 'grid' 
                   ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' 
                   : 'text-muted-foreground hover:text-foreground'
@@ -426,37 +461,6 @@ export const Inventory = () => {
               Mosaico
             </button>
           </div>
-        </div>
-
-        <div className="lg:col-span-4 flex items-center justify-end gap-3">
-          {/* Botón de Importación */}
-          <button 
-            onClick={() => setIsImportModalOpen(true)}
-            className="h-14 px-6 bg-muted/40 hover:bg-muted/80 text-foreground border border-border/50 rounded-2xl flex items-center justify-center gap-2 hover:scale-105 transition-all font-black uppercase text-[10px] tracking-widest"
-            title="Importar catálogo desde Excel"
-          >
-            <Upload size={16} />
-            Importar
-          </button>
-
-          {/* Botón de Exportación */}
-          <button 
-            onClick={handleExportExcel}
-            className="h-14 px-6 bg-muted/40 hover:bg-muted/80 text-foreground border border-border/50 rounded-2xl flex items-center justify-center gap-2 hover:scale-105 transition-all font-black uppercase text-[10px] tracking-widest"
-            title="Exportar catálogo a Excel"
-          >
-            <Download size={16} />
-            Exportar
-          </button>
-
-          {/* Botón Nuevo Producto */}
-          <Button 
-            onClick={() => setIsAddModalOpen(true)}
-            icon={Plus}
-            className="h-14 px-8 rounded-2xl bg-brand-500 hover:bg-brand-600 text-white font-black uppercase text-[10px] tracking-widest hover:scale-105 transition-all shadow-2xl shadow-brand-500/20 border-none"
-          >
-            Nuevo
-          </Button>
         </div>
       </div>
     </Card>
