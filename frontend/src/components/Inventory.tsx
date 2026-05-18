@@ -833,60 +833,7 @@ export const Inventory = () => {
  </div>
  )}
  </Card>
- ) : (
- <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-8">
- {filteredProducts.map((p) => (
- <Card key={p.id} className="group bg-card border-border hover:border-brand-500/40 hover:-translate-y-2 transition-all p-6 relative overflow-hidden rounded-[2.5rem] backdrop-blur-xl">
- <div className="absolute top-[-20%] right-[-20%] w-32 h-32 bg-brand-500/5 blur-[50px] rounded-full group-hover:bg-brand-500/10 transition-all pointer-events-none"/>
- 
- <div className="aspect-[4/3] bg-muted/40 rounded-[2rem] mb-5 flex items-center justify-center relative shadow-inner overflow-hidden border border-border">
- <Package className="h-16 w-16 text-foreground group-hover:scale-110 group-hover:text-brand-500/20 transition-all duration-700"/>
- <div className="absolute top-4 right-4">
- <div className={`px-2.5 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest border shadow-sm ${p.stock > p.min_stock ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20 animate-pulse'}`}>
- {p.stock > p.min_stock ? 'Operativo' : 'Crítico'}
- </div>
- </div>
- </div>
-
- <div className="space-y-1 mb-6">
- {(() => { const cs = getCategoryStyle(p.category_id); return (
- <span className={`inline-block px-2.5 py-1 text-[9px] font-black uppercase tracking-widest rounded-md border ${cs.bg} ${cs.text} ${cs.border}`}>{getCategoryName(p.category_id)}</span>
- ); })()}
- <h3 className="font-outfit font-black text-lg text-foreground uppercase tracking-tight truncate leading-tight">{p.name}</h3>
- <p className="text-[9px] font-mono text-muted-foreground tracking-widest">{p.sku || 'N/A'}</p>
- </div>
-
- <div className="flex items-end justify-between border-t border-border pt-5 mt-auto mb-4">
- <div className="flex flex-col">
- <span className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-1">Precio Mercado</span>
- <span className="text-2xl font-black text-brand-500 font-outfit tracking-tighter leading-none">${p.price.toLocaleString()}</span>
- </div>
- <div className="flex flex-col items-end">
- <span className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-1">Disponible</span>
- <span className="text-sm font-black text-foreground font-mono italic leading-none">{p.stock} <span className="text-muted-foreground text-[10px] non-italic">{p.unit}</span></span>
- </div>
- </div>
-
- <div className="grid grid-cols-2 gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 relative z-10">
- <button 
- onClick={() => handleOpenMerma(p)}
- className="w-full py-2 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-orange-100 dark:hover:bg-orange-500/20 transition-colors flex items-center justify-center gap-1.5"
- >
- <AlertTriangle size={12} /> Merma
- </button>
- <button 
- onClick={() => handleEdit(p)}
- className="w-full py-2 bg-muted text-muted-foreground rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-border /10 transition-colors flex items-center justify-center gap-1.5"
- >
- <Edit2 size={12} /> Editar
- </button>
- </div>
-
- <div className="absolute bottom-0 left-0 h-1.5 w-0 bg-brand-500 group-hover:w-full transition-all duration-700"/>
- </Card>
- ))}
- </div>
- )}
+ }
  {/* MODAL KARDEX: TRAZABILIDAD INBOUND */}
  {isHistoryModalOpen && (
  <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-background/60 backdrop-blur-md animate-in fade-in">
