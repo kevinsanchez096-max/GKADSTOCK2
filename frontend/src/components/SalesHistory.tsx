@@ -789,7 +789,10 @@ export const SalesHistory = () => {
 
  {/* ARQUEO MODAL - No Print */}
   {arqueoData && createPortal(
-    <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-background/60 backdrop-blur-sm animate-in fade-in duration-300">
+    <div 
+      style={{ backgroundColor: 'rgba(15, 23, 42, 0.45)' }}
+      className="fixed inset-0 z-[99999] flex items-center justify-center p-4 animate-in fade-in duration-300"
+    >
       <div className="w-full max-w-lg bg-card border border-border rounded-[2rem] shadow-2xl overflow-hidden animate-in zoom-in duration-300 relative flex flex-col max-h-[90vh]">
         
         {/* HEADER: Con ícono en bg-brand-500 */}

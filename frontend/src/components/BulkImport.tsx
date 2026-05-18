@@ -36,8 +36,11 @@ export const BulkImport = ({ onComplete, onClose }: BulkImportProps) => {
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/60 backdrop-blur-sm animate-in fade-in duration-300">
-      <Card className="relative w-full max-w-2xl p-0 glass-dark border border-border shadow-[0_25px_60px_-15px_rgba(0,0,0,0.5)] overflow-hidden rounded-[3rem] max-h-[90vh] flex flex-col animate-in zoom-in-95 duration-300">
+    <div 
+      style={{ backgroundColor: 'rgba(15, 23, 42, 0.45)' }}
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300"
+    >
+      <Card className="relative w-full max-w-2xl p-0 bg-card border border-border shadow-[0_25px_60px_-15px_rgba(0,0,0,0.5)] overflow-hidden rounded-[3rem] max-h-[90vh] flex flex-col animate-in zoom-in-95 duration-300">
         <div className="absolute top-[-20%] left-[-20%] w-64 h-64 bg-brand-500/10 blur-[80px] rounded-full pointer-events-none"/>
         
         {/* HEADER */}
