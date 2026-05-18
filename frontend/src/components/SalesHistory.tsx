@@ -788,65 +788,75 @@ export const SalesHistory = () => {
  )}
 
  {/* ARQUEO MODAL - No Print */}
- {arqueoData && createPortal(
-  <div 
-    style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      width: '100vw',
-      height: '100vh',
-      zIndex: 99999,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: 'rgba(0,0,0,0.75)'
-    }}
-  >
-    <div style={{
-      position: 'relative',
-      width: '100%',
-      maxWidth: '520px',
-      maxHeight: '85vh',
-      overflowY: 'auto',
-      margin: '0 16px',
-      borderRadius: '24px',
-      background: 'var(--color-card)',
-    }}>
-      <Card className="w-full p-0 glass-dark border-border relative rounded-[3rem]">
-       <button onClick={() => setArqueoData(null)} className="absolute right-8 top-8 p-3 bg-muted text-muted-foreground hover:text-foreground rounded-2xl z-10"><X size={20} /></button>
- <div className="p-10 border-b border-border bg-brand-500/5">
- <div className="flex items-center gap-4 mb-2">
- <div className="p-3 bg-brand-500 rounded-2xl text-white shadow-xl shadow-brand-500/30 border-2 border-border"><DollarSign className="h-6 w-6"/></div>
- <div>
- <h3 className="font-black text-2xl text-foreground font-outfit uppercase tracking-tight">CIERRE DE CAJA</h3>
- <p className="text-[10px] text-brand-500 font-black uppercase tracking-[0.3em]">SESIÓN: {arqueoData.date}</p>
- </div>
- </div>
- </div>
- <div className="p-10 space-y-8">
- <div className="space-y-4">
- <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest border-b border-border pb-2">Distribución por Canal</p>
- {Object.entries(arqueoData.totalsByMethod).map(([method, total]: any) => (
- <div key={method} className="flex justify-between items-center group p-4 bg-muted rounded-2xl border border-border">
- <span className="capitalize text-muted-foreground font-black text-[11px] uppercase tracking-widest flex items-center gap-3">
- <div className={`h-2 w-2 rounded-full ${method === 'cash' ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.3)]' : method === 'card' ? 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.3)]' : 'bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.3)]'}`} />
- {method === 'cash' ? 'Efectivo Fisico' : method === 'card' ? 'Terminal Bancaria' : 'Transferencia Cloud'}
- </span>
- <span className="font-black text-lg text-foreground font-outfit tracking-tighter">${total.toLocaleString()}</span>
- </div>
- ))}
- </div>
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
- <Button variant="outline"onClick={() => setArqueoData(null)} className="h-14 text-[10px] font-black uppercase tracking-widest rounded-2xl">DESCARTAR</Button>
- <Button icon={Printer} onClick={handlePrintArqueo} className="h-14 text-[10px] font-black uppercase tracking-widest rounded-2xl glow-blue">IMPRIMIR REPORTE</Button>
- </div>
- </div>
-      </Card>
-    </div>
-  </div>,
-  document.body
-)}
+  {arqueoData && createPortal(
+    <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-background/60 backdrop-blur-sm animate-in fade-in duration-300">
+      <div className="w-full max-w-lg bg-card border border-border rounded-[2rem] shadow-2xl overflow-hidden animate-in zoom-in duration-300 relative flex flex-col max-h-[90vh]">
+        
+        {/* HEADER: Con ícono en bg-brand-500 */}
+        <div className="p-6 border-b border-border flex items-center justify-between bg-brand-500/5">
+          <div className="flex items-center gap-4">
+            <div className="bg-brand-500 p-2.5 rounded-xl text-white shadow-lg shadow-brand-500/20 flex items-center justify-center">
+              <DollarSign className="h-6 w-6"/>
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-foreground leading-tight uppercase tracking-tight">Cierre de Caja</h2>
+              <p className="text-[10px] text-brand-500 font-black uppercase tracking-[0.2em] mt-0.5">SESIÓN: {arqueoData.date}</p>
+            </div>
+          </div>
+          <button 
+            onClick={() => setArqueoData(null)} 
+            className="text-muted-foreground hover:text-foreground transition-colors p-2 rounded-xl bg-muted/40 hover:bg-muted/80"
+          >
+            <X className="h-5 w-5"/>
+          </button>
+        </div>
+
+        {/* CONTENT: Distribución por Canal */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          <div className="space-y-4">
+            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest border-b border-border pb-2">
+              Distribución por Canal
+            </p>
+            {Object.entries(arqueoData.totalsByMethod).map(([method, total]: any) => (
+              <div key={method} className="flex justify-between items-center group p-4 bg-muted/50 hover:bg-muted/85 rounded-2xl border border-border transition-colors">
+                <span className="capitalize text-muted-foreground font-black text-[11px] uppercase tracking-widest flex items-center gap-3">
+                  <div className={`h-2 w-2 rounded-full ${
+                    method === 'cash' ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.3)]' : 
+                    method === 'card' ? 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.3)]' : 
+                    'bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.3)]'
+                  }`} />
+                  {method === 'cash' ? 'Efectivo Físico' : method === 'card' ? 'Terminal Bancaria' : 'Transferencia Cloud'}
+                </span>
+                <span className="font-black text-lg text-foreground font-outfit tracking-tighter">
+                  ${total.toLocaleString()}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* FOOTER: Con los dos botones manteniendo funcionalidad */}
+        <div className="p-6 bg-muted/30 border-t border-border grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Button 
+            variant="outline" 
+            onClick={() => setArqueoData(null)} 
+            className="h-12 text-[10px] font-black uppercase tracking-widest rounded-2xl"
+          >
+            DESCARTAR
+          </Button>
+          <Button 
+            icon={Printer} 
+            onClick={handlePrintArqueo} 
+            className="h-12 text-[10px] font-black uppercase tracking-widest rounded-2xl glow-blue"
+          >
+            IMPRIMIR REPORTE
+          </Button>
+        </div>
+        
+      </div>
+    </div>,
+    document.body
+  )}
  </div>
  );
 };
