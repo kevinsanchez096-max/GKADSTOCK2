@@ -140,6 +140,8 @@ const usersController = {
             const userRole = req.user?.role;
             const userOrgId = req.user?.organization_id;
 
+            console.log('[USERS DELETE] Paso 1: Buscando usuario', id);
+
             // Buscar el usuario directamente por ID sin filtrar por organización (usando supabaseAdmin para bypass RLS)
             const { data: profile, error: findError } = await supabaseAdmin
                 .from('profiles')
@@ -151,10 +153,14 @@ const usersController = {
                 return res.status(404).json({ error: 'Usuario no encontrado.' });
             }
 
+            console.log('[USERS DELETE] Paso 2: Usuario encontrado', profile);
+
             // Si no es super admin solo puede eliminar usuarios de su organización
             if (userRole !== 'super_admin' && profile.organization_id !== userOrgId) {
                 return res.status(403).json({ error: 'No tiene permisos para eliminar este usuario.' });
             }
+
+            console.log('[USERS DELETE] Paso 3: Eliminando perfil');
 
             // Eliminar perfil de la tabla profiles
             const { error: deleteProfileError } = await supabaseAdmin
@@ -164,6 +170,8 @@ const usersController = {
 
             if (deleteProfileError) throw deleteProfileError;
 
+            console.log('[USERS DELETE] Paso 4: Eliminando de Auth');
+
             // Eliminar usuario de Supabase Auth
             const { error: deleteAuthError } = await supabaseAdmin.auth.admin.deleteUser(id);
 
@@ -172,8 +180,18 @@ const usersController = {
             return res.status(200).json({ message: 'Usuario eliminado correctamente.' });
 
         } catch (error) {
-            console.error('[USERS] Error al eliminar usuario:', error.message);
-            return res.status(500).json({ error: 'Error interno al eliminar el usuario.' });
+            console.error('[USERS DELETE] Error completo:', error);
+            console.error('[USERS DELETE] Mensaje:', error.message);
+            console.error('[USERS DELETE] Código:', error.code);
+            console.error('[USERS DELETE] Detalles:', error.details);
+
+            if (error.code === '23503') {
+                return res.status(400).json({ 
+                    error: 'No se puede eliminar este colaborador porque tiene ventas o movimientos registrados a su nombre. Para revocar su acceso conservando la integridad contable y de auditoría de tus reportes financieros, por favor edite su estado y cámbielo a "Inactivo" (Suspender).' 
+                });
+            }
+
+            res.status(500).json({ error: 'Error interno al eliminar el usuario.' });
         }
     },
 
