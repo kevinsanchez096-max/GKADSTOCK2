@@ -5,6 +5,9 @@ const { supabaseAdmin } = require('../config/supabase');
 const DATA_DIR = path.join(__dirname, '../../data');
 const DATA_FILE = path.join(DATA_DIR, 'cash_sessions.json');
 
+// Flag global de control para evitar ejecuciones concurrentes del daemon de autocierre
+let isAutoCloseRunning = false;
+
 // Inicializar archivo de datos de forma segura
 function ensureDataFile() {
     if (!fs.existsSync(DATA_DIR)) {
@@ -370,6 +373,12 @@ const cashSessionController = {
 
     // 5. Daemon de Autocierre a las 11:59 PM o sesión vencida de días anteriores
     executeAutoCloseDaemon: async () => {
+        if (isAutoCloseRunning) {
+            console.log('Daemon ya en ejecución. Omitiendo.');
+            return;
+        }
+        isAutoCloseRunning = true;
+
         try {
             console.log('⏰ Running Cash Register Autocierre Daemon...');
             const sessions = readSessions();
@@ -416,6 +425,9 @@ const cashSessionController = {
 
                 // Comparar usando fechas locales de Colombia para evitar desfases de zona horaria (UTC vs Colombia GMT-5)
                 const openDate = new Date(s.opening_time);
+                const ageMs = now.getTime() - openDate.getTime();
+                if (ageMs < 10 * 60 * 1000) continue;
+
                 const openDateStr = getColombiaDateString(openDate);
                 const isPreviousDay = openDateStr < todayStr;
                 
@@ -468,6 +480,8 @@ const cashSessionController = {
             }
         } catch (error) {
             console.error('🔥 Error en Daemon de Autocierre de Cajas:', error.message);
+        } finally {
+            isAutoCloseRunning = false;
         }
     }
 };
