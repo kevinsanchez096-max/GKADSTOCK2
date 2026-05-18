@@ -130,17 +130,17 @@
     "organization_id": "6c061000-984e-433a-ac64-a9fa06368baa",
     "user_id": "8dc4a4b7-80eb-4ebe-b975-887eab2ee0ed",
     "user_name": "ARIOSTO MALAVER GOMEZ ",
-    "status": "open",
+    "status": "closed",
     "opening_time": "2026-05-17T21:09:22.378Z",
-    "closing_time": null,
+    "closing_time": "2026-05-17T23:59:00.000Z",
     "opening_balance": 10000,
-    "sales_cash": 0,
-    "sales_other": 0,
+    "sales_cash": 560650,
+    "sales_other": 86100,
     "total_expenses": 0,
-    "expected_cash": 10000,
-    "actual_cash": null,
-    "difference": null,
-    "notes": "",
-    "auto_closed": false
+    "expected_cash": 570650,
+    "actual_cash": 570650,
+    "difference": 0,
+    "notes": "Sesión clausurada automáticamente por el daemon del sistema (11:59 PM).",
+    "auto_closed": true
   }
 ]

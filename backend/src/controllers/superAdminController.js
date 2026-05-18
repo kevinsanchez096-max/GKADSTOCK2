@@ -544,39 +544,8 @@ const superAdminController = {
     },
 
     getAllUsers: async (req, res) => {
-        try {
-            const { data: profiles, error } = await supabase
-                .from('profiles')
-                .select('*, organizations(name)');
-            
-            if (error) throw error;
-
-            let authUsers = [];
-            try {
-                const { data: authData } = await supabase.auth.admin.listUsers();
-                if (authData && authData.users) {
-                    authUsers = authData.users;
-                }
-            } catch (authErr) {
-                console.error('[AUTH ERROR] Error listing users:', authErr.message);
-            }
-
-            const enriched = (profiles || []).map(p => ({
-                id: p.id,
-                full_name: p.full_name,
-                email: authUsers.find(u => u.id === p.id)?.email || 'S/D',
-                role: p.role,
-                status: p.status || 'active',
-                created_at: p.created_at,
-                organization_id: p.organization_id,
-                organization_name: p.organizations?.name || 'Sistema'
-            }));
-
-            res.status(200).json(enriched);
-        } catch (error) {
-            console.error('🔥 [SUPERADMIN ERROR] getAllUsers:', error.message);
-            res.status(500).json({ error: error.message });
-        }
+        const { data } = await supabase.from('profiles').select('*, organizations(name)');
+        res.status(200).json(data);
     },
     getSystemHealth: async (req, res) => { 
         const start = Date.now();
