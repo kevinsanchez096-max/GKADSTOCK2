@@ -44,7 +44,7 @@ export const Inventory = () => {
  const { profile } = useAuthStore();
  
  const [searchTerm, setSearchTerm] = useState('');
- const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
+ 
  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
@@ -439,28 +439,7 @@ export const Inventory = () => {
             />
           </div>
           
-          <div className="flex bg-muted/40 p-1 rounded-2xl border border-border/50 shadow-inner w-fit">
-            <button 
-              onClick={() => setViewMode('list')} 
-              className={`px-8 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all duration-300 ${
-                viewMode === 'list' 
-                  ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' 
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Lista
-            </button>
-            <button 
-              onClick={() => setViewMode('grid')} 
-              className={`px-8 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all duration-300 ${
-                viewMode === 'grid' 
-                  ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' 
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Mosaico
-            </button>
-          </div>
+
         </div>
       </div>
     </Card>
@@ -775,70 +754,70 @@ export const Inventory = () => {
  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
  {[1, 2, 3].map(i => <Card key={i} className="h-48 animate-pulse bg-muted/50 border-border"> </Card>)}
  </div>
- ) : viewMode === 'list' ? (
+   ) : (
  <Card className="p-0 bg-card border-border overflow-hidden shadow-2xl relative rounded-[2.5rem] backdrop-blur-xl">
  <div className="overflow-x-auto">
  <table className="w-full text-left border-collapse">
  <thead>
  <tr className="bg-muted/40 text-muted-foreground text-[10px] uppercase font-black tracking-[0.2em] border-b border-border">
- <th className="px-8 py-5">Producto / Entidad</th>
- <th className="px-8 py-5 hidden md:table-cell">ID Logístico</th>
- <th className="px-8 py-5 hidden md:table-cell">Categoría</th>
- <th className="px-8 py-5 text-right">Precio / Medida</th>
- <th className="px-8 py-5 text-center">Stock Disponible</th>
- <th className="px-8 py-5 text-right">Acciones</th>
+ <th className="px-6 py-2.5">Producto / Entidad</th>
+ <th className="px-6 py-2.5 hidden md:table-cell">ID Logístico</th>
+ <th className="px-6 py-2.5 hidden md:table-cell">Categoría</th>
+ <th className="px-6 py-2.5 text-right">Precio / Medida</th>
+ <th className="px-6 py-2.5 text-center">Stock Disponible</th>
+ <th className="px-6 py-2.5 text-right">Acciones</th>
  </tr>
  </thead>
  <tbody className="divide-y divide-border/40">
  {filteredProducts.map((p) => (
  <tr key={p.id} className="hover:bg-muted/30 transition-colors text-xs font-bold group">
- <td className="px-8 py-5">
+ <td className="px-6 py-2.5">
  <div className="flex items-center gap-4">
- <div className="h-12 w-12 bg-muted rounded-2xl flex items-center justify-center border border-border group-hover:scale-110 group-hover:border-brand-500/30 transition-all duration-300 shadow-sm">
- <Package className="h-6 w-6 text-muted-foreground group-hover:text-brand-500 transition-colors"/>
+ <div className="h-9 w-9 bg-muted rounded-xl flex items-center justify-center border border-border group-hover:scale-110 group-hover:border-brand-500/30 transition-all duration-300 shadow-sm">
+ <Package className="h-4 w-4 text-muted-foreground group-hover:text-brand-500 transition-colors"/>
  </div>
- <span className="font-outfit font-black text-sm text-foreground group-hover:text-foreground dark:group-hover:text-foreground uppercase tracking-tight">{p.name}</span>
+ <span className="font-outfit font-black text-xs text-foreground group-hover:text-foreground dark:group-hover:text-foreground uppercase tracking-tight">{p.name}</span>
  </div>
  </td>
- <td className="px-8 py-5 text-muted-foreground text-xs font-mono tracking-widest hidden md:table-cell">{p.sku || 'N/A'}</td>
- <td className="px-8 py-5 hidden md:table-cell">
+ <td className="px-6 py-2.5 text-muted-foreground text-xs font-mono tracking-widest hidden md:table-cell">{p.sku || 'N/A'}</td>
+ <td className="px-6 py-2.5 hidden md:table-cell">
  {(() => { const cs = getCategoryStyle(p.category_id); return (
- <span className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg border shadow-md ${cs.bg} ${cs.text} ${cs.border} ${cs.shadow}`}>
+ <span className={`px-2 py-0.5 text-[9px] font-black uppercase tracking-widest rounded border shadow-sm ${cs.bg} ${cs.text} ${cs.border} ${cs.shadow}`}>
  {getCategoryName(p.category_id)}
  </span>
  ); })()}
  </td>
- <td className="px-8 py-5 text-right font-black text-foreground font-outfit text-base tracking-tighter">
- ${p.price.toLocaleString()} <span className="text-[10px] text-muted-foreground font-bold uppercase ml-1 italic">/ {p.is_weighted ? 'KG' : 'UND'}</span>
+ <td className="px-6 py-2.5 text-right font-black text-foreground font-outfit text-sm tracking-tighter">
+ ${p.price.toLocaleString()} <span className="text-[9px] text-muted-foreground font-bold uppercase ml-1 italic">/ {p.is_weighted ? 'KG' : 'UND'}</span>
  </td>
- <td className="px-8 py-5 text-center">
+ <td className="px-6 py-2.5 text-center">
  <div className="flex flex-col items-center">
- <span className={`font-mono text-sm font-black ${p.stock <= p.min_stock ? 'text-red-500 animate-pulse' : 'text-muted-foreground'}`}>
+ <span className={`font-mono text-xs font-black ${p.stock <= p.min_stock ? 'text-red-500 animate-pulse' : 'text-muted-foreground'}`}>
  {p.is_weighted ? Number(p.stock || 0).toFixed(3) : (p.stock || 0)}
  </span>
  <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">{p.is_weighted ? 'KG' : 'UND'}</span>
  </div>
  </td>
- <td className="px-8 py-5 text-right">
- <div className="flex justify-end gap-3 opacity-40 group-hover:opacity-100 transition-all">
+ <td className="px-6 py-2.5 text-right">
+ <div className="flex justify-end gap-2 opacity-40 group-hover:opacity-100 transition-all">
  <button 
  onClick={() => handleOpenMerma(p)}
  title="Registrar Merma"
- className="p-2.5 bg-muted text-orange-500 hover:bg-orange-500/10 rounded-xl border border-transparent hover:border-orange-500/20 transition-all cursor-pointer"
+ className="p-2 bg-muted text-orange-500 hover:bg-orange-500/10 rounded-lg border border-transparent hover:border-orange-500/20 transition-all cursor-pointer"
  >
- <AlertTriangle size={16} />
+ <AlertTriangle size={14} />
  </button>
  <button 
  onClick={() => handleEdit(p)}
- className="p-2.5 bg-muted text-muted-foreground hover:text-brand-500 hover:bg-brand-500/10 rounded-xl border border-transparent hover:border-brand-500/20 transition-all cursor-pointer"
+ className="p-2 bg-muted text-muted-foreground hover:text-brand-500 hover:bg-brand-500/10 rounded-lg border border-transparent hover:border-brand-500/20 transition-all cursor-pointer"
  >
- <Edit2 size={16} />
+ <Edit2 size={14} />
  </button>
  <button 
  onClick={() => handleDelete(p.id)}
- className="p-2.5 bg-muted text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-xl border border-transparent hover:border-red-500/20 transition-all cursor-pointer"
+ className="p-2 bg-muted text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-lg border border-transparent hover:border-red-500/20 transition-all cursor-pointer"
  >
- <Trash2 size={16} />
+ <Trash2 size={14} />
  </button>
  </div>
  </td>
