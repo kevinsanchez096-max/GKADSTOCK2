@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 interface ImportError {
   row: number;
   message: string;
+  productName?: string;
 }
 
 export const startBulkImport = async (
@@ -172,19 +173,31 @@ const processImport = async (
       }
 
       if (row.Precio_Venta <= 0) {
-        localErrors.push({ row: rowNum, message: `Columna "Precio_Venta": El valor debe ser un número mayor a 0.` });
+        localErrors.push({ 
+          row: rowNum, 
+          message: `Columna "Precio_Venta": El valor debe ser un número mayor a 0.`, 
+          productName: row.Nombre 
+        });
         continue;
       }
 
       if (row.Stock < 0) {
-        localErrors.push({ row: rowNum, message: `Columna "Stock": El valor debe ser mayor o igual a 0.` });
+        localErrors.push({ 
+          row: rowNum, 
+          message: `Columna "Stock": El valor debe ser mayor o igual a 0.`, 
+          productName: row.Nombre 
+        });
         continue;
       }
 
       if (row.Sku) {
         const skuLower = row.Sku.toLowerCase();
         if (existingSkus.has(skuLower) || seenSkus.has(skuLower)) {
-          localErrors.push({ row: rowNum, message: `SKU duplicado detectado: "${row.Sku}".` });
+          localErrors.push({ 
+            row: rowNum, 
+            message: `SKU duplicado detectado: "${row.Sku}".`, 
+            productName: row.Nombre 
+          });
           continue;
         }
         seenSkus.add(skuLower);
@@ -193,7 +206,11 @@ const processImport = async (
       if (row.Codigo_Barras) {
         const barcodeLower = row.Codigo_Barras.toLowerCase();
         if (existingBarcodes.has(barcodeLower) || seenBarcodes.has(barcodeLower)) {
-          localErrors.push({ row: rowNum, message: `Código de Barras duplicado detectado: "${row.Codigo_Barras}".` });
+          localErrors.push({ 
+            row: rowNum, 
+            message: `Código de Barras duplicado detectado: "${row.Codigo_Barras}".`, 
+            productName: row.Nombre 
+          });
           continue;
         }
         seenBarcodes.add(barcodeLower);
@@ -214,50 +231,54 @@ const processImport = async (
       });
     }
 
-    // DECISIÓN ATÓMICA: Si hay algún error en la Fase 1, no importamos nada
-    if (localErrors.length > 0) {
-      const errorMsg = `Se detectaron ${localErrors.length} errores en la validación. Carga cancelada.`;
-      toast.error(errorMsg, {
-        id: toastId,
-        duration: 8000,
-        description: localErrors.slice(0, 3).map(e => `Fila ${e.row}: ${e.message}`).join(' | ') + (localErrors.length > 3 ? ' ...ver logs' : '')
-      });
-      console.error('[BulkImport] Errores de validación de importación:', localErrors);
-      return;
-    }
+    // FASE 2: INSERCIÓN EN SEGUNDO PLANO POR LOTES (Permisiva)
+    if (validatedRows.length > 0) {
+      const batchSize = 50;
+      const totalRows = validatedRows.length;
 
-    // ════════════════════════════════════════════════════════════════
-    // FASE 2: INSERCIÓN EN SEGUNDO PLANO POR LOTES
-    // ════════════════════════════════════════════════════════════════
-    const batchSize = 50;
-    const totalRows = validatedRows.length;
+      for (let i = 0; i < totalRows; i += batchSize) {
+        const batch = validatedRows.slice(i, i + batchSize);
 
-    for (let i = 0; i < totalRows; i += batchSize) {
-      const batch = validatedRows.slice(i, i + batchSize);
+        const { error: insertErr } = await supabase.from('products').insert(batch);
+        if (insertErr) {
+          console.error(`[BulkImport] Error de inserción de lote:`, insertErr);
+          failedCount += batch.length;
+          batch.forEach((b: any) => {
+            localErrors.push({
+              row: -1,
+              message: `Error de base de datos: ${insertErr.message}`,
+              productName: b.name
+            });
+          });
+        } else {
+          successCount += batch.length;
+        }
 
-      const { error: insertErr } = await supabase.from('products').insert(batch);
-      if (insertErr) {
-        console.error(`[BulkImport] Error de inserción de lote:`, insertErr);
-        failedCount += batch.length;
-      } else {
-        successCount += batch.length;
+        const progress = Math.min(100, Math.round(((i + batch.length) / totalRows) * 80) + 20);
+        toast.loading(`Sincronizando inventario... (${progress}%)`, { id: toastId });
       }
-
-      const progress = Math.min(100, Math.round(((i + batch.length) / totalRows) * 80) + 20);
-      toast.loading(`Sincronizando inventario... (${progress}%)`, { id: toastId });
     }
 
     // ════════════════════════════════════════════════════════════════
-    // FASE 3: COMPLEMENTACIÓN
+    // FASE 3: COMPLEMENTACIÓN Y REPORTE DETALLADO
     // ════════════════════════════════════════════════════════════════
     if (successCount > 0) {
       onComplete(); // Recargar productos en el state de React en el background
     }
 
-    if (failedCount > 0) {
-      toast.warning(`Importación completada con observaciones. Éxito: ${successCount}, Fallados: ${failedCount}`, {
+    const totalFailed = localErrors.length + failedCount;
+
+    if (totalFailed > 0) {
+      const errorDetails = localErrors.map(e => {
+        const rowPart = e.row !== -1 ? `Fila ${e.row}` : 'Inserción';
+        const namePart = e.productName ? ` (${e.productName})` : '';
+        return `❌ ${rowPart}${namePart}: ${e.message}`;
+      });
+
+      toast.warning(`Importación completada. Éxito: ${successCount}, Fallados: ${totalFailed}`, {
         id: toastId,
-        duration: 6000
+        duration: 15000,
+        description: errorDetails.slice(0, 6).join('\n') + (errorDetails.length > 6 ? `\n... y ${errorDetails.length - 6} errores más.` : '')
       });
     } else {
       toast.success(`¡Sincronización exitosa! ${successCount} productos agregados al radar.`, {
