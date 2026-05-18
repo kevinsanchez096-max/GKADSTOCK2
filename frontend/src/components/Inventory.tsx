@@ -525,8 +525,10 @@ export const Inventory = () => {
  {isImportModalOpen && (
  <BulkImport 
  onComplete={(report) => {
-    setIsImportModalOpen(false);
-    fetchProducts();
+     setIsImportModalOpen(false);
+     if (profile?.organization_id) {
+       fetchProducts(profile.organization_id);
+     }
     if (report) {
       setImportReport(report);
     }
