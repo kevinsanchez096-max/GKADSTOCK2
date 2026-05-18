@@ -428,13 +428,34 @@ export const Inventory = () => {
           </div>
         </div>
 
-        <div className="lg:col-span-4 flex justify-end">
+        <div className="lg:col-span-4 flex items-center justify-end gap-3">
+          {/* Botón de Importación */}
+          <button 
+            onClick={() => setIsImportModalOpen(true)}
+            className="h-14 px-6 bg-muted/40 hover:bg-muted/80 text-foreground border border-border/50 rounded-2xl flex items-center justify-center gap-2 hover:scale-105 transition-all font-black uppercase text-[10px] tracking-widest"
+            title="Importar catálogo desde Excel"
+          >
+            <Upload size={16} />
+            Importar
+          </button>
+
+          {/* Botón de Exportación */}
+          <button 
+            onClick={handleExportExcel}
+            className="h-14 px-6 bg-muted/40 hover:bg-muted/80 text-foreground border border-border/50 rounded-2xl flex items-center justify-center gap-2 hover:scale-105 transition-all font-black uppercase text-[10px] tracking-widest"
+            title="Exportar catálogo a Excel"
+          >
+            <Download size={16} />
+            Exportar
+          </button>
+
+          {/* Botón Nuevo Producto */}
           <Button 
             onClick={() => setIsAddModalOpen(true)}
             icon={Plus}
-            className="h-14 px-10 rounded-2xl bg-brand-500 hover:bg-brand-600 text-white font-black uppercase text-[10px] tracking-widest hover:scale-105 transition-all shadow-2xl shadow-brand-500/20 border-none"
+            className="h-14 px-8 rounded-2xl bg-brand-500 hover:bg-brand-600 text-white font-black uppercase text-[10px] tracking-widest hover:scale-105 transition-all shadow-2xl shadow-brand-500/20 border-none"
           >
-            Nuevo Producto
+            Nuevo
           </Button>
         </div>
       </div>
