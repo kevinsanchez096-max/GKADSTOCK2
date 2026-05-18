@@ -68,6 +68,63 @@ const DarkInput = ({
   );
 };
 
+// ── CONSTANTES Y UTILIDADES ESTÁTICAS DE AUTENTICACIÓN ──────────
+const passwordRules = [
+  { id: 'len', text: 'Mínimo 8 caracteres', check: (p: string) => p.length >= 8 },
+  { id: 'up', text: 'Una mayúscula', check: (p: string) => /[A-Z]/.test(p) },
+  { id: 'low', text: 'Una minúscula', check: (p: string) => /[a-z]/.test(p) },
+  { id: 'num', text: 'Un número', check: (p: string) => /[0-9]/.test(p) },
+  { id: 'spec', text: 'Un carácter especial', check: (p: string) => /[^A-Za-z0-9]/.test(p) },
+];
+
+const toTitleCase = (str: string) => {
+  return str
+    .trim()
+    .replace(/\s+/g, ' ')
+    .toLowerCase()
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
+
+const validateEmailField = (val: string) => {
+  const clean = val.trim().toLowerCase();
+  if (!clean) return 'El correo es obligatorio.';
+  if (!/\S+@\S+\.\S+/.test(clean)) return 'Correo inválido.';
+  return '';
+};
+
+const validateFullNameField = (val: string) => {
+  const clean = val.trim().replace(/\s+/g, ' ');
+  if (!clean) return 'El nombre es obligatorio.';
+  if (clean.length < 3) return 'Mínimo 3 caracteres.';
+  if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(clean)) return 'Solo se permiten letras y espacios.';
+  return '';
+};
+
+const validateOrgNameField = (val: string) => {
+  const clean = val.trim().replace(/\s+/g, ' ');
+  if (!clean) return 'La organización es obligatoria.';
+  if (clean.length < 3) return 'Mínimo 3 caracteres.';
+  if (/[\x00-\x1F\x7F]/.test(val)) return 'No se permiten caracteres de control.';
+  return '';
+};
+
+const getStrengthColor = (score: number) => {
+  if (score <= 1) return 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.3)]';
+  if (score <= 3) return 'bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.3)]';
+  if (score === 4) return 'bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.3)]';
+  return 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]';
+};
+
+const getStrengthText = (score: number, pass: string) => {
+  if (!pass) return '';
+  if (score <= 1) return 'Nivel: Muy Débil';
+  if (score <= 3) return 'Nivel: Medio';
+  if (score === 4) return 'Nivel: Fuerte';
+  return 'Nivel: Excelente';
+};
+
 export const AuthForm = ({ darkMode, toggleDarkMode, initialMode }: AuthFormProps) => {
   const [mode, setMode] = useState<FlowMode>(initialMode || 'login');
   const [step, setStep] = useState(1);
@@ -110,20 +167,7 @@ export const AuthForm = ({ darkMode, toggleDarkMode, initialMode }: AuthFormProp
   const { login, requestPasswordReset } = useAuthStore();
   const totalSteps = mode === 'login' ? 2 : (mode === 'register' ? 5 : 2);
 
-  const getStrengthColor = (score: number) => {
-    if (score <= 1) return 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.3)]';
-    if (score <= 3) return 'bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.3)]';
-    if (score === 4) return 'bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.3)]';
-    return 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]';
-  };
 
-  const getStrengthText = (score: number) => {
-    if (!password) return '';
-    if (score <= 1) return 'Nivel: Muy Débil';
-    if (score <= 3) return 'Nivel: Medio';
-    if (score === 4) return 'Nivel: Fuerte';
-    return 'Nivel: Excelente';
-  };
 
   const strengthScore = passwordRules.filter(r => r.check(password)).length;
 
@@ -151,48 +195,7 @@ export const AuthForm = ({ darkMode, toggleDarkMode, initialMode }: AuthFormProp
     setRecentEmails(list);
   };
 
-  const passwordRules = [
-    { id: 'len', text: 'Mínimo 8 caracteres', check: (p: string) => p.length >= 8 },
-    { id: 'up', text: 'Una mayúscula', check: (p: string) => /[A-Z]/.test(p) },
-    { id: 'low', text: 'Una minúscula', check: (p: string) => /[a-z]/.test(p) },
-    { id: 'num', text: 'Un número', check: (p: string) => /[0-9]/.test(p) },
-    { id: 'spec', text: 'Un carácter especial', check: (p: string) => /[^A-Za-z0-9]/.test(p) },
-  ];
   const isPasswordValid = passwordRules.every(r => r.check(password));
-
-  // Utilidad para limpiar espacios múltiples y pasar a Title Case
-  const toTitleCase = (str: string) => {
-    return str
-      .trim()
-      .replace(/\s+/g, ' ')
-      .toLowerCase()
-      .split(' ')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
-  };
-
-  const validateEmailField = (val: string) => {
-    const clean = val.trim().toLowerCase();
-    if (!clean) return 'El correo es obligatorio.';
-    if (!/\S+@\S+\.\S+/.test(clean)) return 'Correo inválido.';
-    return '';
-  };
-
-  const validateFullNameField = (val: string) => {
-    const clean = val.trim().replace(/\s+/g, ' ');
-    if (!clean) return 'El nombre es obligatorio.';
-    if (clean.length < 3) return 'Mínimo 3 caracteres.';
-    if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(clean)) return 'Solo se permiten letras y espacios.';
-    return '';
-  };
-
-  const validateOrgNameField = (val: string) => {
-    const clean = val.trim().replace(/\s+/g, ' ');
-    if (!clean) return 'La organización es obligatoria.';
-    if (clean.length < 3) return 'Mínimo 3 caracteres.';
-    if (/[\x00-\x1F\x7F]/.test(val)) return 'No se permiten caracteres de control.';
-    return '';
-  };
 
   const handleOtpChange = (index: number, value: string) => {
     const cleaned = value.replace(/\D/g, '');
@@ -593,7 +596,7 @@ export const AuthForm = ({ darkMode, toggleDarkMode, initialMode }: AuthFormProp
                       <div className="space-y-1.5 mt-2">
                         <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-widest text-zinc-500">
                           <span>Seguridad de la Clave</span>
-                          <span className="text-white">{getStrengthText(strengthScore)}</span>
+                          <span className="text-white">{getStrengthText(strengthScore, password)}</span>
                         </div>
                         <div className="h-1.5 w-full bg-[#1a1a1a] rounded-full overflow-hidden flex gap-1">
                           {Array.from({ length: 5 }).map((_, idx) => (
@@ -699,7 +702,7 @@ export const AuthForm = ({ darkMode, toggleDarkMode, initialMode }: AuthFormProp
                       <div className="space-y-1.5 mt-2">
                         <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-widest text-zinc-500">
                           <span>Seguridad de la Clave</span>
-                          <span className="text-white">{getStrengthText(strengthScore)}</span>
+                          <span className="text-white">{getStrengthText(strengthScore, password)}</span>
                         </div>
                         <div className="h-1.5 w-full bg-[#1a1a1a] rounded-full overflow-hidden flex gap-1">
                           {Array.from({ length: 5 }).map((_, idx) => (
