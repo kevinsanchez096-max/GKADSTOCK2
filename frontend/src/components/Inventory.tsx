@@ -87,33 +87,36 @@ export const Inventory = () => {
 
  const filteredProducts = metrics?.filteredProducts || [];
 
- const handleExportExcel = () => {
- if (products.length === 0) {
- // Inventario vacío → descargar la plantilla estática como guía de inicio
- const link = document.createElement('a');
- link.href = '/plantilla_importacion.xlsx';
- link.download = 'Plantilla_GKAD_STOCK.xlsx';
- link.click();
- toast.info('Descargando plantilla de importación...', { icon: '📥' });
- return;
- }
+  const handleExportExcel = () => {
+    if (products.length === 0) {
+      // Inventario vacío → descargar la plantilla estática como guía de inicio
+      const link = document.createElement('a');
+      link.href = '/plantilla_importacion.xlsx';
+      link.download = 'Plantilla_GKAD_STOCK.xlsx';
+      link.click();
+      toast.info('Descargando plantilla de importación...', { icon: '📥' });
+      return;
+    }
 
- const dataToExport = filteredProducts.map(p => ({
- Nombre: p.name,
- SKU: p.sku || 'N/A',
- Categoría: getCategoryName(p.category_id),
- Precio: p.price,
- Stock: p.stock,
- Unidad: p.unit,
- 'Stock Mínimo': p.min_stock
- }));
+    const dataToExport = filteredProducts.map(p => ({
+      Nombre: p.name,
+      SKU: p.sku || '',
+      Codigo_Barras: p.barcode || '',
+      Categoria: getCategoryName(p.category_id),
+      Precio_Venta: p.price,
+      Precio_Compra: p.cost_price || 0,
+      Stock: p.stock,
+      Minimo_Stock: p.min_stock || 5,
+      Unidad: p.unit || 'unid',
+      Es_Pesable: p.is_weighted ? 'SI' : 'NO'
+    }));
 
- const worksheet = XLSX.utils.json_to_sheet(dataToExport);
- const workbook = XLSX.utils.book_new();
- XLSX.utils.book_append_sheet(workbook, worksheet,"Inventario");
- XLSX.writeFile(workbook, `Inventario_${profile?.organization_name || 'POS'}_${new Date().toLocaleDateString()}.xlsx`);
- toast.success("Excel generado correctamente");
- };
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Inventario");
+    XLSX.writeFile(workbook, `Inventario_${profile?.organization_name || 'POS'}_${new Date().toLocaleDateString()}.xlsx`);
+    toast.success("Excel generado correctamente");
+  };
 
  const [newProduct, setNewProduct] = useState({
  name: '',
