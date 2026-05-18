@@ -374,13 +374,11 @@ const cashSessionController = {
     // 5. Daemon de Autocierre a las 11:59 PM o sesión vencida de días anteriores
     executeAutoCloseDaemon: async () => {
         if (isAutoCloseRunning) {
-            console.log('Daemon ya en ejecución. Omitiendo.');
             return;
         }
         isAutoCloseRunning = true;
 
         try {
-            console.log('⏰ Running Cash Register Autocierre Daemon...');
             const sessions = readSessions();
             let modified = false;
 
