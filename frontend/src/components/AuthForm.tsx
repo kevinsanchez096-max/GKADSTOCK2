@@ -98,6 +98,7 @@ export const AuthForm = ({ darkMode, toggleDarkMode, initialMode }: AuthFormProp
   const [emailError, setEmailError] = useState('');
   const [fullNameError, setFullNameError] = useState('');
   const [orgNameError, setOrgNameError] = useState('');
+  const [confirmPasswordError, setConfirmPasswordError] = useState('');
 
   const [otpValues, setOtpValues] = useState<string[]>(Array(6).fill(''));
   const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -109,10 +110,40 @@ export const AuthForm = ({ darkMode, toggleDarkMode, initialMode }: AuthFormProp
   const { login, requestPasswordReset } = useAuthStore();
   const totalSteps = mode === 'login' ? 2 : (mode === 'register' ? 5 : 2);
 
+  const getStrengthColor = (score: number) => {
+    if (score <= 1) return 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.3)]';
+    if (score <= 3) return 'bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.3)]';
+    if (score === 4) return 'bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.3)]';
+    return 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]';
+  };
+
+  const getStrengthText = (score: number) => {
+    if (!password) return '';
+    if (score <= 1) return 'Nivel: Muy Débil';
+    if (score <= 3) return 'Nivel: Medio';
+    if (score === 4) return 'Nivel: Fuerte';
+    return 'Nivel: Excelente';
+  };
+
+  const strengthScore = passwordRules.filter(r => r.check(password)).length;
+
   useEffect(() => {
     const stored = localStorage.getItem('gkad_recent_emails');
     if (stored) setRecentEmails(JSON.parse(stored));
   }, []);
+
+  // Validación de coincidencia de contraseña en tiempo real
+  useEffect(() => {
+    if (confirmPassword) {
+      if (password !== confirmPassword) {
+        setConfirmPasswordError('Las contraseñas no coinciden.');
+      } else {
+        setConfirmPasswordError('');
+      }
+    } else {
+      setConfirmPasswordError('');
+    }
+  }, [password, confirmPassword]);
 
   const saveEmail = (emailStr: string) => {
     const list = [emailStr, ...recentEmails.filter(e => e !== emailStr)].slice(0, 5);
@@ -129,41 +160,68 @@ export const AuthForm = ({ darkMode, toggleDarkMode, initialMode }: AuthFormProp
   ];
   const isPasswordValid = passwordRules.every(r => r.check(password));
 
+  // Utilidad para limpiar espacios múltiples y pasar a Title Case
+  const toTitleCase = (str: string) => {
+    return str
+      .trim()
+      .replace(/\s+/g, ' ')
+      .toLowerCase()
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+
   const validateEmailField = (val: string) => {
-    if (!val) return 'El correo es obligatorio.';
-    if (!/\S+@\S+\.\S+/.test(val)) return 'Correo inválido.';
+    const clean = val.trim().toLowerCase();
+    if (!clean) return 'El correo es obligatorio.';
+    if (!/\S+@\S+\.\S+/.test(clean)) return 'Correo inválido.';
     return '';
   };
 
   const validateFullNameField = (val: string) => {
-    if (!val) return 'El nombre es obligatorio.';
-    if (val.length < 3) return 'Mínimo 3 caracteres.';
-    if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(val)) return 'Solo se permiten letras y espacios.';
+    const clean = val.trim().replace(/\s+/g, ' ');
+    if (!clean) return 'El nombre es obligatorio.';
+    if (clean.length < 3) return 'Mínimo 3 caracteres.';
+    if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(clean)) return 'Solo se permiten letras y espacios.';
     return '';
   };
 
   const validateOrgNameField = (val: string) => {
-    if (!val) return 'La organización es obligatoria.';
-    if (val.length < 3) return 'Mínimo 3 caracteres.';
-    if (!/^[a-zA-Z0-9\s&.\-]+$/.test(val)) return 'Solo se permiten letras, números y &, ., -';
+    const clean = val.trim().replace(/\s+/g, ' ');
+    if (!clean) return 'La organización es obligatoria.';
+    if (clean.length < 3) return 'Mínimo 3 caracteres.';
+    if (/[\x00-\x1F\x7F]/.test(val)) return 'No se permiten caracteres de control.';
     return '';
   };
 
   const handleOtpChange = (index: number, value: string) => {
-    if (value.length > 1) {
-      const digits = value.replace(/\D/g, '').slice(0, 6).split('');
+    const cleaned = value.replace(/\D/g, '');
+    if (cleaned.length === 0) {
       const next = [...otpValues];
-      digits.forEach((d, i) => { if (index + i < 6) next[index + i] = d; });
+      next[index] = '';
       setOtpValues(next);
-      const focus = Math.min(index + digits.length, 5);
-      otpRefs.current[focus]?.focus();
       return;
     }
-    if (!/^\d*$/.test(value)) return;
+
+    if (cleaned.length > 1) {
+      const digits = cleaned.slice(0, 6).split('');
+      const next = [...otpValues];
+      digits.forEach((d, i) => {
+        if (index + i < 6) next[index + i] = d;
+      });
+      setOtpValues(next);
+      const focusIndex = Math.min(index + digits.length, 5);
+      otpRefs.current[focusIndex]?.focus();
+      return;
+    }
+
     const next = [...otpValues];
-    next[index] = value;
+    next[index] = cleaned;
     setOtpValues(next);
-    if (value && index < 5) otpRefs.current[index + 1]?.focus();
+
+    if (index < 5) {
+      otpRefs.current[index + 1]?.focus();
+    }
   };
 
   const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -176,36 +234,68 @@ export const AuthForm = ({ darkMode, toggleDarkMode, initialMode }: AuthFormProp
     setError(null);
     if (mode === 'login') {
       if (step === 1) {
-        if (!email.trim() || !email.includes('@')) return setError('Correo inválido.');
+        const err = validateEmailField(email);
+        if (err) {
+          setEmailError(err);
+          return setError(err);
+        }
         setStep(2);
-      } else await handleLogin();
+      } else {
+        if (!password.trim()) {
+          return setError('La contraseña es obligatoria.');
+        }
+        await handleLogin();
+      }
     } else if (mode === 'forgot-password') {
       if (step === 1) {
-        if (!email.trim() || !email.includes('@')) return setError('Correo inválido.');
+        const err = validateEmailField(email);
+        if (err) {
+          setEmailError(err);
+          return setError(err);
+        }
         try {
-          await requestPasswordReset(email.trim());
+          await requestPasswordReset(email.trim().toLowerCase());
           setStep(2);
         } catch (err: any) {
           setError(err.message || 'Error al enviar correo de recuperación.');
         }
       }
     } else if (mode === 'reset-password') {
+      if (!isPasswordValid) return setError('Contraseña débil. Cumple todas las políticas de seguridad.');
+      if (password !== confirmPassword) return setError('Las contraseñas no coinciden.');
       await handleResetPassword();
     } else {
       if (step === 1) {
-        if (!email.trim() || !email.includes('@')) return setError('Correo inválido.');
+        const err = validateEmailField(email);
+        if (err) {
+          setEmailError(err);
+          return setError(err);
+        }
         setStep(2);
       } else if (step === 2) {
-        if (!fullName.trim()) return setError('El nombre es obligatorio.');
+        const err = validateFullNameField(fullName);
+        if (err) {
+          setFullNameError(err);
+          return setError(err);
+        }
         setStep(3);
       } else if (step === 3) {
-        if (!orgName.trim()) return setError('La organización es obligatoria.');
+        const err = validateOrgNameField(orgName);
+        if (err) {
+          setOrgNameError(err);
+          return setError(err);
+        }
         setStep(4);
       } else if (step === 4) {
-        if (!isPasswordValid) return setError('Contraseña débil.');
-        if (password !== confirmPassword) return setError('Las contraseñas no coinciden.');
+        if (!isPasswordValid) return setError('Contraseña débil. Cumple todas las políticas de seguridad.');
+        if (password !== confirmPassword) {
+          setConfirmPasswordError('Las contraseñas no coinciden.');
+          return setError('Las contraseñas no coinciden.');
+        }
         await handleSignUp();
-      } else await handleVerifyRegistration();
+      } else {
+        await handleVerifyRegistration();
+      }
     }
   };
 
@@ -256,10 +346,14 @@ export const AuthForm = ({ darkMode, toggleDarkMode, initialMode }: AuthFormProp
   const handleSignUp = async () => {
     setLoading(true);
     try {
+      const cleanEmail = email.trim().toLowerCase();
+      const cleanName = toTitleCase(fullName);
+      const cleanOrg = orgName.trim().replace(/\s+/g, ' ');
+
       const { error: signUpError } = await supabase.auth.signUp({
-        email: email.trim().toLowerCase(),
+        email: cleanEmail,
         password,
-        options: { data: { full_name: fullName.trim(), organization_name: orgName.trim() } },
+        options: { data: { full_name: cleanName, organization_name: cleanOrg } },
       });
       if (signUpError) throw signUpError;
       setStep(5);
@@ -495,7 +589,25 @@ export const AuthForm = ({ darkMode, toggleDarkMode, initialMode }: AuthFormProp
                   </div>
                   <div className="space-y-3">
                     <DarkInput label="Nueva Contraseña" type="password" icon={Lock} value={password} onChange={e => setPassword(e.target.value)} autoComplete="new-password" autoFocus required />
-                    <DarkInput label="Confirmar Contraseña" type="password" icon={ShieldCheck} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} autoComplete="new-password" required />
+                    {password && (
+                      <div className="space-y-1.5 mt-2">
+                        <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-widest text-zinc-500">
+                          <span>Seguridad de la Clave</span>
+                          <span className="text-white">{getStrengthText(strengthScore)}</span>
+                        </div>
+                        <div className="h-1.5 w-full bg-[#1a1a1a] rounded-full overflow-hidden flex gap-1">
+                          {Array.from({ length: 5 }).map((_, idx) => (
+                            <div
+                              key={idx}
+                              className={`h-full flex-1 transition-all duration-300 ${
+                                idx < strengthScore ? getStrengthColor(strengthScore) : 'bg-zinc-800'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    <DarkInput label="Confirmar Contraseña" type="password" icon={ShieldCheck} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} autoComplete="new-password" required error={confirmPasswordError} />
                   </div>
 
                   {/* Panel de Políticas de Seguridad (Restablecimiento) */}
@@ -583,7 +695,25 @@ export const AuthForm = ({ darkMode, toggleDarkMode, initialMode }: AuthFormProp
                 <motion.div key="r4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
                   <div className="space-y-3">
                     <DarkInput label="Nueva Contraseña" type="password" icon={Lock} value={password} onChange={e => setPassword(e.target.value)} autoComplete="new-password" autoFocus required />
-                    <DarkInput label="Confirmar Contraseña" type="password" icon={ShieldCheck} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} autoComplete="new-password" required />
+                    {password && (
+                      <div className="space-y-1.5 mt-2">
+                        <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-widest text-zinc-500">
+                          <span>Seguridad de la Clave</span>
+                          <span className="text-white">{getStrengthText(strengthScore)}</span>
+                        </div>
+                        <div className="h-1.5 w-full bg-[#1a1a1a] rounded-full overflow-hidden flex gap-1">
+                          {Array.from({ length: 5 }).map((_, idx) => (
+                            <div
+                              key={idx}
+                              className={`h-full flex-1 transition-all duration-300 ${
+                                idx < strengthScore ? getStrengthColor(strengthScore) : 'bg-zinc-800'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    <DarkInput label="Confirmar Contraseña" type="password" icon={ShieldCheck} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} autoComplete="new-password" required error={confirmPasswordError} />
                   </div>
 
                   <div className="bg-[#0f0f0f] border border-[#1e1e1e] p-5 rounded-[1.5rem] space-y-3 shadow-inner">
