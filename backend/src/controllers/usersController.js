@@ -1,4 +1,4 @@
-const { supabaseAdmin } = require('../config/supabase');
+const { supabase, supabaseAdmin } = require('../config/supabase');
 
 const usersController = {
     // Helper para obtener el ID de organización con validación estricta
@@ -153,6 +153,10 @@ const usersController = {
                 return res.status(403).json({ error: 'No tienes permiso para borrar este usuario (Violación de Inquilino).' });
             }
 
+            // 2. Eliminar perfil en base de datos
+            await supabase.from('profiles').delete().eq('id', userId);
+
+            // 3. Eliminar de Supabase Auth
             const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(userId);
             if (authError) throw authError;
 
