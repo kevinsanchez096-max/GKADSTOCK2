@@ -39,18 +39,42 @@ export const BulkImport = ({ onComplete, onClose }: BulkImportProps) => {
       <Card className="w-full max-w-2xl bg-card shadow-2xl border-white/20 overflow-hidden flex flex-col max-h-[90vh]">
         
         {/* HEADER */}
-        <div className="p-6 border-b border-border flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="bg-brand-100 dark:bg-brand-900/30 p-2 rounded-lg text-brand-600 dark:text-brand-400">
+        <div 
+          style={{
+            padding: '40px',
+            borderBottom: '1px solid var(--border)',
+            backgroundColor: 'color-mix(in srgb, var(--brand-primary), transparent 95%)'
+          }}
+          className="relative shrink-0"
+        >
+          <div className="flex items-center gap-4">
+            <div 
+              style={{ 
+                padding: '12px',
+                backgroundColor: 'var(--brand-primary)', 
+                borderRadius: '16px', 
+                color: 'white', 
+                border: '2px solid var(--border)',
+                boxShadow: '0 10px 25px -5px color-mix(in srgb, var(--brand-primary), transparent 60%)'
+              }}
+              className="flex items-center justify-center animate-pulse shrink-0"
+            >
               <Upload className="h-6 w-6"/>
             </div>
             <div>
-              <h2 className="text-xl font-bold text-foreground leading-tight">Importación Masiva</h2>
-              <p className="text-xs text-muted-foreground">Máximo 2000 productos por carga.</p>
+              <h3 className="font-black text-2xl text-foreground font-outfit uppercase tracking-tight m-0">
+                IMPORTACIÓN <span style={{ color: 'var(--brand-primary)' }}>MASIVA</span>
+              </h3>
+              <p style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '3px', color: 'var(--brand-primary)', margin: 0 }}>
+                Máximo 2000 productos por carga.
+              </p>
             </div>
           </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors">
-            <X className="h-6 w-6"/>
+          <button
+            onClick={onClose}
+            className="absolute right-8 top-8 p-3 bg-muted text-muted-foreground hover:text-foreground rounded-2xl transition-all"
+          >
+            <X className="h-5 w-5"/>
           </button>
         </div>
 
