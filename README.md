@@ -298,14 +298,16 @@ npm run dev
 
 ## 🧪 Patrones de Diseño Implementados
 
-- **MVC (Model-View-Controller)**: Separación estricta entre rutas, controladores y vistas.
-- **Saga Compensatoria**: Rollback manual en transacciones distribuidas (Ventas, Registro).
-- **Zero-Trust Security**: Cada petición es validada independientemente; nunca se confía en el cliente.
-- **Auto-Healing Middleware**: Detección y reparación automática de perfiles huérfanos.
-- **State Hydration Guard**: Barrera `isInitialized` para prevenir Race Conditions en el frontend.
-- **Observer Pattern**: Suscripciones Realtime para sincronización entre terminales.
+- **MVC (Model-View-Controller)**: Separación estricta entre enrutadores, controladores de lógica y modelos de datos.
+- **Saga Compensatoria**: Mecanismo de Rollback manual atómico en transacciones distribuidas complejas (como Ventas y Registro).
+- **Reasociación Contable No Destructiva**: Bypass inteligente de restricciones relacionales PostgreSQL (FK Constraints 23503). Permite al Súper Administrador eliminar físicamente perfiles de usuarios de la base de datos reasociando en tiempo de ejecución sus facturas históricas a cuentas de control del sistema, preservando el 100% de la contabilidad sin cascadas destructivas.
+- **Auto-Cierre con Huso Horario Estricto (GMT-5)**: Daemon autónomo de balance y arqueo de caja sincronizado estrictamente bajo la zona horaria `America/Bogota` a través de `Intl.DateTimeFormat`, neutralizando desfases horarios locales o de servidores en la nube (UTC).
+- **Zero-Trust Security**: Cada petición es filtrada a nivel de base de datos e inyección de middleware; aislamiento robusto de inquilinos.
+- **Auto-Healing Middleware**: Detección y curación/reparación automatizada en tiempo real de perfiles de usuario huérfanos al vuelo.
+- **State Hydration Guard**: Barrera preventiva `isInitialized` de Zustand en el frontend que erradica Race Conditions en el renderizado de estados reactivos.
+- **Observer Pattern**: Suscripciones reactivas vía WebSockets de Supabase para sincronización instantánea de stock y reportes entre múltiples terminales.
 
 ---
 
-_Desarrollado por Kevin Sánchez — Ingeniería de Software, 2026._
+_Desarrollado por Kevin Sánchez — Ingeniería de Software, 2026._  
 _GKAD STOCK V5.0 Enterprise — Sistema POS Multi-Tenant de Alta Disponibilidad._

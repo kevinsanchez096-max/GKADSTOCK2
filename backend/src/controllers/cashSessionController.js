@@ -53,6 +53,11 @@ const cashSessionController = {
     // 1. Obtener estado de caja activo (GET /api/cash-sessions/active)
     getActiveSession: async (req, res) => {
         try {
+            // Autocierre Pasivo Secuencial: valida y cierra cajas del día anterior antes de consultar el estado
+            await cashSessionController.executeAutoCloseDaemon().catch(err => {
+                console.error('⚠️ [CASH LAZY AUTOCLOSE ERROR]:', err.message);
+            });
+
             const orgId = cashSessionController.getOrgId(req);
             const sessions = readSessions();
             
