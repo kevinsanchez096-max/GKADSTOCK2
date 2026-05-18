@@ -35,8 +35,8 @@ export const BulkImport = ({ onComplete, onClose }: BulkImportProps) => {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/60 backdrop-blur-sm animate-in fade-in duration-300">
-      <Card className="w-full max-w-2xl bg-card shadow-2xl border-white/20 overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/60 backdrop-blur-sm">
+      <Card className="w-full max-w-2xl bg-card shadow-2xl border border-border overflow-y-auto flex flex-col max-h-[90vh]">
         
         {/* HEADER */}
         <div 
