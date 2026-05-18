@@ -372,35 +372,56 @@ const cashSessionController = {
 
             const now = new Date();
             
-            // Helper para obtener fecha local en formato YYYY-MM-DD
-            const getLocalDateString = (d) => {
-                const year = d.getFullYear();
-                const month = String(d.getMonth() + 1).padStart(2, '0');
-                const day = String(d.getDate()).padStart(2, '0');
-                return `${year}-${month}-${day}`;
+            // Helper para obtener la fecha local de Colombia en formato YYYY-MM-DD
+            const getColombiaDateString = (d) => {
+                try {
+                    return d.toLocaleDateString('sv-SE', { timeZone: 'America/Bogota' });
+                } catch (e) {
+                    const year = d.getFullYear();
+                    const month = String(d.getMonth() + 1).padStart(2, '0');
+                    const day = String(d.getDate()).padStart(2, '0');
+                    return `${year}-${month}-${day}`;
+                }
             };
 
-            const todayStr = getLocalDateString(now);
+            // Helper para obtener la hora y minutos en la zona horaria de Colombia
+            const getColombiaHoursAndMinutes = (d) => {
+                try {
+                    const formatter = new Intl.DateTimeFormat('en-US', {
+                        timeZone: 'America/Bogota',
+                        hour: 'numeric',
+                        minute: 'numeric',
+                        hour12: false
+                    });
+                    const parts = formatter.formatToParts(d);
+                    const hour = parseInt(parts.find(p => p.type === 'hour').value, 10);
+                    const minute = parseInt(parts.find(p => p.type === 'minute').value, 10);
+                    return { hour, minute };
+                } catch (e) {
+                    return { hour: d.getHours(), minute: d.getMinutes() };
+                }
+            };
+
+            const todayStr = getColombiaDateString(now);
+            const { hour, minute } = getColombiaHoursAndMinutes(now);
 
             for (let i = 0; i < sessions.length; i++) {
                 const s = sessions[i];
                 if (s.status !== 'open') continue;
 
-                // Comparar usando fechas locales del sistema para evitar desfases de zona horaria (ej. UTC vs Colombia GMT-5)
+                // Comparar usando fechas locales de Colombia para evitar desfases de zona horaria (UTC vs Colombia GMT-5)
                 const openDate = new Date(s.opening_time);
-                const openDateStr = getLocalDateString(openDate);
+                const openDateStr = getColombiaDateString(openDate);
                 const isPreviousDay = openDateStr < todayStr;
                 
-                // Si la hora local actual es las 11:59 PM (23:59:00 o posterior) O si es de un día anterior
-                const isLateNight = now.getHours() === 23 && now.getMinutes() >= 59;
+                // Si la hora en Colombia es las 11:59 PM (23:59) o posterior
+                const isLateNight = hour === 23 && minute >= 59;
 
                 if (isPreviousDay || isLateNight) {
                     console.log(`⚠️ Auto-cerrando sesión vencida ID ${s.id} (Org: ${s.organization_id})`);
                     
-                    // Definir tiempo de cierre: 23:59:00 en el horario local del día respectivo
-                    const targetDate = new Date(isPreviousDay ? openDate.getTime() : now.getTime());
-                    targetDate.setHours(23, 59, 0, 0);
-                    const closingTime = targetDate.toISOString();
+                    // Definir tiempo de cierre: 23:59:00 en el horario local de Colombia
+                    const closingTime = `${isPreviousDay ? openDateStr : todayStr}T23:59:00-05:00`;
 
                     const metrics = await cashSessionController.calculateMetrics(s.organization_id, s.opening_time, closingTime);
                     const base = s.opening_balance;
