@@ -11,7 +11,7 @@ import { startBulkImport } from '../lib/bulkImportManager';
 import { toast } from 'sonner';
 
 interface BulkImportProps {
-  onComplete: () => void;
+  onComplete: (report: any) => void;
   onClose: () => void;
 }
 

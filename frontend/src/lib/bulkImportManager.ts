@@ -2,16 +2,45 @@ import * as XLSX from 'xlsx';
 import { supabase } from './supabase';
 import { toast } from 'sonner';
 
-interface ImportError {
+export interface ImportError {
   row: number;
   message: string;
   productName?: string;
 }
 
+export const translateError = (message: string): string => {
+  if (!message) return "Error desconocido";
+
+  if (message.includes("duplicate key value violates unique constraint idx_products_barcode")) {
+    return "Código de barras ya registrado en el sistema";
+  }
+  if (message.includes("duplicate key value violates unique constraint idx_products_sku")) {
+    return "SKU ya registrado en el sistema";
+  }
+  if (message.includes("El campo Nombre es obligatorio")) {
+    return "El nombre del producto es obligatorio";
+  }
+  if (message.includes("SKU duplicado") || message.includes("SKU repetido")) {
+    return "SKU repetido en el archivo";
+  }
+  if (message.includes("Código de barras duplicado") || message.includes("Código de barras repetido")) {
+    return "Código de barras repetido en el archivo";
+  }
+  if (
+    message.includes("Fallo al insertar en base de datos") || 
+    message.includes("Error de base de datos") ||
+    message.includes("violates unique constraint")
+  ) {
+    return "No se pudo guardar, verifica los datos del producto";
+  }
+  
+  return message;
+};
+
 export const startBulkImport = async (
   file: File,
   orgId: string,
-  onComplete: () => void
+  onComplete: (report: { successCount: number; totalFailed: number; errors: ImportError[] }) => void
 ) => {
   const toastId = toast.loading('Leyendo archivo Excel... (0%)', { duration: Infinity });
 
@@ -262,30 +291,14 @@ const processImport = async (
     // ════════════════════════════════════════════════════════════════
     // FASE 3: COMPLEMENTACIÓN Y REPORTE DETALLADO
     // ════════════════════════════════════════════════════════════════
-    if (successCount > 0) {
-      onComplete(); // Recargar productos en el state de React en el background
-    }
-
     const totalFailed = localErrors.length + failedCount;
+    toast.dismiss(toastId);
 
-    if (totalFailed > 0) {
-      const errorDetails = localErrors.map(e => {
-        const rowPart = e.row !== -1 ? `Fila ${e.row}` : 'Inserción';
-        const namePart = e.productName ? ` (${e.productName})` : '';
-        return `❌ ${rowPart}${namePart}: ${e.message}`;
-      });
-
-      toast.warning(`Importación completada. Éxito: ${successCount}, Fallados: ${totalFailed}`, {
-        id: toastId,
-        duration: 15000,
-        description: errorDetails.slice(0, 6).join('\n') + (errorDetails.length > 6 ? `\n... y ${errorDetails.length - 6} errores más.` : '')
-      });
-    } else {
-      toast.success(`¡Sincronización exitosa! ${successCount} productos agregados al radar.`, {
-        id: toastId,
-        duration: 6000
-      });
-    }
+    onComplete({
+      successCount,
+      totalFailed,
+      errors: localErrors
+    });
 
   } catch (err: any) {
     toast.error(`Error crítico en importación: ${err.message}`, { id: toastId, duration: 6000 });

@@ -27,6 +27,7 @@ import { supabase } from '../lib/supabase';
 import { api } from '../lib/api';
 import { useMemo } from 'react';
 import { BulkImport } from './BulkImport';
+import { ImportReportModal } from './ImportReportModal';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
 
@@ -46,6 +47,11 @@ export const Inventory = () => {
  const [searchTerm, setSearchTerm] = useState('');
  
  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+ const [importReport, setImportReport] = useState<{
+  successCount: number;
+  totalFailed: number;
+  errors: any[];
+ } | null>(null);
  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
  const [historyDate, setHistoryDate] = useState(new Date().toISOString().split('T')[0]);
@@ -518,9 +524,22 @@ export const Inventory = () => {
  {/* MODALS */}
  {isImportModalOpen && (
  <BulkImport 
- onComplete={() => setIsImportModalOpen(false)} 
+ onComplete={(report) => {
+    setIsImportModalOpen(false);
+    fetchProducts();
+    if (report) {
+      setImportReport(report);
+    }
+  }} 
  onClose={() => setIsImportModalOpen(false)} 
  />
+ )}
+
+ {importReport && (
+  <ImportReportModal 
+   report={importReport} 
+   onClose={() => setImportReport(null)} 
+  />
  )}
 
  {isAddModalOpen && createPortal(
