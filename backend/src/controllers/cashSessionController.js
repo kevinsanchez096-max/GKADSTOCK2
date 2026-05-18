@@ -327,12 +327,17 @@ const cashSessionController = {
             const { id } = req.params;
             const sessions = readSessions();
 
-            const sessionIndex = sessions.findIndex(s => s.id === id && s.organization_id === orgId);
+            const sessionIndex = sessions.findIndex(s => s.id === id);
             if (sessionIndex === -1) {
-                return res.status(404).json({ error: 'La sesión de caja no existe o no pertenece a su organización.' });
+                return res.status(404).json({ error: 'La sesión de caja no existe.' });
             }
 
             const sessionToDelete = sessions[sessionIndex];
+
+            // Si el usuario no es super_admin, verificar que la sesión pertenezca a su organización
+            if (req.user.role !== 'super_admin' && sessionToDelete.organization_id !== orgId) {
+                return res.status(403).json({ error: 'No tiene permisos para eliminar esta sesión de caja.' });
+            }
             
             // Eliminar de la lista
             sessions.splice(sessionIndex, 1);
@@ -344,7 +349,7 @@ const cashSessionController = {
                     level: 'warning',
                     module: 'cash_register',
                     user_id: req.user.id,
-                    organization_id: orgId,
+                    organization_id: sessionToDelete.organization_id,
                     message: `Reporte de cierre de caja (Fecha: ${new Date(sessionToDelete.closing_time || '').toLocaleDateString()}, Base: $${sessionToDelete.opening_balance.toLocaleString()}) ELIMINADO por ${req.user.full_name || 'Admin'}`
                 }]);
             } catch (logError) {
@@ -366,25 +371,36 @@ const cashSessionController = {
             let modified = false;
 
             const now = new Date();
-            const todayStr = now.toISOString().split('T')[0];
+            
+            // Helper para obtener fecha local en formato YYYY-MM-DD
+            const getLocalDateString = (d) => {
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            };
+
+            const todayStr = getLocalDateString(now);
 
             for (let i = 0; i < sessions.length; i++) {
                 const s = sessions[i];
                 if (s.status !== 'open') continue;
 
-                const openDateStr = s.opening_time.split('T')[0];
+                // Comparar usando fechas locales del sistema para evitar desfases de zona horaria (ej. UTC vs Colombia GMT-5)
+                const openDate = new Date(s.opening_time);
+                const openDateStr = getLocalDateString(openDate);
                 const isPreviousDay = openDateStr < todayStr;
                 
-                // Si la hora es las 11:59 PM (23:59:00 o posterior) O si es de un día anterior
+                // Si la hora local actual es las 11:59 PM (23:59:00 o posterior) O si es de un día anterior
                 const isLateNight = now.getHours() === 23 && now.getMinutes() >= 59;
 
                 if (isPreviousDay || isLateNight) {
                     console.log(`⚠️ Auto-cerrando sesión vencida ID ${s.id} (Org: ${s.organization_id})`);
                     
-                    // Definir tiempo de cierre: si es día anterior, 11:59:00 de ese día. Si no, 11:59:00 de hoy.
-                    const closingTime = isPreviousDay 
-                        ? `${openDateStr}T23:59:00.000Z`
-                        : `${todayStr}T23:59:00.000Z`;
+                    // Definir tiempo de cierre: 23:59:00 en el horario local del día respectivo
+                    const targetDate = new Date(isPreviousDay ? openDate.getTime() : now.getTime());
+                    targetDate.setHours(23, 59, 0, 0);
+                    const closingTime = targetDate.toISOString();
 
                     const metrics = await cashSessionController.calculateMetrics(s.organization_id, s.opening_time, closingTime);
                     const base = s.opening_balance;
