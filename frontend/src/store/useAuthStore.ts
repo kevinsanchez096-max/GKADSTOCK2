@@ -153,30 +153,6 @@ export const useAuthStore = create<AuthState>((set) => ({
         console.warn('[Login] No se pudo restaurar sesión de caja:', err.message);
       }
 
-      // 🎨 Hidratación de Branding
-      if (profileData?.role === 'super_admin') {
-        document.documentElement.style.removeProperty('--brand-primary');
-        document.documentElement.style.removeProperty('--brand-secondary');
-      } else {
-        try {
-          const { data: dbProfile } = await supabase
-            .from('profiles')
-            .select('theme_color, theme_secondary_color')
-            .eq('id', user.id)
-            .maybeSingle();
-
-          if (dbProfile) {
-            if (dbProfile.theme_color) document.documentElement.style.setProperty('--brand-primary', dbProfile.theme_color);
-            if (dbProfile.theme_secondary_color) document.documentElement.style.setProperty('--brand-secondary', dbProfile.theme_secondary_color);
-          } else {
-            document.documentElement.style.removeProperty('--brand-primary');
-            document.documentElement.style.removeProperty('--brand-secondary');
-          }
-        } catch (dbErr) {
-          console.error('Error al hidratar estilo crudo:', dbErr);
-        }
-      }
-
       return { user, profile: profileData, session };
     } catch (error: any) {
       set({ loading: false });
