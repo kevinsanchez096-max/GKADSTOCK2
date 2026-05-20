@@ -98,7 +98,7 @@ function App() {
     }
   }, [profile?.organization_id, fetchActiveSession]);
 
-  useEffect(() {
+  useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add('dark');
       localStorage.setItem('gkad_theme', 'dark');
