@@ -428,11 +428,16 @@ const cashSessionController = {
 
                 const openDateStr = getColombiaDateString(openDate);
                 const isPreviousDay = openDateStr < todayStr;
+                const isSameDay = openDateStr === todayStr;
                 
-                // Si la hora en Colombia es las 11:59 PM (23:59) o posterior
-                const isLateNight = hour === 23 && minute >= 59;
+                // Si la hora en Colombia es las 11:59 PM (23:59)
+                const isExactly2359 = hour === 23 && minute >= 59;
 
-                if (isPreviousDay || isLateNight) {
+                // PROTECCIÓN: Cerrar SOLO si:
+                // 1. La sesión es de un día ANTERIOR (isPreviousDay), O
+                // 2. Es el MISMO DÍA ACTUAL y son exactamente las 23:59
+                // Las sesiones del día actual se cierran manualmente o a las 23:59, NUNCA antes.
+                if (isPreviousDay || (isSameDay && isExactly2359)) {
                     console.log(`⚠️ Auto-cerrando sesión vencida ID ${s.id} (Org: ${s.organization_id})`);
                     
                     // Definir tiempo de cierre: 23:59:00 en el horario local de Colombia

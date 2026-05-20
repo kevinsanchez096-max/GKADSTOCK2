@@ -24,6 +24,7 @@ import { PlanLimitModal } from './components/PlanLimitModal';
 import { CashRegister } from './components/CashRegister';
 import { useAuthStore } from './store/useAuthStore';
 import { useOrganizationStore } from './store/useOrganizationStore';
+import { useCashStore } from './store/useCashStore';
 import { Toaster } from 'sonner';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { GlobalPlatformSettings } from './components/GlobalPlatformSettings';
@@ -89,7 +90,15 @@ function App() {
     return () => unsubscribeFromChanges();
   }, [profile?.organization_id, fetchOrganization, subscribeToChanges, unsubscribeFromChanges]);
 
+  // ── Restaurar estado de caja al autenticarse ──
+  const { fetchActiveSession } = useCashStore();
   useEffect(() => {
+    if (profile?.organization_id) {
+      fetchActiveSession();
+    }
+  }, [profile?.organization_id, fetchActiveSession]);
+
+  useEffect(() {
     if (darkMode) {
       document.documentElement.classList.add('dark');
       localStorage.setItem('gkad_theme', 'dark');

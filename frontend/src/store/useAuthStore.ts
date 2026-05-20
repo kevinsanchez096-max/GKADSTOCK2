@@ -145,6 +145,14 @@ export const useAuthStore = create<AuthState>((set) => ({
         isInitialized: true
       });
 
+      // ── RESTAURAR ESTADO DE CAJA ACTIVA ──
+      try {
+        const { useCashStore } = await import('./useCashStore');
+        useCashStore.getState().fetchActiveSession();
+      } catch (err) {
+        console.warn('[Login] No se pudo restaurar sesión de caja:', err.message);
+      }
+
       // 🎨 Hidratación de Branding
       if (profileData?.role === 'super_admin') {
         document.documentElement.style.removeProperty('--brand-primary');
