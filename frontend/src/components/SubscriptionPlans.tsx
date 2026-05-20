@@ -458,108 +458,99 @@ export const SubscriptionPlans = () => {
 
       {/* Checkout Simulator Modal */}
       {showCheckout && selectedPlan && createPortal(
-        <div 
-          style={{
-            position: 'fixed', top: 0, left: 0,
-            width: '100vw', height: '100vh',
-            zIndex: 99999,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            backgroundColor: 'rgba(15, 23, 42, 0.45)'
-          }}
-          className="no-print p-4"
-        >
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-background/60 backdrop-blur-sm animate-in fade-in duration-300 no-print">
           <div 
-            className="w-full max-w-4xl rounded-[3rem] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.5)] overflow-hidden bg-card border border-border relative flex flex-col md:flex-row h-[90vh] md:h-auto max-h-[90vh]"
+            className="w-full max-w-4xl bg-card border border-border rounded-[2rem] shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[90vh] animate-in zoom-in-95 duration-300"
             onClick={e => e.stopPropagation()}
           >
-            {/* Left Side: Summary Panel */}
-            <div 
-              style={{
-                backgroundColor: 'color-mix(in srgb, var(--brand-primary), transparent 96%)',
-                borderRight: '1px solid var(--border)'
-              }}
-              className="p-8 md:w-[320px] flex flex-col justify-between shrink-0"
-            >
+            
+            {/* LEFT PANEL: Resumen del Plan */}
+            <div className="p-8 md:w-[320px] flex flex-col justify-between shrink-0 bg-brand-500/5 border-r border-border">
+            
+              {/* Header con Logo */}
               <div className="space-y-6">
                 <div>
-                  <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-brand-500/10 border border-brand-500/20 rounded-full mb-3">
-                    <Lock size={12} className="text-brand-500" />
-                    <span className="text-[9px] font-black text-brand-500 uppercase tracking-widest">
-                      Pago Seguro SSL
+                  <div className="inline-flex items-center gap-3 mb-4">
+                    <div className="h-10 w-10 rounded-lg bg-emerald-500/20 text-emerald-500 flex items-center justify-center">
+                      <BarChart3 size={16} />
+                    </div>
+                    <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">
+                      Pago Seguro
                     </span>
                   </div>
-                  <h3 className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-1">
-                    ESTÁS ADQUIRIENDO:
+                  
+                  <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2">
+                    Estás adquiriendo:
                   </h3>
                   <h2 className="text-3xl font-black text-foreground uppercase font-outfit tracking-tighter leading-none">
                     Plan {selectedPlan}
                   </h2>
-                  <p className="text-xs text-muted-foreground mt-2 font-medium leading-relaxed">
+                  <p className="text-xs text-muted-foreground mt-3 font-medium leading-relaxed">
                     {getPlanDetails(selectedPlan).subtitle}
                   </p>
                 </div>
 
                 <div className="h-px bg-border" />
 
-                <div className="space-y-4">
+                <div className="space-y-3">
                   <div className="flex justify-between items-baseline">
-                    <span className="text-xs font-bold text-muted-foreground uppercase">Suscripción:</span>
-                    <span className="text-xl font-black text-foreground font-outfit">{getPlanDetails(selectedPlan).price}</span>
+                    <span className="text-[9px] font-black text-muted-foreground uppercase tracking-wider">Suscripción:</span>
+                    <span className="text-lg font-black text-foreground font-outfit">{getPlanDetails(selectedPlan).price}</span>
                   </div>
                   <div className="flex justify-between items-baseline">
-                    <span className="text-xs font-bold text-muted-foreground uppercase">Impuestos:</span>
-                    <span className="text-xs font-bold text-muted-foreground">$0 (Incluido)</span>
+                    <span className="text-[9px] font-black text-muted-foreground uppercase tracking-wider">Impuestos:</span>
+                    <span className="text-[9px] font-bold text-muted-foreground">$0 (Incluido)</span>
                   </div>
                   <div className="h-px bg-border border-dashed" />
                   <div className="flex justify-between items-baseline">
-                    <span className="text-xs font-black text-brand-500 uppercase tracking-wider">Total a Pagar:</span>
-                    <span className="text-2xl font-black text-brand-500 font-outfit tracking-tight">
+                    <span className="text-[9px] font-black uppercase tracking-wider" style={{ color: 'var(--brand-primary)' }}>Total a Pagar:</span>
+                    <span className="text-2xl font-black font-outfit tracking-tight" style={{ color: 'var(--brand-primary)' }}>
                       {getPlanDetails(selectedPlan).price}
                     </span>
                   </div>
                 </div>
               </div>
 
-              {/* Secure transaction compliance footer */}
+              {/* Seguridad Footer */}
               <div className="mt-8 p-4 bg-emerald-500/5 rounded-2xl border border-emerald-500/10 flex flex-col gap-1.5">
                 <span className="text-[9px] font-black uppercase text-emerald-500 tracking-wider flex items-center gap-1.5">
-                  🔒 Conexión Encriptada
+                  🔒 Encriptado
                 </span>
                 <span className="text-[8px] font-medium text-muted-foreground leading-relaxed uppercase">
-                  Tus datos de pago están protegidos mediante cifrado de extremo a extremo y cumplen con la normativa PCI-DSS.
+                  Protegido con cifrado de extremo a extremo y normativa PCI-DSS.
                 </span>
               </div>
             </div>
 
-            {/* Right Side: Payment Form / Checkout Steps */}
+            {/* RIGHT PANEL: Formulario de Pago */}
             <div className="flex-1 p-8 flex flex-col justify-between overflow-y-auto">
               
-              {/* Form Step */}
               {checkoutStep === 'form' && (
                 <div className="space-y-6">
-                  {/* Title & Close */}
+                  
+                  {/* Header */}
                   <div className="flex justify-between items-start">
                     <div>
-                      <h2 className="text-2xl font-black text-foreground uppercase tracking-tight font-outfit">
+                      <h2 className="text-2xl font-black text-foreground uppercase font-outfit tracking-tighter">
                         Método de Pago
                       </h2>
-                      <p className="text-xs text-muted-foreground font-bold uppercase tracking-wider">
+                      <p className="text-[9px] font-black text-muted-foreground uppercase tracking-wider mt-1">
                         Selecciona cómo deseas realizar tu compra
                       </p>
                     </div>
                     <button
                       onClick={() => setShowCheckout(false)}
-                      className="p-3 bg-muted text-muted-foreground hover:text-foreground rounded-2xl transition-all border-none cursor-pointer"
+                      className="p-2.5 bg-muted text-muted-foreground hover:text-foreground rounded-xl transition-all border-none cursor-pointer"
                     >
                       <X size={18} />
                     </button>
                   </div>
 
-                  {/* Tabs Selector */}
-                  <div className="grid grid-cols-2 gap-3 p-1.5 bg-muted rounded-2xl border border-border">
+                  {/* Tabs: Tarjeta vs PSE */}
+                  <div className="grid grid-cols-2 gap-2 p-1 bg-muted rounded-xl border border-border">
                     <button
                       onClick={() => setPaymentMethod('card')}
-                      className={`h-11 rounded-xl flex items-center justify-center gap-2 text-xs font-black uppercase tracking-wider transition-all border-none cursor-pointer ${
+                      className={`h-10 rounded-lg flex items-center justify-center gap-2 text-xs font-black uppercase tracking-wider transition-all border-none cursor-pointer ${
                         paymentMethod === 'card'
                           ? 'bg-card text-foreground shadow-sm'
                           : 'text-muted-foreground hover:text-foreground'
@@ -570,7 +561,7 @@ export const SubscriptionPlans = () => {
                     </button>
                     <button
                       onClick={() => setPaymentMethod('pse')}
-                      className={`h-11 rounded-xl flex items-center justify-center gap-2 text-xs font-black uppercase tracking-wider transition-all border-none cursor-pointer ${
+                      className={`h-10 rounded-lg flex items-center justify-center gap-2 text-xs font-black uppercase tracking-wider transition-all border-none cursor-pointer ${
                         paymentMethod === 'pse'
                           ? 'bg-card text-foreground shadow-sm'
                           : 'text-muted-foreground hover:text-foreground'
@@ -581,22 +572,17 @@ export const SubscriptionPlans = () => {
                     </button>
                   </div>
 
-                  {/* Payment Forms Content */}
+                  {/* Payment Form Content */}
                   <div className="space-y-5">
                     {paymentMethod === 'card' ? (
                       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-                        {/* Mock Credit Card Viewer */}
+                        
+                        {/* Visualización de Tarjeta */}
                         <div className="lg:col-span-5 flex justify-center">
-                          <div 
-                            style={{
-                              background: `linear-gradient(135deg, ${getPlanDetails(selectedPlan).color}, #1e1b4b)`,
-                              boxShadow: `0 15px 30px -10px ${getPlanDetails(selectedPlan).color}40`
-                            }}
-                            className="w-full max-w-[280px] h-[170px] rounded-2xl p-5 flex flex-col justify-between text-white relative overflow-hidden"
-                          >
-                            {/* Card Chip & Network */}
+                          <div className="w-full max-w-[280px] h-[170px] rounded-2xl p-5 flex flex-col justify-between text-white relative overflow-hidden bg-gradient-to-br from-blue-600 to-blue-900 shadow-lg">
+                            
+                            {/* Chip & Network */}
                             <div className="flex justify-between items-center relative z-10">
-                              {/* Glowing SIM Chip */}
                               <div className="w-10 h-7 rounded-md bg-gradient-to-r from-amber-400 to-amber-200 border border-amber-300 shadow-sm relative overflow-hidden">
                                 <div className="absolute inset-0 grid grid-cols-3 gap-0.5 opacity-25">
                                   <div className="border-r border-b border-black"></div>
@@ -609,9 +595,9 @@ export const SubscriptionPlans = () => {
                               </span>
                             </div>
 
-                            {/* Card Number */}
+                            {/* Número de Tarjeta */}
                             <div className="space-y-1 relative z-10">
-                              <p className="text-[13px] font-black tracking-[0.25em] font-outfit">
+                              <p className="text-sm font-black tracking-[0.2em] font-outfit">
                                 {cardNum || '•••• •••• •••• ••••'}
                               </p>
                               <p className="text-[7px] font-black uppercase tracking-widest text-white/50">
@@ -619,7 +605,7 @@ export const SubscriptionPlans = () => {
                               </p>
                             </div>
 
-                            {/* Holder & Expiry */}
+                            {/* Titular & Vencimiento */}
                             <div className="flex justify-between items-end relative z-10">
                               <div className="min-w-0">
                                 <p className="text-[9px] font-black uppercase tracking-wider truncate">
@@ -639,72 +625,83 @@ export const SubscriptionPlans = () => {
                               </div>
                             </div>
 
-                            {/* Background mesh effects */}
+                            {/* Mesh effect */}
                             <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent rotate-12 scale-150" />
                           </div>
                         </div>
 
-                        {/* Credit Card Inputs */}
+                        {/* Inputs de Tarjeta */}
                         <div className="lg:col-span-7 space-y-4">
+                          
                           <div className="space-y-1.5">
-                            <label className="text-[9px] font-black uppercase tracking-wider text-muted-foreground">Nombre del Tarjetahabiente</label>
+                            <label className="text-[9px] font-black uppercase tracking-wider text-muted-foreground">
+                              Nombre del Tarjetahabiente
+                            </label>
                             <input
                               type="text"
-                              placeholder="Ej: KEVIN SANCHEZ SANCHEZ"
+                              placeholder="Ej: GERALDINE GONZALEZ"
                               value={cardName}
                               onChange={e => setCardName(e.target.value.toUpperCase())}
-                              className="w-full h-11 px-4 bg-muted border border-border rounded-xl text-xs font-bold text-foreground focus:outline-none focus:border-brand-500 transition-colors uppercase"
+                              className="w-full h-12 px-4 bg-muted border border-border rounded-xl text-xs font-bold text-foreground focus:outline-none focus:border-brand-500 transition-colors uppercase"
                             />
                           </div>
 
                           <div className="space-y-1.5">
-                            <label className="text-[9px] font-black uppercase tracking-wider text-muted-foreground">Número de Tarjeta</label>
+                            <label className="text-[9px] font-black uppercase tracking-wider text-muted-foreground">
+                              Número de Tarjeta
+                            </label>
                             <input
                               type="text"
                               maxLength={19}
                               placeholder="4000 1234 5678 9010"
                               value={cardNum}
                               onChange={e => handleCardNumberChange(e.target.value)}
-                              className="w-full h-11 px-4 bg-muted border border-border rounded-xl text-xs font-bold text-foreground focus:outline-none focus:border-brand-500 transition-colors"
+                              className="w-full h-12 px-4 bg-muted border border-border rounded-xl text-xs font-bold text-foreground focus:outline-none focus:border-brand-500 transition-colors"
                             />
                           </div>
 
                           <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1.5">
-                              <label className="text-[9px] font-black uppercase tracking-wider text-muted-foreground">Vencimiento</label>
+                              <label className="text-[9px] font-black uppercase tracking-wider text-muted-foreground">
+                                Vencimiento
+                              </label>
                               <input
                                 type="text"
                                 maxLength={5}
                                 placeholder="MM/AA"
                                 value={cardExpiry}
                                 onChange={e => handleExpiryChange(e.target.value)}
-                                className="w-full h-11 px-4 bg-muted border border-border rounded-xl text-xs font-bold text-foreground focus:outline-none focus:border-brand-500 transition-colors text-center"
+                                className="w-full h-12 px-4 bg-muted border border-border rounded-xl text-xs font-bold text-foreground focus:outline-none focus:border-brand-500 transition-colors text-center"
                               />
                             </div>
                             <div className="space-y-1.5">
-                              <label className="text-[9px] font-black uppercase tracking-wider text-muted-foreground">Código CVV</label>
+                              <label className="text-[9px] font-black uppercase tracking-wider text-muted-foreground">
+                                CVV
+                              </label>
                               <input
                                 type="password"
                                 maxLength={4}
                                 placeholder="•••"
                                 value={cardCvv}
                                 onChange={e => setCardCvv(e.target.value.replace(/[^0-9]/g, ''))}
-                                className="w-full h-11 px-4 bg-muted border border-border rounded-xl text-xs font-bold text-foreground focus:outline-none focus:border-brand-500 transition-colors text-center"
+                                className="w-full h-12 px-4 bg-muted border border-border rounded-xl text-xs font-bold text-foreground focus:outline-none focus:border-brand-500 transition-colors text-center"
                               />
                             </div>
                           </div>
                         </div>
                       </div>
                     ) : (
-                      // PSE Form
+                      /* PSE Form */
                       <div className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="space-y-1.5">
-                            <label className="text-[9px] font-black uppercase tracking-wider text-muted-foreground">Entidad Bancaria</label>
+                            <label className="text-[9px] font-black uppercase tracking-wider text-muted-foreground">
+                              Entidad Bancaria
+                            </label>
                             <select
                               value={pseBank}
                               onChange={e => setPseBank(e.target.value)}
-                              className="w-full h-11 px-4 bg-muted border border-border rounded-xl text-xs font-bold text-foreground focus:outline-none focus:border-brand-500 transition-colors cursor-pointer"
+                              className="w-full h-12 px-4 bg-muted border border-border rounded-xl text-xs font-bold text-foreground focus:outline-none focus:border-brand-500 transition-colors cursor-pointer"
                             >
                               <option value="">Selecciona tu Banco</option>
                               {COLOMBIAN_BANKS.map(bank => (
@@ -713,11 +710,13 @@ export const SubscriptionPlans = () => {
                             </select>
                           </div>
                           <div className="space-y-1.5">
-                            <label className="text-[9px] font-black uppercase tracking-wider text-muted-foreground">Tipo de Persona</label>
+                            <label className="text-[9px] font-black uppercase tracking-wider text-muted-foreground">
+                              Tipo de Persona
+                            </label>
                             <select
                               value={pseClientType}
                               onChange={e => setPseClientType(e.target.value)}
-                              className="w-full h-11 px-4 bg-muted border border-border rounded-xl text-xs font-bold text-foreground focus:outline-none focus:border-brand-500 transition-colors cursor-pointer"
+                              className="w-full h-12 px-4 bg-muted border border-border rounded-xl text-xs font-bold text-foreground focus:outline-none focus:border-brand-500 transition-colors cursor-pointer"
                             >
                               <option value="Persona Natural">Persona Natural</option>
                               <option value="Persona Jurídica">Persona Jurídica</option>
@@ -727,23 +726,27 @@ export const SubscriptionPlans = () => {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="space-y-1.5">
-                            <label className="text-[9px] font-black uppercase tracking-wider text-muted-foreground">Correo Registrado en PSE</label>
+                            <label className="text-[9px] font-black uppercase tracking-wider text-muted-foreground">
+                              Correo Registrado en PSE
+                            </label>
                             <input
                               type="email"
                               placeholder="Ej: tu-correo@email.com"
                               value={pseEmail}
                               onChange={e => setPseEmail(e.target.value)}
-                              className="w-full h-11 px-4 bg-muted border border-border rounded-xl text-xs font-bold text-foreground focus:outline-none focus:border-brand-500 transition-colors"
+                              className="w-full h-12 px-4 bg-muted border border-border rounded-xl text-xs font-bold text-foreground focus:outline-none focus:border-brand-500 transition-colors"
                             />
                           </div>
                           <div className="space-y-1.5">
-                            <label className="text-[9px] font-black uppercase tracking-wider text-muted-foreground">Cédula o NIT de Identidad</label>
+                            <label className="text-[9px] font-black uppercase tracking-wider text-muted-foreground">
+                              Cédula o NIT
+                            </label>
                             <input
                               type="text"
                               placeholder="Ej: 1020304050"
                               value={pseDoc}
                               onChange={e => setPseDoc(e.target.value.replace(/[^0-9]/g, ''))}
-                              className="w-full h-11 px-4 bg-muted border border-border rounded-xl text-xs font-bold text-foreground focus:outline-none focus:border-brand-500 transition-colors"
+                              className="w-full h-12 px-4 bg-muted border border-border rounded-xl text-xs font-bold text-foreground focus:outline-none focus:border-brand-500 transition-colors"
                             />
                           </div>
                         </div>
@@ -751,19 +754,21 @@ export const SubscriptionPlans = () => {
                     )}
                   </div>
 
-                  {/* Actions buttons */}
-                  <div className="flex gap-4 pt-4 border-t border-border">
+                  {/* Action Buttons */}
+                  <div className="flex gap-3 pt-4 border-t border-border">
                     <button
                       onClick={() => setShowCheckout(false)}
-                      className="flex-1 h-14 text-[10px] font-black uppercase tracking-widest rounded-2xl border border-border text-muted-foreground hover:bg-muted/50 transition-all cursor-pointer bg-transparent"
+                      className="flex-1 h-12 text-[9px] font-black uppercase tracking-widest rounded-xl border border-border text-muted-foreground hover:bg-muted transition-colors cursor-pointer bg-transparent"
                     >
                       Cancelar
                     </button>
                     <button
                       onClick={executeSimulatedPayment}
-                      className="flex-[2] h-14 text-[10px] font-black uppercase tracking-widest rounded-2xl bg-brand-500 text-white shadow-xl shadow-brand-500/20 hover:scale-[1.02] active:scale-100 transition-all cursor-pointer border-none"
+                      disabled={isProcessing}
+                      className="flex-1 h-12 text-[9px] font-black uppercase tracking-widest rounded-xl bg-brand-500 hover:bg-brand-600 text-white shadow-lg transition-all active:scale-95 border-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
-                      Procesar Pago Seguro
+                      <Lock size={14} />
+                      Completar Pago
                     </button>
                   </div>
                 </div>
@@ -773,9 +778,7 @@ export const SubscriptionPlans = () => {
               {checkoutStep === 'processing' && (
                 <div className="flex-1 flex flex-col items-center justify-center py-12 space-y-6">
                   <div className="relative flex items-center justify-center">
-                    {/* Glowing outer spinner */}
                     <div className="absolute h-24 w-24 rounded-full border-2 border-brand-500/10 border-t-brand-500 animate-spin" />
-                    {/* Inner pulse */}
                     <div className="h-16 w-16 bg-brand-500/10 border border-brand-500/20 rounded-full flex items-center justify-center animate-pulse">
                       <Loader2 className="h-8 w-8 text-brand-500 animate-spin" />
                     </div>
@@ -784,7 +787,7 @@ export const SubscriptionPlans = () => {
                     <h3 className="text-lg font-black text-foreground uppercase tracking-wider font-outfit">
                       Procesando Transacción
                     </h3>
-                    <p className="text-xs text-muted-foreground font-black uppercase tracking-widest animate-pulse max-w-sm mx-auto">
+                    <p className="text-xs text-muted-foreground font-black uppercase tracking-widest animate-pulse max-w-sm">
                       {processingMessage}
                     </p>
                   </div>
@@ -795,60 +798,25 @@ export const SubscriptionPlans = () => {
               {checkoutStep === 'success' && (
                 <div className="flex-1 flex flex-col justify-between py-4">
                   <div className="space-y-6 text-center">
-                    {/* Animated Check */}
-                    <div className="mx-auto h-20 w-20 bg-emerald-500/10 border border-emerald-500/20 rounded-full flex items-center justify-center shadow-lg shadow-emerald-500/10 animate-bounce">
+                    <div className="mx-auto h-20 w-20 bg-emerald-500/10 border border-emerald-500/20 rounded-full flex items-center justify-center shadow-lg animate-bounce">
                       <Check className="h-10 w-10 text-emerald-500" strokeWidth={3} />
                     </div>
 
                     <div className="space-y-2">
-                      <h2 className="text-3xl font-black text-foreground uppercase tracking-tight font-outfit">
-                        ¡Transacción Aprobada!
-                      </h2>
-                      <p className="text-xs text-muted-foreground font-medium max-w-md mx-auto leading-relaxed">
-                        El pago ha sido procesado de manera exitosa a través de la pasarela y tu organización ha sido actualizada al nuevo plan corporativo.
+                      <h3 className="text-2xl font-black text-foreground uppercase font-outfit tracking-tighter">
+                        ¡Pago Exitoso!
+                      </h3>
+                      <p className="text-xs text-muted-foreground font-bold leading-relaxed max-w-sm">
+                        Tu suscripción al plan {selectedPlan} ha sido activada correctamente.
                       </p>
                     </div>
-
-                    {/* Receipt Details Box */}
-                    <div className="bg-muted rounded-[2rem] border border-border p-6 max-w-md mx-auto text-left space-y-3 shadow-inner">
-                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-500 text-center mb-4">
-                        Comprobante de Pago Electrónico
-                      </p>
-                      <div className="flex justify-between items-center text-xs">
-                        <span className="font-bold text-muted-foreground uppercase">Referencia:</span>
-                        <span className="font-black text-foreground font-outfit">{transactionRef}</span>
-                      </div>
-                      <div className="flex justify-between items-center text-xs">
-                        <span className="font-bold text-muted-foreground uppercase">Plan Activado:</span>
-                        <span className="font-black text-foreground uppercase">Plan {selectedPlan}</span>
-                      </div>
-                      <div className="flex justify-between items-center text-xs">
-                        <span className="font-bold text-muted-foreground uppercase">Pasarela de Pago:</span>
-                        <span className="font-black text-foreground uppercase">{paymentMethod.toUpperCase()}</span>
-                      </div>
-                      <div className="flex justify-between items-center text-xs">
-                        <span className="font-bold text-muted-foreground uppercase">Estado:</span>
-                        <span className="px-2 py-0.5 bg-emerald-500/15 text-emerald-500 rounded-md font-black text-[9px] uppercase tracking-wider">Aprobado</span>
-                      </div>
-                      <div className="h-px bg-border my-2 border-dashed" />
-                      <div className="flex justify-between items-center text-xs">
-                        <span className="font-black text-foreground uppercase">Total Débito:</span>
-                        <span className="font-black text-brand-500 font-outfit text-sm">{getPlanDetails(selectedPlan).price}</span>
-                      </div>
-                    </div>
                   </div>
-
-                  {/* Actions buttons */}
-                  <div className="pt-6 border-t border-border flex justify-center">
-                    <button
-                      onClick={() => {
-                        setShowCheckout(false);
-                      }}
-                      className="w-full max-w-md h-14 rounded-2xl bg-emerald-500 text-white font-black uppercase tracking-widest text-xs shadow-lg shadow-emerald-500/20 hover:scale-[1.02] active:scale-100 transition-all cursor-pointer border-none"
-                    >
-                      Completar y Finalizar
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => setShowCheckout(false)}
+                    className="w-full h-12 text-[9px] font-black uppercase tracking-widest rounded-xl bg-brand-500 hover:bg-brand-600 text-white shadow-lg transition-all active:scale-95 border-none cursor-pointer"
+                  >
+                    Cerrar y Continuar
+                  </button>
                 </div>
               )}
             </div>
