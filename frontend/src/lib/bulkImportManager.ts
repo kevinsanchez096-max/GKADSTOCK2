@@ -8,6 +8,12 @@ export interface ImportError {
   productName?: string;
 }
 
+export interface SuccessDetail {
+  row: number;
+  productName: string;
+  sku?: string;
+}
+
 export const translateError = (message: string): string => {
   if (!message) return "Error desconocido";
 
@@ -40,7 +46,7 @@ export const translateError = (message: string): string => {
 export const startBulkImport = async (
   file: File,
   orgId: string,
-  onComplete: (report: { successCount: number; totalFailed: number; errors: ImportError[] }) => void
+  onComplete: (report: { successCount: number; totalFailed: number; errors: ImportError[]; successDetails: SuccessDetail[] }) => void
 ) => {
   const toastId = toast.loading('Leyendo archivo Excel... (0%)', { duration: Infinity });
 
@@ -142,6 +148,7 @@ const processImport = async (
   let successCount = 0;
   let failedCount = 0;
   const localErrors: ImportError[] = [];
+  const successDetails: SuccessDetail[] = [];
 
   try {
     // 1. Resolver categorías
@@ -281,6 +288,11 @@ const processImport = async (
           });
         } else {
           successCount++;
+          successDetails.push({
+            row: rowNum,
+            productName: payload.name,
+            sku: payload.sku || undefined
+          });
         }
 
         const progress = Math.min(100, Math.round(((i + 1) / totalRows) * 80) + 20);
@@ -297,7 +309,8 @@ const processImport = async (
     onComplete({
       successCount,
       totalFailed,
-      errors: localErrors
+      errors: localErrors,
+      successDetails
     });
 
   } catch (err: any) {
