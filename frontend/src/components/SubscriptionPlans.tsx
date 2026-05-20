@@ -483,10 +483,10 @@ export const SubscriptionPlans = () => {
                     Estás adquiriendo:
                   </h3>
                   <h2 className="text-3xl font-black text-foreground uppercase font-outfit tracking-tighter leading-none">
-                    Plan {selectedPlan}
+                    Plan {selectedPlan!}
                   </h2>
                   <p className="text-xs text-muted-foreground mt-3 font-medium leading-relaxed">
-                    {getPlanDetails(selectedPlan).subtitle}
+                    {getPlanDetails(selectedPlan!).subtitle}
                   </p>
                 </div>
 
@@ -495,7 +495,7 @@ export const SubscriptionPlans = () => {
                 <div className="space-y-3">
                   <div className="flex justify-between items-baseline">
                     <span className="text-[9px] font-black text-muted-foreground uppercase tracking-wider">Suscripción:</span>
-                    <span className="text-lg font-black text-foreground font-outfit">{getPlanDetails(selectedPlan).price}</span>
+                    <span className="text-lg font-black text-foreground font-outfit">{getPlanDetails(selectedPlan!).price}</span>
                   </div>
                   <div className="flex justify-between items-baseline">
                     <span className="text-[9px] font-black text-muted-foreground uppercase tracking-wider">Impuestos:</span>
@@ -505,7 +505,7 @@ export const SubscriptionPlans = () => {
                   <div className="flex justify-between items-baseline">
                     <span className="text-[9px] font-black uppercase tracking-wider" style={{ color: 'var(--brand-primary)' }}>Total a Pagar:</span>
                     <span className="text-2xl font-black font-outfit tracking-tight" style={{ color: 'var(--brand-primary)' }}>
-                      {getPlanDetails(selectedPlan).price}
+                      {getPlanDetails(selectedPlan!).price}
                     </span>
                   </div>
                 </div>
@@ -807,7 +807,7 @@ export const SubscriptionPlans = () => {
                         ¡Pago Exitoso!
                       </h3>
                       <p className="text-xs text-muted-foreground font-bold leading-relaxed max-w-sm">
-                        Tu suscripción al plan {selectedPlan} ha sido activada correctamente.
+                        Tu suscripción al plan {selectedPlan!} ha sido activada correctamente.
                       </p>
                     </div>
                   </div>
