@@ -183,6 +183,21 @@ function App() {
     );
   }
 
+  // ── Guard para usuarios pendientes de verificar OTP ──
+  if (user && useAuthStore.getState().pendingOtpVerification) {
+    return (
+      <>
+        <AuthForm 
+          darkMode={darkMode} 
+          toggleDarkMode={toggleDarkMode}
+          initialMode="register"
+          initialStep={5}
+        />
+        <Toaster position="top-right" richColors />
+      </>
+    );
+  }
+
   const renderContent = () => {
     switch (activeTab) {
       case 'home':

@@ -9,6 +9,7 @@ interface AuthState {
   profile: any | null;
   loading: boolean;
   isInitialized: boolean;
+  pendingOtpVerification: boolean;
   login: (email: string, password: string) => Promise<any>;
   register: (data: any) => Promise<void>;
   setUser: (user: any) => void;
@@ -21,6 +22,7 @@ interface AuthState {
   activateAccount: (email: string, code: string) => Promise<any>;
   requestPasswordReset: (email: string) => Promise<void>;
   checkAuth: () => Promise<void>;
+  setPendingOtpVerification: (pending: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -28,6 +30,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   profile: null,
   loading: false,
   isInitialized: false,
+  pendingOtpVerification: false,
 
   requestPasswordReset: async (email) => {
     set({ loading: true });
@@ -260,7 +263,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     // ── PASO 6: Redirigir y forzar recarga total para asegurar limpieza de memoria ──
     window.location.href = '/';
   },
-
+  setPendingOtpVerification: (pending) => set({ pendingOtpVerification: pending }),
   requestOTP: async (email) => {
     set({ loading: true });
     const { error } = await supabase.auth.signInWithOtp({ 
@@ -377,7 +380,8 @@ export const useAuthStore = create<AuthState>((set) => ({
         user,
         profile: profileData,
         loading: false,
-        isInitialized: true
+        isInitialized: true,
+        pendingOtpVerification: false
       });
       return { user, profile: profileData };
     } catch (error) {

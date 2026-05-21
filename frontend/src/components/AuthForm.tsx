@@ -359,6 +359,10 @@ export const AuthForm = ({ darkMode, toggleDarkMode, initialMode }: AuthFormProp
         options: { data: { full_name: cleanName, organization_name: cleanOrg } },
       });
       if (signUpError) throw signUpError;
+      
+      // ── Marcar que hay OTP pendiente de verificación ──
+      useAuthStore.getState().setPendingOtpVerification(true);
+      
       setStep(5);
       toast.success('OTP enviado.');
     } catch (err: any) { setError(err.message || 'Error en registro.'); } finally { setLoading(false); }
