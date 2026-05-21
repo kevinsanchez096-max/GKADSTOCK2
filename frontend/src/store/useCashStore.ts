@@ -55,6 +55,7 @@ export const useCashStore = create<CashState>((set, get) => ({
         } catch (error) {
             console.error('[CashStore] Error fetching active cash session:', error);
             set({ activeSession: null, hasCheckedActive: true });
+            throw error;
         } finally {
             set({ loading: false });
         }
@@ -113,6 +114,7 @@ export const useCashStore = create<CashState>((set, get) => ({
             }
         } catch (error) {
             console.error('[CashStore] Error fetching history:', error);
+            throw error;
         } finally {
             set({ loadingHistory: false });
         }

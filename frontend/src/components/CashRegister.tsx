@@ -43,13 +43,32 @@ export const CashRegister = () => {
     const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
     useEffect(() => {
-        fetchActiveSession();
-        fetchHistory();
+        const loadInitialData = async () => {
+            try {
+                await fetchActiveSession();
+                await fetchHistory();
+            } catch (err: any) {
+                if (err?.status === 401) {
+                    console.warn('[CashRegister] Error 401 detectado al cargar datos iniciales.');
+                }
+            }
+        };
+
+        loadInitialData();
+
         // Polling automático cada 15s para mantener datos en tiempo real
-        const interval = setInterval(() => {
-            fetchActiveSession();
-            fetchHistory();
+        const interval = setInterval(async () => {
+            try {
+                await fetchActiveSession();
+                await fetchHistory();
+            } catch (err: any) {
+                if (err?.status === 401) {
+                    console.warn('[CashRegister] Error de autenticación (401) detectado. Deteniendo polling de caja.');
+                    clearInterval(interval);
+                }
+            }
         }, 15000);
+
         return () => clearInterval(interval);
     }, []);
 

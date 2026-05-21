@@ -1,3 +1,5 @@
+import { supabase } from './supabase';
+
 const BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 /**
@@ -13,7 +15,8 @@ export const api = {
  const isFormData = options.body instanceof FormData;
  
  // Configuración por defecto de cabeceras con Token JWT si existe
- const token = localStorage.getItem('gkad_token');
+ const { data } = await supabase.auth.getSession();
+ const token = data.session?.access_token;
  const headers: any = {
  ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
  ...options.headers,
