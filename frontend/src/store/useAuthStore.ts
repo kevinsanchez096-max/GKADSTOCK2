@@ -319,6 +319,57 @@ export const useAuthStore = create<AuthState>((set) => ({
         localStorage.setItem('gkad_token', session.access_token);
       }
 
+      // ── PASO CRÍTICO: Establecer sesión en el cliente de Supabase ──
+      // Esto garantiza que Supabase tenga la sesión activa antes de hacer getSession()
+      if (session?.access_token && session?.refresh_token) {
+        await supabase.auth.setSession({
+          access_token: session.access_token,
+          refresh_token: session.refresh_token
+        });
+      }
+
+      // ── PASO CRÍTICO: Esperar a que la sesión de Supabase esté disponible ──
+      // El problema: el backend confirma el OTP, pero la sesión en el cliente
+      // de Supabase aún puede no estar lista. Reintentamos hasta 3 veces.
+      let sessionReady = false;
+      let lastError: Error | null = null;
+      const maxRetries = 3;
+      const retryDelay = 500; // ms
+
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          const { data: { session: supabaseSession }, error } = await supabase.auth.getSession();
+          
+          if (error) {
+            throw new Error(`Supabase error: ${error.message}`);
+          }
+
+          if (supabaseSession) {
+            sessionReady = true;
+            console.log(`[activateAccount] Sesión disponible en intento ${attempt}`);
+            break;
+          }
+
+          if (attempt < maxRetries) {
+            console.warn(`[activateAccount] Sesión no disponible, reintentando (${attempt}/${maxRetries})...`);
+            await new Promise(resolve => setTimeout(resolve, retryDelay));
+          }
+        } catch (err: any) {
+          lastError = err;
+          if (attempt < maxRetries) {
+            await new Promise(resolve => setTimeout(resolve, retryDelay));
+          }
+        }
+      }
+
+      // Si después de los reintentos no hay sesión, lanzar error descriptivo
+      if (!sessionReady) {
+        const errorMsg = lastError
+          ? `No se pudo establecer la sesión de Supabase: ${lastError.message}`
+          : 'No se pudo establecer la sesión de Supabase después de 3 intentos.';
+        throw new Error(errorMsg);
+      }
+
       // Refrescar perfil localmente para que is_active sea true
       const profileData = await api.get('/auth/me');
       
