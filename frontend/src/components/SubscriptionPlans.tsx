@@ -133,6 +133,7 @@ export const SubscriptionPlans = () => {
   const [checkoutStep, setCheckoutStep] = useState<'form' | 'processing' | 'success'>('form');
   const [processingMessage, setProcessingMessage] = useState('');
   const [transactionRef, setTransactionRef] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
 
   // Estados de los formularios de pago
   const [cardNum, setCardNum] = useState('');
@@ -216,6 +217,7 @@ export const SubscriptionPlans = () => {
       }
     }
 
+    setIsProcessing(true);
     setCheckoutStep('processing');
     setProcessingMessage('Iniciando comunicación con el Gateway del banco...');
 
@@ -259,12 +261,14 @@ export const SubscriptionPlans = () => {
 
             setTransactionRef(`REF-GKAD-${Math.random().toString(36).substring(2, 9).toUpperCase()}`);
             setCheckoutStep('success');
+            setIsProcessing(false);
             toast.success('¡Suscripción actualizada con éxito!', {
               style: { background: '#10b981', color: '#fff', border: 'none' }
             });
           } catch (error) {
             toast.error('Error al procesar el cobro');
             setCheckoutStep('form');
+            setIsProcessing(false);
           }
         }, 1500);
       }, 1500);
