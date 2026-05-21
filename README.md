@@ -45,6 +45,118 @@ La base de datos en Supabase (PostgreSQL) se organiza en **12 tablas relacionale
 11. **`payment_requests`**: Registro detallado de solicitudes y conciliaciones de pagos recibidos.
 12. **`system_logs`**: Bitácora forense de auditoría global del SaaS para trazar las acciones críticas ejecutadas por los usuarios.
 
+#### 📐 Diagrama Entidad-Relación (DER Enterprise)
+
+El siguiente modelo relacional describe cómo interactúan las 12 tablas en el motor Supabase PostgreSQL:
+
+```mermaid
+erDiagram
+    ORGANIZATIONS ||--o{ PROFILES : "has"
+    ORGANIZATIONS ||--o{ CATEGORIES : "defines"
+    ORGANIZATIONS ||--o{ PRODUCTS : "owns"
+    ORGANIZATIONS ||--o{ SALES : "records"
+    ORGANIZATIONS ||--o{ EXPENSES : "tracks"
+    ORGANIZATIONS ||--o{ CUSTOMERS : "manages"
+    ORGANIZATIONS ||--o{ SUPPLIERS : "maintains"
+    ORGANIZATIONS ||--o{ SYSTEM_LOGS : "audits"
+    ORGANIZATIONS ||--o{ PAYMENT_REQUESTS : "collects"
+    
+    CATEGORIES ||--o{ PRODUCTS : "categorizes"
+    PROFILES ||--o{ SALES : "operates"
+    SALES ||--|{ SALE_ITEMS : "contains"
+    PRODUCTS ||--o{ SALE_ITEMS : "sold_in"
+    PRODUCTS ||--o{ INVENTORY_MOVEMENTS : "tracks_stock_in"
+
+    ORGANIZATIONS {
+        uuid id PK
+        text name
+        text tax_id
+        text plan
+        text status
+    }
+    PROFILES {
+        uuid id PK
+        uuid organization_id FK
+        text email
+        text role
+        text full_name
+    }
+    CATEGORIES {
+        uuid id PK
+        uuid organization_id FK
+        text name
+    }
+    PRODUCTS {
+        uuid id PK
+        uuid organization_id FK
+        uuid category_id FK
+        text name
+        text barcode
+        decimal price_buy
+        decimal price_sell
+        decimal stock
+        decimal stock_min
+    }
+    SALES {
+        uuid id PK
+        uuid organization_id FK
+        uuid profile_id FK
+        uuid cash_session_id FK
+        decimal subtotal
+        decimal taxes
+        decimal total
+        text payment_method
+    }
+    SALE_ITEMS {
+        uuid id PK
+        uuid sale_id FK
+        uuid product_id FK
+        decimal quantity
+        decimal price_historical
+    }
+    EXPENSES {
+        uuid id PK
+        uuid organization_id FK
+        uuid cash_session_id FK
+        text description
+        decimal amount
+    }
+    CUSTOMERS {
+        uuid id PK
+        uuid organization_id FK
+        text name
+        text phone
+        text email
+    }
+    SUPPLIERS {
+        uuid id PK
+        uuid organization_id FK
+        text name
+        text phone
+        text contact_person
+    }
+    INVENTORY_MOVEMENTS {
+        uuid id PK
+        uuid product_id FK
+        text type
+        decimal quantity
+        text reason
+    }
+    PAYMENT_REQUESTS {
+        uuid id PK
+        uuid organization_id FK
+        decimal amount
+        text status
+    }
+    SYSTEM_LOGS {
+        uuid id PK
+        uuid organization_id FK
+        text action
+        text details
+    }
+```
+
+
 ### 🔌 Módulos de la API REST (75 Endpoints / 11 Módulos)
 
 El backend expone **75 endpoints únicos** organizados bajo **11 módulos de enrutamiento MVC** para aislar responsabilidades operativas:
