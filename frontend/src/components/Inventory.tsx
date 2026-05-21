@@ -43,6 +43,8 @@ export const Inventory = () => {
  fetchInventoryMovements 
  } = useShopStore();
  const { profile } = useAuthStore();
+ const isSeller = ['vendedor', 'seller', 'cashier']
+   .includes(profile?.role?.toLowerCase?.() || '');
  
  const [searchTerm, setSearchTerm] = useState('');
  
@@ -408,6 +410,7 @@ export const Inventory = () => {
 
           <div className="flex items-center gap-3 flex-wrap sm:flex-nowrap">
             {/* Botón de Importación */}
+            {!isSeller && (
             <button 
               onClick={() => setIsImportModalOpen(true)}
               className="h-14 px-6 bg-muted/40 hover:bg-muted/80 text-foreground border border-border/50 rounded-2xl flex items-center justify-center gap-2 hover:scale-105 transition-all font-black uppercase text-[10px] tracking-widest"
@@ -416,6 +419,7 @@ export const Inventory = () => {
               <Upload size={16} />
               Importar
             </button>
+            )}
 
             {/* Botón de Exportación */}
             <button 
@@ -428,6 +432,7 @@ export const Inventory = () => {
             </button>
 
             {/* Botón Nuevo Producto */}
+            {!isSeller && (
             <Button 
               onClick={() => setIsAddModalOpen(true)}
               icon={Plus}
@@ -435,6 +440,7 @@ export const Inventory = () => {
             >
               Nuevo
             </Button>
+            )}
           </div>
         </div>
 
@@ -827,25 +833,31 @@ export const Inventory = () => {
   </td>
   <td className="px-8 py-5 text-right">
   <div className="flex justify-end gap-3 opacity-40 group-hover:opacity-100 transition-all">
-  <button 
-  onClick={() => handleOpenMerma(p)}
-  title="Registrar Merma"
-  className="p-2.5 bg-muted text-orange-500 hover:bg-orange-500/10 rounded-xl border border-transparent hover:border-orange-500/20 transition-all cursor-pointer"
-  >
-  <AlertTriangle size={16} />
-  </button>
-  <button 
-  onClick={() => handleEdit(p)}
-  className="p-2.5 bg-muted text-muted-foreground hover:text-brand-500 hover:bg-brand-500/10 rounded-xl border border-transparent hover:border-brand-500/20 transition-all cursor-pointer"
-  >
-  <Edit2 size={16} />
-  </button>
-  <button 
-  onClick={() => handleDelete(p.id)}
-  className="p-2.5 bg-muted text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-xl border border-transparent hover:border-red-500/20 transition-all cursor-pointer"
-  >
-  <Trash2 size={16} />
-  </button>
+  {!isSeller && (
+    <button 
+      onClick={() => handleOpenMerma(p)}
+      title="Registrar Merma"
+      className="p-2.5 bg-muted text-orange-500 hover:bg-orange-500/10 rounded-xl border border-transparent hover:border-orange-500/20 transition-all cursor-pointer"
+    >
+      <AlertTriangle size={16} />
+    </button>
+  )}
+  {!isSeller && (
+    <button 
+      onClick={() => handleEdit(p)}
+      className="p-2.5 bg-muted text-muted-foreground hover:text-brand-500 hover:bg-brand-500/10 rounded-xl border border-transparent hover:border-brand-500/20 transition-all cursor-pointer"
+    >
+      <Edit2 size={16} />
+    </button>
+  )}
+  {!isSeller && (
+    <button 
+      onClick={() => handleDelete(p.id)}
+      className="p-2.5 bg-muted text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-xl border border-transparent hover:border-red-500/20 transition-all cursor-pointer"
+    >
+      <Trash2 size={16} />
+    </button>
+  )}
   </div>
   </td>
   </tr>

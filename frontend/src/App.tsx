@@ -32,6 +32,9 @@ import { supabase } from './lib/supabase';
 
 function App() {
   const { user, profile, loading, isInitialized, checkAuth } = useAuthStore();
+  const isSeller = ['vendedor', 'seller', 'cashier']
+    .includes(profile?.role?.toLowerCase?.() || '');
+  const isSuperAdmin = profile?.role === 'super_admin';
   const [activeTab, setActiveTab] = useState('home');
   const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [darkMode, setDarkMode] = useState(() => {
@@ -194,18 +197,18 @@ function App() {
         return <CashRegister />;
       case 'customers':
         return <Customers />;
-      case 'suppliers':
-        return <Suppliers />;
-      case 'categories':
-        return <CategoryManager />;
       case 'expenses':
         return <Expenses />;
       case 'sales_history':
         return <SalesHistory />;
       case 'settings':
-        return <Settings />;
+        return isSeller ? <Dashboard /> : <Settings />;
       case 'subscriptions':
-        return <SubscriptionPlans />;
+        return isSeller ? <Dashboard /> : <SubscriptionPlans />;
+      case 'suppliers':
+        return isSeller ? <Dashboard /> : <Suppliers />;
+      case 'categories':
+        return isSeller ? <Dashboard /> : <CategoryManager />;
       case 'admin_metrics':
         return <SuperAdminDashboard setActiveTab={setActiveTab} />;
       case 'admin_organizations':
@@ -215,7 +218,7 @@ function App() {
       case 'admin_subscriptions':
         return <SubscriptionsManager />;
       case 'payments':
-        return profile?.role === 'super_admin' ? <PaymentRequests /> : <Dashboard />;
+        return isSuperAdmin ? <PaymentRequests /> : <Dashboard />;
       case 'admin_appearance':
         return <AdminAppearance />;
       case 'admin_settings':

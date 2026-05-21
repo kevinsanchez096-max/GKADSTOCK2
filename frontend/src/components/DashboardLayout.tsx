@@ -61,6 +61,8 @@ export const DashboardLayout = ({
  return saved === 'collapsed';
  });
  const { profile, signOut } = useAuthStore();
+ const isSeller = ['vendedor', 'seller', 'cashier']
+   .includes(profile?.role?.toLowerCase?.() || '');
  const dropdownRef = useRef<HTMLDivElement>(null);
 
  // Cerrar dropdown al hacer clic fuera
@@ -115,6 +117,16 @@ export const DashboardLayout = ({
  { id: 'settings', label: 'Ajustes', icon: Settings, color: 'text-muted-foreground' },
  ];
 
+ const sellerMenuItems = [
+ { id: 'home', label: 'Inicio', icon: LayoutGrid, color: 'text-blue-500' },
+ { id: 'pos', label: 'Punto de Venta', icon: ShoppingCart, color: 'text-emerald-500' },
+ { id: 'cash_register', label: 'Caja', icon: Wallet, color: 'text-emerald-400' },
+ { id: 'sales_history', label: 'Historial', icon: FileText, color: 'text-amber-500' },
+ { id: 'inventory', label: 'Inventario', icon: Package, color: 'text-violet-500' },
+ { id: 'customers', label: 'Clientes', icon: Contact, color: 'text-pink-500' },
+ { id: 'expenses', label: 'Gastos', icon: ArrowDownRight, color: 'text-red-500' },
+ ];
+
  const saasMenuItems = [
  { id: 'home', label: 'Inicio', icon: LayoutGrid, color: 'text-blue-500' },
  { id: 'admin_metrics', label: 'Analíticas', icon: LayoutDashboard, color: 'text-cyan-500' },
@@ -126,7 +138,11 @@ export const DashboardLayout = ({
  { id: 'admin_settings', label: 'Ajustes SaaS', icon: Settings, color: 'text-muted-foreground' },
  ];
 
- const menuItems = profile?.role === 'super_admin' ? saasMenuItems : standardMenuItems;
+ const menuItems = profile?.role === 'super_admin'
+   ? saasMenuItems
+   : isSeller
+     ? sellerMenuItems
+     : standardMenuItems;
 
  const orgStore = useOrganizationStore();
  const currentPlan = orgStore.organization?.plan || profile?.organizations?.plan;
