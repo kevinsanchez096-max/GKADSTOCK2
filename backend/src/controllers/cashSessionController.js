@@ -62,10 +62,11 @@ const cashSessionController = {
             });
 
             const orgId = cashSessionController.getOrgId(req);
+            const userId = req.user.id;
             const sessions = readSessions();
             
-            // Buscar sesión activa ('open') de la organización
-            const active = sessions.find(s => s.organization_id === orgId && s.status === 'open');
+            // Buscar sesión activa ('open') del usuario actual en su organización
+            const active = sessions.find(s => s.organization_id === orgId && s.user_id === userId && s.status === 'open');
             
             if (!active) {
                 return res.status(200).json({ active: false, session: null });
@@ -165,6 +166,7 @@ const cashSessionController = {
     openSession: async (req, res) => {
         try {
             const orgId = cashSessionController.getOrgId(req);
+            const userId = req.user.id;
             const { opening_balance } = req.body;
 
             if (opening_balance === undefined || opening_balance === null || Number(opening_balance) < 0) {
@@ -173,10 +175,10 @@ const cashSessionController = {
 
             const sessions = readSessions();
             
-            // Verificar que no haya otra abierta
-            const hasActive = sessions.some(s => s.organization_id === orgId && s.status === 'open');
+            // Verificar que no haya otra abierta para este usuario específico
+            const hasActive = sessions.some(s => s.organization_id === orgId && s.user_id === userId && s.status === 'open');
             if (hasActive) {
-                return res.status(400).json({ error: 'Ya existe una sesión de caja activa abierta para esta organización.' });
+                return res.status(400).json({ error: 'Ya tienes una sesión de caja activa abierta.' });
             }
 
             const newSession = {
@@ -225,6 +227,7 @@ const cashSessionController = {
     closeSession: async (req, res) => {
         try {
             const orgId = cashSessionController.getOrgId(req);
+            const userId = req.user.id;
             const { actual_cash, notes } = req.body;
 
             if (actual_cash === undefined || actual_cash === null || Number(actual_cash) < 0) {
@@ -232,7 +235,7 @@ const cashSessionController = {
             }
 
             const sessions = readSessions();
-            const activeIndex = sessions.findIndex(s => s.organization_id === orgId && s.status === 'open');
+            const activeIndex = sessions.findIndex(s => s.organization_id === orgId && s.user_id === userId && s.status === 'open');
 
             if (activeIndex === -1) {
                 return res.status(400).json({ error: 'No existe ninguna sesión de caja activa para cerrar.' });
